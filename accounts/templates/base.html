@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Site{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+</head>
+<body>
+    <style>
+        .profile-icon {
+            width: 20px; 
+            height: 20px; 
+            border-radius: 50%;  
+            margin-right: 10px;  
+        }
+
+        
+        .profile-item {
+            display: flex;
+            align-items: center;  
+            gap: 8px;  
+        }
+
+        .profile-item a {
+            display: flex;
+            align-items: center; 
+        }
+
+        .profile-item a span {
+            margin-top: -2px;  
+        }
+    </style>
+
+    <header class="nav-header">
+        <div class="logo">Auidio Man</div>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'services' %}">Services</a></li>
+                <li><a href="{% url 'aboutus' %}">About Us</a></li>
+                <li><a href="{% url 'contactus' %}">Contact Us</a></li>
+                
+                {% if user.is_authenticated %}
+                    <li class="profile-item">
+                        <a href="{% url 'profile' %}">
+                            
+                            <img src="{% static 'images/profile-icon.png' %}" alt="Profile Icon" class="profile-icon">
+                            
+                            <span>{{ user.username }}</span>
+                        </a>
+                    </li>
+                    <li><a href="{% url 'logout' %}">Logout</a></li>
+                {% else %}
+                    <li><a href="{% url 'register' %}">Register</a></li>
+                    <li><a href="{% url 'login' %}">Login</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    {% block content %}{% endblock %}
+
+</body>
+</html>

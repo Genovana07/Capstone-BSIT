@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    <main>
+        <h2 class="tagline">Rent. <span>Set the Mood.</span></h2>
+        <h1 class="main-heading">Make the Magic Happen.</h1>
+        <p class="description">StudioFlow provides top-quality sound and lighting equipment for any event, big or small.</p>
+        <button class="book-now">BOOK NOW</button>
+    </main>
+
+    <div class="container">
+        <div class="header">
+            <span>Event Highlights</span>
+            <div class="dots" onclick="scrollToContainer1()">• • •</div>
+        </div>
+        <div class="gallery">
+            {% for _ in "1234" %}
+            <div class="item">
+                <img src="{% static 'images/speaker1.jpg' %}" alt="Speaker">
+                <p>Alto Speaker</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="container1" class="container1" style="display: none;">
+        <div class="title-container">
+            <h2 class="title">Event Highlights</h2>
+        </div>
+        <div class="gallery1">
+            {% for _ in "1234567890" %}
+            <div class="item1">
+                <img src="{% static 'images/speaker1.jpg' %}" alt="Speaker">
+                <p>Alto Speaker</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="testimonials-container">
+        <h2 class="title">Testimonials <span class="line"></span></h2>
+        <div class="carousel">
+            <button class="prev">&#x2039;</button>
+            <div class="cards">
+                {% for _ in "1234" %}
+                <div class="card">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                    <div class="customer-info">
+                        <img src="{% static 'images/user-icon.png' %}" alt="User">
+                        <span>Customer Name</span>
+                        <span class="rating">⭐ 4.9</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="next">&#x203A;</button>
+        </div>
+        <div class="dots">
+            {% for _ in "123" %}
+            <span class="dot{% if forloop.first %} active{% endif %}"></span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="faq-container">
+        <div class="faq-content">
+            <h2>FAQ’s</h2>
+            <p>Everything You Need to Know</p>
+            {% for _ in "123" %}
+            <select>
+                <option>Lorem ipsum dolor sit amet?</option>
+            </select>
+            {% endfor %}
+        </div>
+        <div class="faq-image">
+            <img src="{% static 'images/speaker1.jpg' %}" alt="FAQ Illustration">
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="logo">YOUR LOGO<br><small>Your Tagging here</small></div>
+        <div class="column">
+            <h3>Title here</h3>
+            <p>text</p>
+            <p>text</p>
+            <p>text</p>
+        </div>
+        <div class="column">
+            <h3>Title here</h3>
+            <p>text</p>
+            <p>text</p>
+            <p>text</p>
+        </div>
+        <div class="column">
+            <h3>Contact Us</h3>
+            <p>info@company.com</p>
+            <p>123-456-7890</p>
+        </div>
+    </footer>
+
+    <script>
+        function scrollToContainer1() {
+            var container = document.getElementById("container1");
+            container.style.display = "block"; // Ensure the container is visible before scrolling
+            window.scrollTo({
+                top: container.offsetTop,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}

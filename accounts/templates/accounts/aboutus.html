@@ -1,0 +1,109 @@
+<!-- about_us.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}About Us{% endblock %}
+
+{% block content %}
+<main>
+    <h2 class="tagline">Learn More <span>About Us</span></h2>
+    <h1 class="main-heading">Our Story</h1>
+    <p class="description">We are passionate about providing top-quality sound and lighting equipment for events, bringing the best experience to any occasion.</p>
+    <button class="read-more">Read More</button>
+</main>
+
+<div class="container">
+    <div class="header">
+        <span>Our Journey</span>
+        <div class="dots" onclick="toggleContainer1()">• • •</div>
+    </div>
+    <div class="gallery">
+        <div class="item">
+            <img src="{% static 'images/speakerImage.jpg' %}" alt="Image" />
+            <p>Our History</p>
+        </div>
+    </div>
+</div>
+
+<div id="container1" class="container1" style="display: none;">
+    <div class="title-container">
+        <h2 class="title">Our Mission, Vision, and Values</h2>
+    </div>
+    <div class="mission-vision-values">
+        <div class="box">
+            <img src="{% static 'images/missionIcon.jpg' %}" alt="Mission Icon" />
+            <h2>Our <span class="highlight">Mission</span></h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+        </div>
+        <div class="box">
+            <img src="{% static 'images/visionIcon.jpg' %}" alt="Vision Icon" />
+            <h2>Our <span class="highlight">Vision</span></h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+        </div>
+        <div class="box">
+            <img src="{% static 'images/valuesIcon.jpg' %}" alt="Values Icon" />
+            <h2>Our <span class="highlight">Values</span></h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+        </div>
+    </div>
+</div>
+
+<h2 class="choose-us-title">Why Choose Us?</h2>
+<div class="why-choose-us">
+    <div class="info-box">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+    </div>
+    <div class="info-box">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+    </div>
+    <div class="info-box">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+    </div>
+</div>
+
+<div class="team-section">
+    <h2 class="team-title">Meet <span>Our Team</span></h2>
+    <p class="team-description">We are a passionate team dedicated to delivering outstanding service.</p>
+    <div class="carousel">
+        <button class="prev">&#10094;</button>
+        <div class="team-members">
+            {% for member in team_members %}
+            <div class="member">
+                <img src="{{ member.img }}" alt="Employee" />
+                <p>{{ member.name }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        <button class="next">&#10095;</button>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="logo">YOUR LOGO<br /><small>Your Tagline here</small></div>
+    <div class="column">
+        <h3>Title here</h3>
+        <p>text</p>
+        <p>text</p>
+        <p>text</p>
+    </div>
+    <div class="column">
+        <h3>Title here</h3>
+        <p>text</p>
+        <p>text</p>
+        <p>text</p>
+    </div>
+    <div class="column">
+        <h3>Contact Us</h3>
+        <p>info@company.com</p>
+        <p>123-456-7890</p>
+    </div>
+</footer>
+
+<script>
+    function toggleContainer1() {
+        var container = document.getElementById("container1");
+        container.style.display = container.style.display === "none" ? "block" : "none";
+    }
+</script>
+<link rel="stylesheet" href="{% static 'css/aboutus.css' %}">
+{% endblock %}

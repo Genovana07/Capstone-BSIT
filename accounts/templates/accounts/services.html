@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Services{% endblock %}
+
+{% block content %}
+    <section class="services">
+        <h2>OUR SERVICES</h2>
+        <div class="title-line"></div>
+        <div class="services-grid">
+            {% for i in "12345678" %}  {# Loop to generate 8 service items #}
+            <div class="service-item">
+                <img src="{% static 'images/speaker1.jpg' %}" alt="Service Image">
+                <h3>Package {{ forloop.counter }}</h3>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+
+                <!-- Conditionally render the button based on whether the user is logged in -->
+                {% if user.is_authenticated %}
+                    <button class="book-now">Book Now</button>
+                {% else %}
+                    <button class="login-first" onclick="window.location.href='{% url 'login' %}'">Login First</button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <button class="see-more" id="see-more-btn">See more</button>
+    </section>
+
+    <section class="services" id="more-services" style="display: none;">
+        <h2>OUR SERVICES</h2>
+        <div class="title-line"></div>
+        <div class="services-grid">
+            {% for i in "12345678901234567890" %}  {# Loop to generate 20 more service items #}
+            <div class="service-item">
+                <img src="{% static 'images/speaker1.jpg' %}" alt="Service Image">
+                <h3>Package {{ forloop.counter }}</h3>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+
+                <!-- Conditionally render the button based on whether the user is logged in -->
+                {% if user.is_authenticated %}
+                    <button class="book-now">Book Now</button>
+                {% else %}
+                    <button class="login-first" onclick="window.location.href='{% url 'login' %}'">Login First</button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <script>
+        document.getElementById("see-more-btn").addEventListener("click", function() {
+            var moreServices = document.getElementById("more-services");
+
+            // Toggle visibility of the 'more-services' section
+            if (moreServices.style.display === "none" || moreServices.style.display === "") {
+                moreServices.style.display = "block";  // Show section
+                moreServices.scrollIntoView({ behavior: "smooth" });  // Scroll to the section smoothly
+            } else {
+                moreServices.style.display = "none";   // Hide section
+            }
+        });
+    </script>
+
+    <footer class="footer">
+        <div class="logo">YOUR LOGO<br /><small>Your Tagging here</small></div>
+        <div class="column">
+            <h3>Title here</h3>
+            <p>text</p>
+            <p>text</p>
+            <p>text</p>
+        </div>
+        <div class="column">
+            <h3>Title here</h3>
+            <p>text</p>
+            <p>text</p>
+            <p>text</p>
+        </div>
+        <div class="column">
+            <h3>Contact Us</h3>
+            <p>info@company.com</p>
+            <p>123-456-7890</p>
+        </div>
+    </footer>
+
+    <link rel="stylesheet" href="{% static 'css/services.css' %}">
+{% endblock %}

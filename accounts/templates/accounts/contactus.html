@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Contact Us{% endblock %}
+
+{% block content %}
+    <div class="contact-container">
+        <!-- Left Section -->
+        <div class="contact-left">
+            <h4 class="contact-subtitle"> ━━━━━ KEEP CLOSE</h4>
+            <h1 class="contact-title">Get in Touch</h1>
+            <p class="contact-description">
+                Let’s bring your event to life – from lights to sound, we’ve got you
+                covered. Contact us today and make every moment unforgettable!
+            </p>
+
+            <div class="contact-info">
+                <div class="contact-item">
+                    <img src="{% static 'images/location.png' %}" alt="Location" class="contact-icon" />
+                    <p>123 Event Avenue, Sound City, ST 45678, United States</p>
+                </div>
+                <div class="contact-item">
+                    <img src="{% static 'images/phone-call.png' %}" alt="Phone" class="contact-icon" />
+                    <p>+63 912 345 6789 (02) 8123 4567</p>
+                </div>
+                <div class="contact-item">
+                    <img src="{% static 'images/clock.png' %}" alt="Hours" class="contact-icon" />
+                    <p>Monday - Saturday | 9:00 AM - 7:00 PM</p>
+                </div>
+                <div class="contact-item">
+                    <img src="{% static 'images/mail.png' %}" alt="Email" class="contact-icon" />
+                    <p>studioflow@gmail.com</p>
+                </div>
+            </div>
+
+            <hr class="divider" />
+
+            <div class="social-icons">
+                <p>FOLLOW US</p>
+                <img src="{% static 'images/facebook.png' %}" alt="Facebook" class="social-icon" />
+                <img src="{% static 'images/instagram.png' %}" alt="Instagram" class="social-icon" />
+                <img src="{% static 'images/youtube.png' %}" alt="YouTube" class="social-icon" />
+            </div>
+        </div>
+
+        <!-- Right Section - Contact Form -->
+        <div class="contact-right">
+            <h2 class="contact-form-title">Your Details</h2>
+            <p>Let us know how to get back to you.</p>
+
+            <form class="contact-form" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <div class="input-container">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" placeholder="Enter your name" required />
+                    </div>
+                    <div class="input-container">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" placeholder="Enter your email" required />
+                    </div>
+                </div>
+
+                <div class="input-container">
+                    <label for="subject">Subject</label>
+                    <input type="text" id="subject" placeholder="Enter subject" class="full-width" required />
+                </div>
+
+                <div class="input-container">
+                    <label for="message">Comments / Questions</label>
+                    <textarea id="message" placeholder="Type your message" class="full-width" required></textarea>
+                </div>
+
+                <button type="submit" class="submit-button">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="logo">YOUR LOGO<br /><small>Your Tagging here</small></div>
+        <div class="column">
+            <h3>Title here</h3>
+            <p>text</p>
+            <p>text</p>
+            <p>text</p>
+        </div>
+        <div class="column">
+            <h3>Title here</h3>
+            <p>text</p>
+            <p>text</p>
+            <p>text</p>
+        </div>
+        <div class="column">
+            <h3>Contact Us</h3>
+            <p>info@company.com</p>
+            <p>123-456-7890</p>
+        </div>
+    </footer>
+
+    <link rel="stylesheet" href="{% static 'css/contactus.css' %}">
+{% endblock %}

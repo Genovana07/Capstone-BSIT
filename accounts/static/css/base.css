@@ -1,0 +1,49 @@
+.nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 50px;
+    background-color: #fff;
+    border-bottom: 2px solid #ddd;
+}
+
+.logo {
+    font-weight: bold;
+    font-size: 20px;
+    font-family: myFont1;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 30px;
+    padding: 20px;
+    margin: 0;
+    font-family: myFont;
+}
+
+nav ul li {
+    display: inline;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: black;
+    font-size: 16px;
+    transition: color 0.3s;
+}
+
+nav ul li a.active {
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+nav ul li a:hover {
+    color: purple;
+}
+.profile-icon {
+    width: 20px;  /* Set the width */
+    height: 20px; /* Set the height */
+    border-radius: 50%;  /* Make it circular */
+    margin-right: 10px;  /* Space between icon and username */
+}

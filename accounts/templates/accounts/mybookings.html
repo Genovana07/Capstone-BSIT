@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <ul>
+      <li>
+        <img src="{% static 'images/profile-user.png' %}" width="20" />
+        <span><a href="{% url 'profile' %}">Profile</a></span>
+      </li>
+      <li>
+        <img src="{% static 'images/open-book.png' %}" width="20" />
+        <span><a href="{% url 'mybookings' %}">My Bookings</a></span>
+      </li>
+      <li>
+        <img src="{% static 'images/history.png' %}" width="20" />
+        <span><a href="{% url 'history' %}">History</a></span>
+      </li>
+      <li>
+        <img src="{% static 'images/history.png' %}" width="20" />
+        <span><a href="{% url 'logout' %}">Logout</a></span>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <h2>
+      <img src="{% static 'images/open-book.png' %}" width="20" /> My Bookings
+    </h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Booking ID</th>
+            <th>Date Of Booking</th>
+            <th>Event Date & Time</th>
+            <th>Status</th>
+            <th>Total Amount</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for booking in booking_list %}
+          <tr>
+            <td>{{ booking.id }}</td>
+            <td>{{ booking.date_booked }}</td>
+            <td>{{ booking.event_datetime }}</td>
+            <td><span class="status {{ booking.status|lower }}">{{ booking.status }}</span></td>
+            <td>₱{{ booking.total }}</td>
+            <td><a href="#">View</a></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6">No bookings found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+<link rel="stylesheet" href="{% static 'css/mybookings.css' %}">
+{% endblock %}

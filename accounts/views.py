@@ -66,4 +66,44 @@ def contactus(request):
 # Profile Page (Only for Logged-in Users)
 @login_required
 def profile(request):
-    return render(request, 'profile.html')
+    return render(request, 'accounts/profile.html')
+
+@login_required
+def mybookings(request):
+    return render(request, 'accounts/mybookings.html')
+
+@login_required
+def history(request):
+    # Dummy data example
+    history_list = [
+        {
+            'id': 1312213,
+            'event_date': 'April 16, 2024',
+            'package': 'Birthday Package',
+            'status': 'Completed',
+            'total': 20000
+        },
+        # Add more entries as needed
+    ]
+    return render(request, 'accounts/history.html', {'history_list': history_list})
+
+@login_required
+def mybookings(request):
+    # Dummy sample data (replace with real DB query)
+    booking_list = [
+        {
+            'id': 1312213,
+            'date_booked': 'April 16, 2024',
+            'event_datetime': 'April 16, 2024',
+            'status': 'Pending',
+            'total': 20000
+        },
+        {
+            'id': 1312214,
+            'date_booked': 'April 17, 2024',
+            'event_datetime': 'April 25, 2024',
+            'status': 'Approved',
+            'total': 30000
+        }
+    ]
+    return render(request, 'accounts/mybookings.html', {'booking_list': booking_list})

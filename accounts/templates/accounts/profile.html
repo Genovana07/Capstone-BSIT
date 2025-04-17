@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <ul>
+            <li>
+                <img src="{% static 'images/profile-user.png' %}" alt="User Icon" width="20" height="20">
+                <span><a href="{% url 'profile' %}">Profile</a></span>
+            </li>
+            <li>
+                <img src="{% static 'images/open-book.png' %}" alt="Bookings Icon" width="20" height="20">
+                <span><a href="{% url 'mybookings' %}">My Bookings</a></span>
+            </li>
+            <li>
+                <img src="{% static 'images/history.png' %}" alt="History Icon" width="20" height="20">
+                <span><a href="{% url 'history' %}">History</a></span>
+            </li>
+            <li>
+                <img src="{% static 'images/history.png' %}" alt="Logout Icon" width="20" height="20">
+                <span><a href="{% url 'logout' %}">Logout</a></span>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Header -->
+        <div class="profile-header">
+            <img src="{% static 'images/profile-user.png' %}" alt="Profile Icon" class="profile-img">
+            <div class="username">Hello {{ user.username }}</div>
+        </div>
+
+        <!-- Form -->
+        <form class="form-grid">
+            <div class="form-group">
+                <label for="first-name">First Name</label>
+                <input type="text" id="first-name" value="{{ user.first_name }}">
+            </div>
+            <div class="form-group">
+                <label for="last-name">Last Name</label>
+                <input type="text" id="last-name" value="{{ user.last_name }}">
+            </div>
+            <div class="form-group">
+                <label for="contact">Contact Number</label>
+                <input type="text" id="contact" value="{{ user.profile.contact_number }}">
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" value="{{ user.email }}">
+            </div>
+            <div class="form-group full-width">
+                <label for="address">Address</label>
+                <input type="text" id="address" value="{{ user.profile.address }}">
+            </div>
+        </form>
+    </main>
+</div>
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}

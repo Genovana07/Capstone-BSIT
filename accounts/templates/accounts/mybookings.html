@@ -1,38 +1,162 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block extra_css %}
-{% endblock %}
-
 {% block content %}
+<style>
+  .container {
+        display: flex;
+        min-height: 100vh;
+        font-family: 'MavenPro', sans-serif;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        width: 240px;
+        background-color: #ffffff;
+        padding: 40px 20px;
+        border-right: 1px solid #ddd;
+    }
+
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+        font-size: 18px;
+    }
+
+    .sidebar li img {
+        width: 24px;
+        height: 24px;
+        margin-right: 12px;
+    }
+
+    .sidebar li span a {
+        color: #23194f;
+        font-weight: 500;
+        font-size: 16px;
+        text-decoration: none;
+    }
+
+    .sidebar li span a:hover {
+        color: #3a2d7c;
+    }
+
+
+  /* Main Section */
+  .main {
+    flex: 1;
+    background-color: #fff;
+    padding: 60px;
+  }
+
+  .main h2 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #23194f;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 30px;
+  }
+
+  /* Table Card */
+  .table-container {
+    background-color: #fff8f8;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+
+  thead th {
+    text-align: left;
+    padding: 12px 8px;
+    border-bottom: 2px solid #ddd;
+    color: #444;
+  }
+
+  tbody td {
+    padding: 14px 8px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody a {
+    color: #3a2d7c;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  tbody a:hover {
+    text-decoration: underline;
+  }
+
+  .status {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    color: white;
+    text-transform: capitalize;
+  }
+
+  .status.pending {
+    background-color: #d4aa00;
+  }
+
+  .status.approved {
+    background-color: #28a745;
+  }
+
+  .status.cancelled {
+    background-color: #dc3545;
+  }
+</style>
+
 <div class="container">
+
   <!-- Sidebar -->
   <aside class="sidebar">
-    <ul>
-      <li>
-        <img src="{% static 'images/profile-user.png' %}" width="20" />
-        <span><a href="{% url 'profile' %}">Profile</a></span>
-      </li>
-      <li>
-        <img src="{% static 'images/open-book.png' %}" width="20" />
-        <span><a href="{% url 'mybookings' %}">My Bookings</a></span>
-      </li>
-      <li>
-        <img src="{% static 'images/history.png' %}" width="20" />
-        <span><a href="{% url 'history' %}">History</a></span>
-      </li>
-      <li>
-        <img src="{% static 'images/history.png' %}" width="20" />
-        <span><a href="{% url 'logout' %}">Logout</a></span>
-      </li>
-    </ul>
+      <ul>
+          <li>
+              <img src="{% static 'images/profile-user.png' %}" alt="User Icon">
+              <span><a href="{% url 'profile' %}">Profile</a></span>
+          </li>
+          <li>
+              <img src="{% static 'images/open-book.png' %}" alt="Bookings Icon">
+              <span><a href="{% url 'mybookings' %}">My Bookings</a></span>
+          </li>
+          <li>
+              <img src="{% static 'images/history.png' %}" alt="History Icon">
+              <span><a href="{% url 'history' %}">History</a></span>
+          </li>
+          <li>
+              <img src="{% static 'images/logout.png' %}" alt="Logout Icon">
+              <span><a href="{% url 'logout' %}">Logout</a></span>
+          </li>
+      </ul>
   </aside>
 
   <!-- Main Content -->
   <main class="main">
     <h2>
-      <img src="{% static 'images/open-book.png' %}" width="20" /> My Bookings
+      <img src="{% static 'images/open-book.png' %}" width="22"> My Bookings
     </h2>
+
     <div class="table-container">
       <table>
         <thead>
@@ -63,5 +187,4 @@
     </div>
   </main>
 </div>
-<link rel="stylesheet" href="{% static 'css/mybookings.css' %}">
 {% endblock %}

@@ -57,7 +57,13 @@ def services(request):
 
 # About Us Page
 def aboutus(request):
-    return render(request, "accounts/aboutus.html")
+    team_members = [
+        {'name': 'Alice Reyes', 'img': 'images/speaker1.png'},
+        {'name': 'Bob Santos', 'img': 'images/speaker1.png'},
+        {'name': 'Charlie Cruz', 'img': 'images/speaker1.png'},
+    ]
+    return render(request, "accounts/aboutus.html", {'team_members': team_members})
+
 
 # Contact Us Page
 def contactus(request):

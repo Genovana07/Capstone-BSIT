@@ -1,65 +1,186 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block extra_css %}
-{% endblock %}
-
 {% block content %}
+<style>
+  .container {
+        display: flex;
+        min-height: 100vh;
+        font-family: 'MavenPro', sans-serif;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        width: 240px;
+        background-color: #ffffff;
+        padding: 40px 20px;
+        border-right: 1px solid #ddd;
+    }
+
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+        font-size: 18px;
+    }
+
+    .sidebar li img {
+        width: 24px;
+        height: 24px;
+        margin-right: 12px;
+    }
+
+    .sidebar li span a {
+        color: #23194f;
+        font-weight: 500;
+        font-size: 16px;
+        text-decoration: none;
+    }
+
+    .sidebar li span a:hover {
+        color: #3a2d7c;
+    }
+
+
+  /* Main Content */
+  .main-content {
+    flex-grow: 1;
+    padding: 60px;
+    background-color: #fff;
+  }
+
+  .main-content h2 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #23194f;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 30px;
+  }
+
+  .table-container {
+    background-color: #fff7f5;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    background-color: white;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 14px 12px;
+    border-bottom: 1px solid #eee;
+  }
+
+  th {
+    font-weight: 600;
+    color: #444;
+    background-color: #fef0ec;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  .status {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    color: white;
+    display: inline-block;
+    text-transform: capitalize;
+  }
+
+  .status.completed {
+    background-color: #00c853;
+  }
+
+  .status.cancelled {
+    background-color: #ff1744;
+  }
+
+  a {
+    color: #3a2d7c;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+</style>
+
 <div class="container">
+
     <!-- Sidebar -->
     <aside class="sidebar">
         <ul>
             <li>
-                <img src="{% static 'images/profile-user.png' %}" alt="User Icon" width="20" height="20">
+                <img src="{% static 'images/profile-user.png' %}" alt="User Icon">
                 <span><a href="{% url 'profile' %}">Profile</a></span>
             </li>
             <li>
-                <img src="{% static 'images/open-book.png' %}" alt="Bookings Icon" width="20" height="20">
+                <img src="{% static 'images/open-book.png' %}" alt="Bookings Icon">
                 <span><a href="{% url 'mybookings' %}">My Bookings</a></span>
             </li>
             <li>
-                <img src="{% static 'images/history.png' %}" alt="History Icon" width="20" height="20">
+                <img src="{% static 'images/history.png' %}" alt="History Icon">
                 <span><a href="{% url 'history' %}">History</a></span>
             </li>
             <li>
-                <img src="{% static 'images/history.png' %}" alt="Logout Icon" width="20" height="20">
+                <img src="{% static 'images/logout.png' %}" alt="Logout Icon">
                 <span><a href="{% url 'logout' %}">Logout</a></span>
             </li>
         </ul>
     </aside>
 
-    <main class="main-content">
-        <h2><span class="icon">🕓</span> History</h2>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Booking ID</th>
-                        <th>Event Date</th>
-                        <th>Package Items</th>
-                        <th>Status</th>
-                        <th>Total Amount</th>
-                        <th>Rating</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Example loop (can be replaced with real data from backend) -->
-                    {% for booking in history_list %}
-                    <tr>
-                        <td>{{ booking.id }}</td>
-                        <td>{{ booking.event_date }}</td>
-                        <td>{{ booking.package }}</td>
-                        <td><span class="status {{ booking.status|lower }}">{{ booking.status }}</span></td>
-                        <td>₱{{ booking.total }}</td>
-                        <td><a href="#">View</a></td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="6">No history found.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </main>
+
+  <!-- Main Section -->
+  <main class="main-content">
+    <h2><span class="icon">🕓</span> History</h2>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Booking ID</th>
+            <th>Event Date</th>
+            <th>Package Items</th>
+            <th>Status</th>
+            <th>Total Amount</th>
+            <th>Rating</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for booking in history_list %}
+          <tr>
+            <td>{{ booking.id }}</td>
+            <td>{{ booking.event_date }}</td>
+            <td>{{ booking.package }}</td>
+            <td><span class="status {{ booking.status|lower }}">{{ booking.status }}</span></td>
+            <td>₱{{ booking.total }}</td>
+            <td><a href="#">View</a></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6">No history found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
 </div>
-<link rel="stylesheet" href="{% static 'css/history.css' %}">
 {% endblock %}

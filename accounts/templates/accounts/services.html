@@ -4,83 +4,230 @@
 {% block title %}Services{% endblock %}
 
 {% block content %}
-    <section class="services">
-        <h2>OUR SERVICES</h2>
-        <div class="title-line"></div>
-        <div class="services-grid">
-            {% for i in "12345678" %}  {# Loop to generate 8 service items #}
-            <div class="service-item">
-                <img src="{% static 'images/speaker1.jpg' %}" alt="Service Image">
-                <h3>Package {{ forloop.counter }}</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-
-                <!-- Conditionally render the button based on whether the user is logged in -->
-                {% if user.is_authenticated %}
-                    <button class="book-now">Book Now</button>
-                {% else %}
-                    <button class="login-first" onclick="window.location.href='{% url 'login' %}'">Login First</button>
-                {% endif %}
-            </div>
-            {% endfor %}
+<section class="services">
+    <h2>OUR SERVICES</h2>
+    <div class="title-line"></div>
+    <div class="services-grid">
+        {% for i in "12345678" %}
+        <div class="service-item">
+            <img src="{% static 'images/speaker1.jpg' %}" alt="Service Image">
+            <h3>Package {{ forloop.counter }}</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+            {% if user.is_authenticated %}
+                <button class="book-now" data-package="Package {{ forloop.counter }}">Book Now</button>
+            {% else %}
+                <button class="login-first" onclick="window.location.href='{% url 'login' %}'">Login First</button>
+            {% endif %}
         </div>
-        <button class="see-more" id="see-more-btn">See more</button>
-    </section>
+        {% endfor %}
+    </div>
+    <button class="see-more" id="see-more-btn">See more</button>
+</section>
 
-    <section class="services" id="more-services" style="display: none;">
-        <h2>OUR SERVICES</h2>
-        <div class="title-line"></div>
-        <div class="services-grid">
-            {% for i in "12345678901234567890" %}  {# Loop to generate 20 more service items #}
-            <div class="service-item">
-                <img src="{% static 'images/speaker1.jpg' %}" alt="Service Image">
-                <h3>Package {{ forloop.counter }}</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-
-                <!-- Conditionally render the button based on whether the user is logged in -->
-                {% if user.is_authenticated %}
-                    <button class="book-now">Book Now</button>
-                {% else %}
-                    <button class="login-first" onclick="window.location.href='{% url 'login' %}'">Login First</button>
-                {% endif %}
-            </div>
-            {% endfor %}
+<section class="services" id="more-services" style="display: none;">
+    <h2>OUR SERVICES</h2>
+    <div class="title-line"></div>
+    <div class="services-grid">
+        {% for i in "12345678901234567890" %}
+        <div class="service-item">
+            <img src="{% static 'images/speaker1.jpg' %}" alt="Service Image">
+            <h3>Package {{ forloop.counter }}</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+            {% if user.is_authenticated %}
+                <button class="book-now" data-package="Package {{ forloop.counter }}">Book Now</button>
+            {% else %}
+                <button class="login-first" onclick="window.location.href='{% url 'login' %}'">Login First</button>
+            {% endif %}
         </div>
-    </section>
+        {% endfor %}
+    </div>
+</section>
 
-    <script>
-        document.getElementById("see-more-btn").addEventListener("click", function() {
-            var moreServices = document.getElementById("more-services");
+<!-- Booking Form Modal -->
+<div id="booking-modal" class="booking-modal">
+    <div class="booking-content">
+        <span class="close-btn" onclick="closeBookingForm()">&times;</span>
+        <h2>Book a Service</h2>
+        <form method="POST" action="#">
+            {% csrf_token %}
 
-            // Toggle visibility of the 'more-services' section
-            if (moreServices.style.display === "none" || moreServices.style.display === "") {
-                moreServices.style.display = "block";  // Show section
-                moreServices.scrollIntoView({ behavior: "smooth" });  // Scroll to the section smoothly
-            } else {
-                moreServices.style.display = "none";   // Hide section
-            }
+            <label for="selected_package">Package Selected</label>
+            <input type="text" id="selected_package" name="selected_package" readonly>
+
+            <label for="full_name">Full Name</label>
+            <input type="text" id="full_name" name="full_name" required>
+
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="contact_number">Contact Number</label>
+            <input type="tel" id="contact_number" name="contact_number" required>
+
+            <label for="event_date">Event Date</label>
+            <input type="date" id="event_date" name="event_date" required>
+
+            <label for="event_time">Event Time</label>
+            <input type="time" id="event_time" name="event_time" required>
+
+            <label for="event_type">Type of Event</label>
+            <select id="event_type" name="event_type" required>
+                <option value="">Select</option>
+                <option value="Wedding">Wedding</option>
+                <option value="Birthday">Birthday</option>
+                <option value="Corporate">Corporate</option>
+                <option value="Concert">Concert</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <label for="location">Event Location</label>
+            <input type="text" id="location" name="location" required>
+
+            <label for="audience_size">Expected Number of Guests</label>
+            <input type="number" id="audience_size" name="audience_size" min="1" required>
+
+            <label for="additional_notes">Additional Notes</label>
+            <textarea id="additional_notes" name="additional_notes" rows="3"></textarea>
+
+            <button type="submit" class="submit-booking">Submit Booking Request</button>
+        </form>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="logo">YOUR LOGO<br /><small>Your Tagging here</small></div>
+    <div class="column">
+        <h3>Title here</h3>
+        <p>text</p><p>text</p><p>text</p>
+    </div>
+    <div class="column">
+        <h3>Title here</h3>
+        <p>text</p><p>text</p><p>text</p>
+    </div>
+    <div class="column">
+        <h3>Contact Us</h3>
+        <p>info@company.com</p>
+        <p>123-456-7890</p>
+    </div>
+</footer>
+
+<!-- JavaScript -->
+<script>
+    document.getElementById("see-more-btn").addEventListener("click", function () {
+        const moreServices = document.getElementById("more-services");
+        moreServices.style.display = (moreServices.style.display === "none" || moreServices.style.display === "") ? "block" : "none";
+        moreServices.scrollIntoView({ behavior: "smooth" });
+    });
+
+    const bookButtons = document.querySelectorAll(".book-now");
+    const modal = document.getElementById("booking-modal");
+    const packageInput = document.getElementById("selected_package");
+
+    bookButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const packageName = btn.getAttribute("data-package");
+            packageInput.value = packageName;
+            modal.style.display = "flex";
         });
-    </script>
+    });
 
-    <footer class="footer">
-        <div class="logo">YOUR LOGO<br /><small>Your Tagging here</small></div>
-        <div class="column">
-            <h3>Title here</h3>
-            <p>text</p>
-            <p>text</p>
-            <p>text</p>
-        </div>
-        <div class="column">
-            <h3>Title here</h3>
-            <p>text</p>
-            <p>text</p>
-            <p>text</p>
-        </div>
-        <div class="column">
-            <h3>Contact Us</h3>
-            <p>info@company.com</p>
-            <p>123-456-7890</p>
-        </div>
-    </footer>
+    function closeBookingForm() {
+        modal.style.display = "none";
+    }
 
-    <link rel="stylesheet" href="{% static 'css/services.css' %}">
+    window.addEventListener("click", function (e) {
+        if (e.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+</script>
+
+<!-- External CSS -->
+<link rel="stylesheet" href="{% static 'css/services.css' %}">
+<style>
+.booking-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.booking-content {
+    background: white;
+    max-width: 600px;
+    width: 100%;
+    margin: auto;
+    border-radius: 10px;
+    padding: 25px;
+    position: relative;
+    font-family: 'MavenPro', sans-serif;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease-in-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+.close-btn {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    font-size: 28px;
+    cursor: pointer;
+    color: #333;
+}
+.booking-content h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #23194f;
+}
+.booking-content label {
+    display: block;
+    margin-top: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #444;
+}
+.booking-content input,
+.booking-content select,
+.booking-content textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 0.95rem;
+    margin-top: 5px;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+}
+.booking-content textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+.submit-booking {
+    margin-top: 25px;
+    width: 100%;
+    background-color: #23194f;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+.submit-booking:hover {
+    background-color: #3a2d7c;
+}
+@media screen and (max-width: 600px) {
+    .booking-content {
+        padding: 20px 15px;
+    }
+    .booking-content h2 {
+        font-size: 1.5rem;
+    }
+}
+</style>
 {% endblock %}

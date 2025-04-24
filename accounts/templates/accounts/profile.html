@@ -1,28 +1,156 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block extra_css %}
-{% endblock %}
+{% block title %}My Profile{% endblock %}
 
 {% block content %}
+<style>
+    @font-face {
+        font-family: 'MavenPro';
+        src: url("{% static 'fonts/MavenPro-Regular.ttf' %}") format('truetype');
+    }
+
+    .container {
+        display: flex;
+        min-height: 100vh;
+        font-family: 'MavenPro', sans-serif;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        width: 240px;
+        background-color: #ffffff;
+        padding: 40px 20px;
+        border-right: 1px solid #ddd;
+    }
+
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+        font-size: 18px;
+    }
+
+    .sidebar li img {
+        width: 24px;
+        height: 24px;
+        margin-right: 12px;
+    }
+
+    .sidebar li span a {
+        color: #23194f;
+        font-weight: 500;
+        font-size: 16px;
+        text-decoration: none;
+    }
+
+    .sidebar li span a:hover {
+        color: #3a2d7c;
+    }
+
+    /* Main Profile Section */
+    .main {
+        flex: 1;
+        padding: 60px;
+        background-color: #f9f9f9;
+    }
+
+    .profile-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 40px;
+    }
+
+    .profile-img {
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 20px;
+    }
+
+    .username {
+        font-size: 24px;
+        font-weight: bold;
+        color: #23194f;
+    }
+
+    /* Form Layout */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group label {
+        margin-bottom: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #555;
+    }
+
+    .form-group input {
+        padding: 14px 16px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        background-color: #fff;
+    }
+
+    .form-group.full-width {
+        grid-column: span 2;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            flex-direction: column;
+        }
+
+        .sidebar {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .main {
+            padding: 30px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
 <div class="container">
+
     <!-- Sidebar -->
     <aside class="sidebar">
         <ul>
             <li>
-                <img src="{% static 'images/profile-user.png' %}" alt="User Icon" width="20" height="20">
+                <img src="{% static 'images/profile-user.png' %}" alt="User Icon">
                 <span><a href="{% url 'profile' %}">Profile</a></span>
             </li>
             <li>
-                <img src="{% static 'images/open-book.png' %}" alt="Bookings Icon" width="20" height="20">
+                <img src="{% static 'images/open-book.png' %}" alt="Bookings Icon">
                 <span><a href="{% url 'mybookings' %}">My Bookings</a></span>
             </li>
             <li>
-                <img src="{% static 'images/history.png' %}" alt="History Icon" width="20" height="20">
+                <img src="{% static 'images/history.png' %}" alt="History Icon">
                 <span><a href="{% url 'history' %}">History</a></span>
             </li>
             <li>
-                <img src="{% static 'images/history.png' %}" alt="Logout Icon" width="20" height="20">
+                <img src="{% static 'images/logout.png' %}" alt="Logout Icon">
                 <span><a href="{% url 'logout' %}">Logout</a></span>
             </li>
         </ul>
@@ -30,13 +158,11 @@
 
     <!-- Main Content -->
     <main class="main">
-        <!-- Header -->
         <div class="profile-header">
             <img src="{% static 'images/profile-user.png' %}" alt="Profile Icon" class="profile-img">
-            <div class="username">Hello {{ user.username }}</div>
+            <div class="username">Hello, {{ user.username }}</div>
         </div>
 
-        <!-- Form -->
         <form class="form-grid">
             <div class="form-group">
                 <label for="first-name">First Name</label>
@@ -61,5 +187,4 @@
         </form>
     </main>
 </div>
-<link rel="stylesheet" href="{% static 'css/profile.css' %}">
 {% endblock %}

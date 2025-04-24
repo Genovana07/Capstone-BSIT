@@ -1,49 +1,144 @@
+/* custom-booking.css - Responsive + Hero Fix + Header Style */
+
+@font-face {
+    font-family: 'MavenPro';
+    src: url('../fonts/MavenPro-Regular.ttf') format('truetype');
+}
+
+:root {
+    --primary-color: #23194f;
+    --secondary-color: #DDFEF8;
+    --accent-color: #3a2d7c;
+    --highlight-bg: linear-gradient(135deg, #dceaff, #eef5ff);
+    --text-color: #333;
+    --light-color: #ffffff;
+    --font-main: 'MavenPro', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--light-color);
+    color: var(--text-color);
+}
+
+/* HEADER STYLING */
 .nav-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 15px 50px;
-    background-color: #fff;
+    background-color: var(--light-color);
     border-bottom: 2px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 .logo {
+    display: flex;
+    align-items: center;
     font-weight: bold;
-    font-size: 20px;
-    font-family: myFont1;
+    font-size: 1.4rem;
+    gap: 10px;
+    font-family: var(--font-main);
+}
+
+.logo img {
+    height: 40px;
+    width: 70px;
+    border-radius: 4px;
 }
 
 nav ul {
     list-style: none;
     display: flex;
     gap: 30px;
-    padding: 20px;
     margin: 0;
-    font-family: myFont;
-}
-
-nav ul li {
-    display: inline;
+    padding: 0;
 }
 
 nav ul li a {
     text-decoration: none;
-    color: black;
-    font-size: 16px;
+    color: var(--text-color);
+    font-size: 1rem;
+    font-weight: 500;
     transition: color 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
+nav ul li a:hover,
 nav ul li a.active {
-    text-decoration: underline;
-    font-weight: bold;
+    color: var(--accent-color);
 }
 
-nav ul li a:hover {
-    color: purple;
+.profile-item {
+    display: flex;
+    align-items: center;
 }
+
+.profile-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    gap: 8px;
+    color: var(--text-color);
+}
+
 .profile-icon {
-    width: 20px;  /* Set the width */
-    height: 20px; /* Set the height */
-    border-radius: 50%;  /* Make it circular */
-    margin-right: 10px;  /* Space between icon and username */
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: inline-block;
+}
+
+
+.profile-name {
+    font-family: var(--font-main);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .main-heading {
+        font-size: 2.5rem;
+    }
+
+    .tagline {
+        font-size: 2rem;
+    }
+
+    .book-now {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    .container, .container1, .testimonials-container, .faq-container {
+        padding: 20px;
+        width: 90%;
+    }
+
+    .faq-container {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+
+    .cards {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .carousel {
+        flex-direction: column;
+    }
 }

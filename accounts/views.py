@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 
+# Register View
 def register_view(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -15,12 +16,13 @@ def register_view(request):
         elif User.objects.filter(email=email).exists():
             messages.error(request, "Email already in use.")
         else:
-            user = User.objects.create_user(username=username, email=email, password=password)  # Auto-hashes password
+            user = User.objects.create_user(username=username, email=email, password=password)
             messages.success(request, "Registration successful. You can now log in.")
             return redirect("login")
 
     return render(request, "accounts/register.html")
 
+# Login View
 def login_view(request):
     if request.method == "POST":
         email = request.POST["email"]
@@ -41,7 +43,7 @@ def login_view(request):
 
     return render(request, "accounts/login.html")
 
-
+# Logout View
 def logout_view(request):
     logout(request)
     messages.success(request, "Logged out successfully.")
@@ -49,7 +51,7 @@ def logout_view(request):
 
 # Home Page
 def home(request):
-    return render(request, "accounts/home.html") 
+    return render(request, "accounts/home.html")
 
 # Services Page
 def services(request):
@@ -64,7 +66,6 @@ def aboutus(request):
     ]
     return render(request, "accounts/aboutus.html", {'team_members': team_members})
 
-
 # Contact Us Page
 def contactus(request):
     return render(request, "accounts/contactus.html")
@@ -74,42 +75,39 @@ def contactus(request):
 def profile(request):
     return render(request, 'accounts/profile.html')
 
+# My Bookings (Only for Logged-in Users)
 @login_required
 def mybookings(request):
-    return render(request, 'accounts/mybookings.html')
+    booking_list = [
+        {'id': 1312213, 'date_booked': 'April 16, 2024', 'event_datetime': 'April 16, 2024', 'status': 'Pending', 'total': 20000},
+        {'id': 1312214, 'date_booked': 'April 17, 2024', 'event_datetime': 'April 25, 2024', 'status': 'Approved', 'total': 30000}
+    ]
+    return render(request, 'accounts/mybookings.html', {'booking_list': booking_list})
 
+# History Page (Only for Logged-in Users)
 @login_required
 def history(request):
-    # Dummy data example
     history_list = [
-        {
-            'id': 1312213,
-            'event_date': 'April 16, 2024',
-            'package': 'Birthday Package',
-            'status': 'Completed',
-            'total': 20000
-        },
-        # Add more entries as needed
+        {'id': 1312213, 'event_date': 'April 16, 2024', 'package': 'Birthday Package', 'status': 'Completed', 'total': 20000}
     ]
     return render(request, 'accounts/history.html', {'history_list': history_list})
 
+# Dashboard View (only accessible by logged-in users)
 @login_required
-def mybookings(request):
-    # Dummy sample data (replace with real DB query)
-    booking_list = [
-        {
-            'id': 1312213,
-            'date_booked': 'April 16, 2024',
-            'event_datetime': 'April 16, 2024',
-            'status': 'Pending',
-            'total': 20000
-        },
-        {
-            'id': 1312214,
-            'date_booked': 'April 17, 2024',
-            'event_datetime': 'April 25, 2024',
-            'status': 'Approved',
-            'total': 30000
-        }
-    ]
-    return render(request, 'accounts/mybookings.html', {'booking_list': booking_list})
+def dashboard(request):
+    return render(request, 'client/dashboard.html')
+
+# Booking View
+@login_required
+def booking(request):
+    return render(request, 'client/booking.html')
+
+# Event View
+@login_required
+def event(request):
+    return render(request, 'client/event.html')
+
+# Equipment Inventory View
+@login_required
+def equipment(request):
+    return render(request, 'client/equipment.html')

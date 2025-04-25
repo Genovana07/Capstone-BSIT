@@ -1,0 +1,124 @@
+{% extends 'client-base.html' %}
+
+{% block title %}Bookings{% endblock %}
+
+{% block content %}
+<header class="header">
+    <h1>Booking Details</h1>
+    <div class="filters">
+      <select><option>Today</option></select>
+      <select><option>2024</option></select>
+    </div>
+  </header>
+
+  <table class="booking-table">
+    <thead>
+      <tr>
+        <th>Event Type</th>
+        <th>Customer Name</th>
+        <th>Event Type</th>
+        <th>Event Date</th>
+        <th>Location</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Birthday</td>
+        <td>Aimee Rose</td>
+        <td>Wedding</td>
+        <td>July 22, 3033</td>
+        <td>Lucena, Quezon</td>
+        <td><span class="badge processing">Processing</span></td>
+        <td class="actions">
+          <button class="accept">Accept</button>
+          <button class="reject">Reject</button>
+          <button class="view">View</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Wedding</td>
+        <td>Christian</td>
+        <td>Wedding</td>
+        <td>July 22, 3033</td>
+        <td>Lucena, Quezon</td>
+        <td><span class="badge not-processed">Not Processed</span></td>
+        <td class="actions">
+          <button class="accept">Accept</button>
+          <button class="reject">Reject</button>
+          <button class="view">View</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</main>
+</div>
+<style>
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 3%;
+    }
+
+    .filters select {
+      padding: 6px 10px;
+      margin-left: 10px;
+    }
+
+    .booking-table {
+      width: 100%;
+      margin-top: 30px;
+      border-collapse: collapse;
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .booking-table th,
+    .booking-table td {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    .badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.9em;
+      color: white;
+    }
+
+    .processing {
+      background-color: #28a745;
+    }
+
+    .not-processed {
+      background-color: #dc3545;
+    }
+
+    .actions button {
+      margin-right: 5px;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 0.85em;
+      cursor: pointer;
+    }
+
+    .actions .accept {
+      background-color: #28a745;
+    }
+
+    .actions .reject {
+      background-color: #dc3545;
+    }
+
+    .actions .view {
+      background-color: #333;
+    }
+</style>
+{% endblock %}
+ 

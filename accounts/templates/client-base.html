@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dashboard{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #fff;
+      color: #000;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: #000000;
+      color: #fff;
+      width: 250px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 30px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+    }
+
+    .user-info span {
+      margin-right: 8px;
+    }
+
+    .user-info .fa-user-circle {
+      margin-right: 24px; /* this adds spacing between user icon and bell */
+      font-size: 24px; /* optional: enlarge the icon */
+    }
+
+    .user-info .fa-bell {
+      font-size: 24px;
+    }
+
+    .user {
+      text-align: center;
+    }
+
+    .avatar img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%; /* makes it a circle */
+      object-fit: cover;
+      color: white;
+    }
+
+    .white-icon {
+      width: 60px;
+      height: 60px;
+      filter: brightness(0) invert(1); /* makes it white */
+    }
+
+    .nav {
+      margin-top: 30px;
+    }
+
+    .nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      color: #ccc;
+      text-decoration: none;
+    }
+
+    .nav a.active,
+    .nav a:hover {
+      background: #444;
+      color: #fff;
+      border-radius: 8px;
+    }
+
+    /* Main Content */
+    .main {
+      flex-grow: 1;
+      padding: 20px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .search-bar {
+      width: 450px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-left: 20px;
+      margin-right: auto;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  </style>
+
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">LOGO</div>
+      <div class="user">
+        <div class="avatar">
+            <img src="user.png" alt="Avatar Icon" class="white-icon">
+        </div>
+        <h3>Name of Owner</h3>
+        <p>Owner</p>
+      </div>
+      
+      <nav class="nav">
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="{% url 'booking' %}"><i class="fas fa-calendar-alt"></i> Booking</a>
+        <a href="{% url 'event' %}"><i class="fas fa-calendar"></i> Event</a>
+        <a href="{% url 'equipment' %}"><i class="fas fa-box"></i> Equipment Inventory</a>
+        <a href="#"><i class="fas fa-eye"></i> Equipment Tracking</a>
+        <a href="#"><i class="fas fa-star"></i> Review</a>
+        <a href="#"><i class="fas fa-users"></i> Customer</a>
+        <a href="#"><i class="fas fa-user"></i> Employee</a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Top Bar -->
+      <div class="topbar">
+        <button class="menu-btn"><i class="fas fa-bars"></i></button>
+        <input type="text" placeholder="Search Projects" class="search-bar">
+        <div class="user-info">
+          <span>Owner</span>
+          <i class="fas fa-user-circle"></i>
+          <i class="fas fa-bell"></i>
+        </div>
+      </div>
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

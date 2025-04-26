@@ -40,24 +40,6 @@
       margin-bottom: 30px;
     }
 
-    .user-info {
-      display: flex;
-      align-items: center;
-    }
-
-    .user-info span {
-      margin-right: 8px;
-    }
-
-    .user-info .fa-user-circle {
-      margin-right: 24px; /* this adds spacing between user icon and bell */
-      font-size: 24px; /* optional: enlarge the icon */
-    }
-
-    .user-info .fa-bell {
-      font-size: 24px;
-    }
-
     .user {
       text-align: center;
     }
@@ -65,7 +47,7 @@
     .avatar img {
       width: 60px;
       height: 60px;
-      border-radius: 50%; /* makes it a circle */
+      border-radius: 50%;
       object-fit: cover;
       color: white;
     }
@@ -73,7 +55,7 @@
     .white-icon {
       width: 60px;
       height: 60px;
-      filter: brightness(0) invert(1); /* makes it white */
+      filter: brightness(0) invert(1);
     }
 
     .nav {
@@ -117,10 +99,44 @@
       margin-right: auto;
     }
 
+    /* Top right user info */
     .user-info {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 16px; /* more space between items */
+      position: relative;
+      cursor: pointer;
+    }
+
+    .user-info i:first-of-type {
+      margin-right: 12px; /* space between user icon and bell */
+    }
+
+    /* Dropdown Menu */
+    .user-info #topbarDropdown {
+      display: none;
+      position: absolute;
+      top: 120%;
+      right: 0;
+      background: #fff;
+      color: #000;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      width: 180px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+    }
+
+    .user-info #topbarDropdown a {
+      display: block;
+      padding: 10px 15px;
+      text-decoration: none;
+      color: #000;
+      font-size: 14px;
+    }
+
+    .user-info #topbarDropdown a:hover {
+      background-color: #f5f5f5;
     }
   </style>
 
@@ -132,12 +148,12 @@
       <div class="logo">LOGO</div>
       <div class="user">
         <div class="avatar">
-            <img src="user.png" alt="Avatar Icon" class="white-icon">
+          <img src="user.png" alt="Avatar Icon" class="white-icon">
         </div>
         <h3>Name of Owner</h3>
         <p>Owner</p>
       </div>
-      
+
       <nav class="nav">
         <a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a>
         <a href="{% url 'booking' %}"><i class="fas fa-calendar-alt"></i> Booking</a>
@@ -156,15 +172,37 @@
       <div class="topbar">
         <button class="menu-btn"><i class="fas fa-bars"></i></button>
         <input type="text" placeholder="Search Projects" class="search-bar">
-        <div class="user-info">
+
+        <div class="user-info" id="topbarDropdownToggle">
           <span>Owner</span>
           <i class="fas fa-user-circle"></i>
           <i class="fas fa-bell"></i>
+
+          <!-- Dropdown -->
+          <div id="topbarDropdown">
+            <a href="{% url 'home' %}">View as User</a>
+          </div>
         </div>
       </div>
 
       {% block content %}{% endblock %}
     </main>
   </div>
+
+  <!-- Dropdown Toggle Script -->
+  <script>
+    const toggle = document.getElementById('topbarDropdownToggle');
+    const dropdown = document.getElementById('topbarDropdown');
+
+    toggle.addEventListener('click', function(event) {
+      dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
+      event.stopPropagation();
+    });
+
+    document.addEventListener('click', function() {
+      dropdown.style.display = 'none';
+    });
+  </script>
+
 </body>
 </html>

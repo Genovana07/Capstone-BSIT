@@ -110,6 +110,33 @@
     .form-group.full-width {
         grid-column: span 2;
     }
+    .form-group select {
+    padding: 14px 16px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #fff;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+.update-btn {
+    background-color: #4CAF50; /* Green color */
+    color: white;
+    padding: 14px 20px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+}
+
+.update-btn:hover {
+    background-color: #45a049;
+}
 
     @media (max-width: 768px) {
         .container {
@@ -163,27 +190,87 @@
             <div class="username">Hello, {{ user.username }}</div>
         </div>
 
-        <form class="form-grid">
+        {% if messages %}
+        {% for message in messages %}
+          <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+      
+        <form method="POST" class="form-grid">
+            {% csrf_token %}
+        
             <div class="form-group">
                 <label for="first-name">First Name</label>
-                <input type="text" id="first-name" value="{{ user.first_name }}">
+                <input type="text" id="first-name" name="first_name" value="{{ user.first_name }}">
             </div>
+        
             <div class="form-group">
                 <label for="last-name">Last Name</label>
-                <input type="text" id="last-name" value="{{ user.last_name }}">
+                <input type="text" id="last-name" name="last_name" value="{{ user.last_name }}">
             </div>
+        
             <div class="form-group">
-                <label for="contact">Contact Number</label>
-                <input type="text" id="contact" value="{{ user.profile.contact_number }}">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" value="{{ user.username }}" readonly>
             </div>
+        
+            <div class="form-group">
+                <label for="contact">Phone Number</label>
+                <input type="text" id="contact" name="phone" value="{{ user.profile.contact_number }}">
+            </div>
+        
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" id="email" value="{{ user.email }}">
+                <input type="email" id="email" name="email" value="{{ user.email }}">
             </div>
+        
+            <div class="form-group">
+                <label for="province">Province</label>
+                <select id="province" name="province">
+                    <option value="Batangas" {% if user.profile.province == "Batangas" %}selected{% endif %}>Batangas</option>
+                    <option value="Cavite" {% if user.profile.province == "Cavite" %}selected{% endif %}>Cavite</option>
+                    <option value="Laguna" {% if user.profile.province == "Laguna" %}selected{% endif %}>Laguna</option>
+                    <option value="Quezon" {% if user.profile.province == "Quezon" %}selected{% endif %}>Quezon</option>
+                    <option value="Rizal" {% if user.profile.province == "Rizal" %}selected{% endif %}>Rizal</option>
+                </select>
+            </div>
+        
+            <div class="form-group">
+    <label for="city">City</label>
+    <select id="city" name="city">
+        <option value="">Select a City</option>
+
+        <!-- Batangas Cities -->
+        <option value="Batangas City" {% if user.profile.city == "Batangas City" %}selected{% endif %}>Batangas City</option>
+        <option value="Lipa" {% if user.profile.city == "Lipa" %}selected{% endif %}>Lipa</option>
+
+        <!-- Cavite Cities -->
+        <option value="Tagaytay" {% if user.profile.city == "Tagaytay" %}selected{% endif %}>Tagaytay</option>
+        <option value="Dasmariñas" {% if user.profile.city == "Dasmariñas" %}selected{% endif %}>Dasmariñas</option>
+
+        <!-- Laguna Cities -->
+        <option value="Calamba" {% if user.profile.city == "Calamba" %}selected{% endif %}>Calamba</option>
+        <option value="Santa Rosa" {% if user.profile.city == "Santa Rosa" %}selected{% endif %}>Santa Rosa</option>
+
+        <!-- Quezon Cities -->
+        <option value="Lucena" {% if user.profile.city == "Lucena" %}selected{% endif %}>Lucena</option>
+        <option value="Tayabas" {% if user.profile.city == "Tayabas" %}selected{% endif %}>Tayabas</option>
+
+        <!-- Rizal Cities -->
+        <option value="Antipolo" {% if user.profile.city == "Antipolo" %}selected{% endif %}>Antipolo</option>
+        <option value="San Mateo" {% if user.profile.city == "San Mateo" %}selected{% endif %}>San Mateo</option>
+        <option value="Taytay" {% if user.profile.city == "Taytay" %}selected{% endif %}>Taytay</option>
+    </select>
+</div>
+        
             <div class="form-group full-width">
                 <label for="address">Address</label>
-                <input type="text" id="address" value="{{ user.profile.address }}">
+                <input type="text" id="address" name="address" value="{{ user.profile.address }}">
             </div>
+        
+            <button type="submit" class="update-btn">Update Profile</button>
         </form>
     </main>
 </div>

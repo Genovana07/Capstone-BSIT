@@ -28,63 +28,51 @@ body {
 }
 
 /* HEADER STYLING */
-.nav-header {
+ /* Navigation Bar */
+ .nav-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 50px;
-    background-color: var(--light-color);
-    border-bottom: 2px solid #ddd;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    font-size: 1.4rem;
-    gap: 10px;
-    font-family: var(--font-main);
+    background-color: #ffffff;
+    padding: 10px 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .logo img {
     height: 40px;
-    width: 70px;
-    border-radius: 4px;
 }
 
 nav ul {
-    list-style: none;
     display: flex;
-    gap: 30px;
+    list-style: none;
     margin: 0;
     padding: 0;
 }
 
+nav ul li {
+    margin-left: 20px;
+    position: relative;
+}
+
 nav ul li a {
     text-decoration: none;
-    color: var(--text-color);
-    font-size: 1rem;
+    color: #333333;
     font-weight: 500;
-    transition: color 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-nav ul li a:hover,
-nav ul li a.active {
-    color: var(--accent-color);
-}
-
-.profile-item {
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
     display: flex;
     align-items: center;
 }
 
+nav ul li a:hover {
+    background-color: #f0f0f0;
+    color: #007BFF; /* Optional: Change color on hover */
+}
+
+.profile-item .profile-link img {
+    margin-right: 8px;
+}
 .profile-link {
     display: flex;
     align-items: center;

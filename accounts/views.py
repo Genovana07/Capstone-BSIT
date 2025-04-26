@@ -3,34 +3,56 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
+from .models import Profile
 
 # Register View
 def register_view(request):
     if request.method == "POST":
-        username = request.POST["username"]
-        email = request.POST["email"]
-        password = request.POST["password"]
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        phone = request.POST.get("phone")
+        address = request.POST.get("address")  # <-- added
+        province = request.POST.get("province")
+        city = request.POST.get("city")
 
-        if User.objects.filter(username=username).exists():
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+        elif User.objects.filter(username=username).exists():
             messages.error(request, "Username already taken.")
         elif User.objects.filter(email=email).exists():
             messages.error(request, "Email already in use.")
         else:
-            user = User.objects.create_user(username=username, email=email, password=password)
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name
+            )
+            Profile.objects.create(
+                user=user,
+                contact_number=phone,
+                address=address,  # <-- added
+                province=province,
+                city=city
+            )
             messages.success(request, "Registration successful. You can now log in.")
             return redirect("login")
 
     return render(request, "accounts/register.html")
-
 # Login View
 def login_view(request):
     if request.method == "POST":
-        email = request.POST["email"]
-        password = request.POST["password"]
+        email = request.POST.get("email")
+        password = request.POST.get("password")
 
         try:
             user = User.objects.get(email=email)
-            user = authenticate(request, username=user.username, password=password)  
+            user = authenticate(request, username=user.username, password=password)
         except User.DoesNotExist:
             user = None
 
@@ -70,12 +92,31 @@ def aboutus(request):
 def contactus(request):
     return render(request, "accounts/contactus.html")
 
-# Profile Page (Only for Logged-in Users)
+# Profile Page
 @login_required
 def profile(request):
+    if request.method == "POST":
+        # Update User basic info
+        user = request.user
+        user.first_name = request.POST.get('first_name')
+        user.last_name = request.POST.get('last_name')
+        user.email = request.POST.get('email')
+        user.save()
+
+        # Update Profile extended info
+        profile = user.profile
+        profile.contact_number = request.POST.get('phone')
+        profile.province = request.POST.get('province')
+        profile.city = request.POST.get('city')
+        profile.address = request.POST.get('address')
+        profile.save()
+
+        messages.success(request, "Profile updated successfully.")
+        return redirect('profile')
+
     return render(request, 'accounts/profile.html')
 
-# My Bookings (Only for Logged-in Users)
+# My Bookings Page
 @login_required
 def mybookings(request):
     booking_list = [
@@ -84,7 +125,7 @@ def mybookings(request):
     ]
     return render(request, 'accounts/mybookings.html', {'booking_list': booking_list})
 
-# History Page (Only for Logged-in Users)
+# History Page
 @login_required
 def history(request):
     history_list = [
@@ -92,7 +133,7 @@ def history(request):
     ]
     return render(request, 'accounts/history.html', {'history_list': history_list})
 
-# Dashboard View (only accessible by logged-in users)
+# Dashboard View
 @login_required
 def dashboard(request):
     return render(request, 'client/dashboard.html')

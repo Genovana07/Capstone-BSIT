@@ -6,7 +6,193 @@
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/register.css' %}?v=1">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&family=Open+Sans&family=Roboto&display=swap" rel="stylesheet">
+<style>
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Open Sans', sans-serif;
+  background-color: #f5f5f5;
+}
 
+/* WRAPPER */
+.register-page {
+  display: flex;
+  width: 1080px;
+  height: 720px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* LEFT FORM */
+.register-left {
+  width: 50%;
+  padding: 3.5rem 3rem;
+  background-color: rgba(255, 255, 255, 0.96);
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  overflow-y: auto;
+}
+
+.register-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 2.4rem;
+  color: #6600cc;
+  text-align: center;
+  margin-bottom: 1.8rem;
+}
+
+.input-group {
+  margin-bottom: 1.2rem;
+}
+
+.input-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.input-group input,
+.input-group select {
+  width: 100%;
+  padding: 0.75rem;
+  background: #e0e0e0;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  background: #fff;
+  outline: 2px solid #6600cc50;
+}
+
+/* STACKED PASSWORD */
+.password-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+/* BUTTON */
+.register-btn {
+  background-color: #6600cc;
+  color: white;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 30px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.register-btn:hover {
+  background-color: #470099;
+}
+
+/* SEPARATOR */
+.separator {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+  color: #6600cc;
+  font-weight: bold;
+}
+
+.separator hr {
+  flex: 1;
+  height: 1px;
+  background: #6600cc;
+  border: none;
+}
+
+.separator span {
+  margin: 0 0.8rem;
+}
+
+/* SOCIAL REGISTER */
+.social-register {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
+.social-register img {
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.social-register img:hover {
+  transform: scale(1.1);
+}
+
+/* RIGHT SECTION (IMAGE) */
+.register-right {
+  width: 55%;
+  background: url("../images/eme2.jpg") no-repeat center center / cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.banner-content {
+  position: absolute;
+  color: white;
+  text-align: center;
+  padding: 3rem;
+  max-width: 80%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 46%;
+}
+
+.banner-content h1 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 2.6rem;
+  margin-bottom: 1rem;
+}
+
+.banner-content p {
+  font-size: 1.25rem;
+  line-height: 1.6;
+}
+
+.banner-content .highlight {
+  font-weight: bold;
+  color: #fff;
+  font-size: 1.5rem;
+}
+
+/* SCROLLBAR HIDE FOR CLEAN FORM */
+.register-left::-webkit-scrollbar {
+  display: none;
+}
+.register-left {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+ 
+
+</style>
 <div class="register-page">
     <!-- Left Section (Form) -->
     <div class="register-left">
@@ -24,7 +210,7 @@
 
         <form class="register-form" method="POST" action="{% url 'register' %}">
             {% csrf_token %}
-
+        
             <div class="input-row">
                 <div class="input-group">
                     <label for="first_name">First Name</label>
@@ -35,22 +221,27 @@
                     <input type="text" id="last_name" name="last_name" placeholder="Lastname" required />
                 </div>
             </div>
-            
+        
             <div class="input-group">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" placeholder="Enter your username here" required />
             </div>
-
+        
             <div class="input-group">
                 <label for="email">Email Address</label>
                 <input type="email" id="email" name="email" placeholder="Enter your email here" required />
             </div>
-
+        
             <div class="input-group">
                 <label for="phone">Phone Number</label>
                 <input type="text" id="phone" name="phone" placeholder="Enter your phone number here" required />
             </div>
-
+        
+            <div class="input-group">
+                <label for="address">Address</label>
+                <input type="text" id="address" name="address" placeholder="Enter your full address here" required />
+            </div>
+        
             <div class="input-row">
                 <div class="input-group">
                     <label for="province">Province</label>
@@ -70,24 +261,24 @@
                     </select>
                 </div>
             </div>
-
+        
             <div class="password-stack">
                 <div class="input-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Enter your password here"  required />
+                    <input type="password" id="password" name="password" placeholder="Enter your password here" required />
                 </div>
                 <div class="input-group">
                     <label for="confirm_password">Confirm Password</label>
-                    <input type="password" id="confirm_password" name="confirm_password"placeholder="Confirm Password"  required />
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required />
                 </div>
             </div>
-
+        
             <button type="submit" class="register-btn">Register</button>
-
+        
             <div class="separator">
                 <hr><span>OR</span><hr>
             </div>
-
+        
             <div class="social-register">
                 <button type="button" class="google-register">
                     <img src="{% static 'images/google.png' %}" alt="Google" />
@@ -97,16 +288,11 @@
                 </button>
             </div>
         </form>
-    </div>
 
-    <!-- Right Section (Banner) -->
-    <div class="register-right">
         <div class="banner-content">
             <h1>Your Events Starts Here</h1>
-            <p>Sign Up for <strong>Easy Rentals</strong><br> and <span class="highlight">Epic Productions!</span></p>
-        </div>
-    </div>
-</div>
+            <p>Sign Up for <strong>Easy Rentals</strong> and <span class="highlight">Epic Productions!</span></p>
+          </div>
 
 <script>
     // Define the provinces and corresponding cities in CALABARZON (Region 4A)

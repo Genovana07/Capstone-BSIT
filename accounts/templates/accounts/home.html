@@ -51,8 +51,8 @@
 <div class="testimonials-container">
     <h2 class="title">Testimonials <span class="line"></span></h2>
     <div class="carousel">
-        <button class="prev">&#x2039;</button>
-        <div class="cards">
+        <button class="prev" onclick="moveCarousel(-1)">&#x2039;</button>
+        <div class="cards" id="testimonial-cards">
             {% for _ in "1234" %}
             <div class="card">
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
@@ -64,7 +64,7 @@
             </div>
             {% endfor %}
         </div>
-        <button class="next">&#x203A;</button>
+        <button class="next" onclick="moveCarousel(1)">&#x203A;</button>
     </div>
     <div class="dots">
         {% for _ in "123" %}

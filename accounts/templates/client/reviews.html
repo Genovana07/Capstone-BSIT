@@ -1,0 +1,163 @@
+{% extends 'client-base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+{% load static %} <!-- Add this line to load the static files -->
+
+<style>
+/* Review Summary */
+    .review-summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fff;
+        padding: 20px 30px;
+        border-bottom: 3px solid black;
+        margin-bottom: 20px;
+    }
+    .divider {
+        width: 1px;
+        height: 60px;
+        background-color: black;
+        margin: 0 30px;
+    }
+
+    .review-count,
+    .average-rating {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .review-count h2,
+    .average-rating h2 {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .review-number,
+    .rating-number {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .growth {
+        font-size: 14px;
+        color: green;
+        margin-left: 8px;
+    }
+
+    .stars {
+        color: gold;
+        margin-left: 10px;
+        font-size: 20px;
+    }
+
+    .filter-box {
+        background-color: #f2f2f2;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    /* Review List */
+    .reviews-list {
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        margin-top: 2%;
+    }
+
+    .review-card {
+        display: flex;
+        padding: 20px 0;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .review-card:last-child {
+        border-bottom: none;
+    }
+
+    .reviewer-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        margin-right: 20px;
+        object-fit: cover;
+    }
+
+    .review-details {
+        flex: 1;
+    }
+
+    .review-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .review-header strong {
+        font-size: 16px;
+    }
+
+    .review-header .date {
+        margin-left: auto;
+        color: #888;
+        font-size: 14px;
+    }
+  </style>
+
+  <div class="review-summary">
+    <div class="review-count">
+        <h2>Reviews</h2>
+        <p class="review-number">10.0k <span class="growth">📈 +2%</span></p>
+        <p class="review-label">Growth in Review this year</p>
+    </div>
+    <div class="divider"></div>
+
+    <div class="average-rating">
+        <h2>Average Rating</h2>
+        <div class="rating-number">
+            4.0 <span class="stars">★★★★★</span>
+        </div>
+        <p>Average Rating This Year</p>
+    </div>
+
+    <div class="filter-box">
+        March 2024 - March 2025
+    </div>
+  </div>
+
+  <div class="reviews-list">
+    <div class="review-card">
+        <img src="{% static 'images/profile-icon.png' %}" alt="Reviewer" class="reviewer-avatar">
+        <div class="review-details">
+            <div class="review-header">
+                <strong>Christian Genovana</strong>
+                <span>Type Of Event</span>
+                <span class="stars">★★★★★</span>
+                <span class="date">2022-07-1</span>
+            </div>
+            <p>Great job on your work! The content is well-organized and clearly presents the main ideas...</p>
+        </div>
+    </div>
+
+    <!-- More reviews can be added here -->
+    <div class="review-card">
+        <img src="{% static 'images/profile-icon.png' %}" alt="Reviewer" class="reviewer-avatar">
+        <div class="review-details">
+            <div class="review-header">
+                <strong>Christian Genovana</strong>
+                <span>Type Of Event</span>
+                <span class="stars">★★★★★</span>
+                <span class="date">2022-07-1</span>
+            </div>
+            <p>Great job on your work! The content is well-organized and clearly presents the main ideas...</p>
+        </div>
+    </div>
+  </div>
+{% endblock %}

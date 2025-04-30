@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Dashboard{% endblock %}</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  
+  {% load static %}
   <style>
     * {
       margin: 0;
@@ -148,7 +148,7 @@
       <div class="logo">LOGO</div>
       <div class="user">
         <div class="avatar">
-          <img src="user.png" alt="Avatar Icon" class="white-icon">
+          <img src="{% static 'images/profile-icon.png' %}" alt="Avatar Icon" class="white-icon">
         </div>
         <h3>Name of Owner</h3>
         <p>Owner</p>
@@ -159,10 +159,10 @@
         <a href="{% url 'booking' %}"><i class="fas fa-calendar-alt"></i> Booking</a>
         <a href="{% url 'event' %}"><i class="fas fa-calendar"></i> Event</a>
         <a href="{% url 'equipment' %}"><i class="fas fa-box"></i> Equipment Inventory</a>
-        <a href="#"><i class="fas fa-eye"></i> Equipment Tracking</a>
-        <a href="#"><i class="fas fa-star"></i> Review</a>
-        <a href="#"><i class="fas fa-users"></i> Customer</a>
-        <a href="#"><i class="fas fa-user"></i> Employee</a>
+        <a href="{% url 'tracking' %}"><i class="fas fa-eye"></i> Equipment Tracking</a>
+        <a href="{% url 'reviews' %}"><i class="fas fa-star"></i> Review</a>
+        <a href="{% url 'customer' %}"><i class="fas fa-users"></i> Customer</a>
+        <a href="{% url 'employee' %}"><i class="fas fa-user"></i> Employee</a>
       </nav>
     </aside>
 

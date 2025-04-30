@@ -152,3 +152,23 @@ def event(request):
 @login_required
 def equipment(request):
     return render(request, 'client/equipment.html')
+
+# Equipment Tracking View
+@login_required
+def tracking(request):
+    return render(request, 'client/tracking.html')
+
+#Reviews
+@login_required
+def reviews(request):
+    return render(request, 'client/reviews.html')
+
+#Customer
+@login_required
+def customer(request):
+    return render(request, 'client/customer.html')
+
+#Employee
+@login_required
+def employee(request):
+    return render(request, 'client/employee.html')

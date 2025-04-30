@@ -28,11 +28,12 @@
         {% endfor %}
     </div>
 
-    <button onclick="scrollToContainer1()" style="display: block; margin: 30px auto 10px; padding: 12px 28px; background-color: #23194f; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-family: 'MavenPro', sans-serif; cursor: pointer; transition: background-color 0.3s ease;" onmouseover="this.style.backgroundColor='#3a2d7c'" onmouseout="this.style.backgroundColor='#23194f'">
+    <button onclick="scrollToContainer1()" class="see-more-btn">
         See More
     </button>
 </div>
 
+<!-- Hidden Additional Gallery -->
 <div id="container1" class="container1" style="display: none;">
     <div class="title-container">
         <h2 class="title">Event Highlights</h2>
@@ -48,6 +49,7 @@
     </div>
 </div>
 
+<!-- Testimonials Section -->
 <div class="testimonials-container">
     <h2 class="title">Testimonials <span class="line"></span></h2>
     <div class="carousel">
@@ -73,6 +75,7 @@
     </div>
 </div>
 
+<!-- FAQ Section -->
 <div class="faq-container">
     <div class="faq-content">
         <h2>FAQ’s</h2>
@@ -115,12 +118,14 @@
 </footer>
 
 <script>
+    // Scroll to the next event section
     function scrollToContainer1() {
         var container = document.getElementById("container1");
         container.style.display = "block";
         container.scrollIntoView({ behavior: "smooth" });
     }
 
+    // Open the lightbox modal
     function openLightbox(src) {
         const modal = document.getElementById("lightbox-modal");
         const img = document.getElementById("lightbox-img");
@@ -128,8 +133,19 @@
         modal.style.display = "flex";
     }
 
+    // Close the lightbox modal
     function closeLightbox() {
         document.getElementById("lightbox-modal").style.display = "none";
+    }
+
+    // Carousel movement (previous and next)
+    let currentIndex = 0;
+    function moveCarousel(direction) {
+        const cards = document.getElementById("testimonial-cards").children;
+        const totalCards = cards.length;
+        currentIndex = (currentIndex + direction + totalCards) % totalCards; // Cycle through the carousel
+        const cardWidth = cards[0].offsetWidth;
+        document.getElementById("testimonial-cards").style.transform = `translateX(-${cardWidth * currentIndex}px)`;
     }
 </script>
 

@@ -1,0 +1,67 @@
+{% extends 'client-base.html' %}
+
+{% block title %}Tracking{% endblock %}
+
+{% block content %}
+  <style>
+    .dashboard-header {
+        margin: 30px 0;
+    }
+
+    .tracking h1 {
+        margin-bottom: 20px;
+        font-size: 28px;
+        margin-top: 3%;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+    }
+
+    table th,
+    table td {
+        border: 1px solid #ddd;
+        padding: 12px 16px;
+        text-align: left;
+        height: 50px;
+    }
+
+    table th {
+        background: #f5f5f5;
+        font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+      <!-- Equipment Tracking Table -->
+      <section class="tracking">
+        <h1>Tracking Equipment</h1>
+        <table>
+          <thead>
+            <tr>
+              <th>Equipment ID</th>
+              <th>Equipment Name</th>
+              <th>Last Checked Out Date</th>
+              <th>Status</th>
+              <th>Current Location</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td>available, rented, undermaintenance</td>
+              <td></td>
+            </tr>
+            <!-- Add more rows if needed -->
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
+{% endblock %}

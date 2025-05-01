@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from .models import Profile
+from django.core.exceptions import PermissionDenied
 
 # Register View
 def register_view(request):
@@ -59,7 +60,12 @@ def login_view(request):
         if user is not None:
             login(request, user)
             messages.success(request, "Login successful.")
-            return redirect("home")
+
+            # Redirect admin users to dashboard
+            if user.is_superuser or user.is_staff:
+                return redirect("dashboard")
+            else:
+                return redirect("home")
         else:
             messages.error(request, "Invalid email or password.")
 
@@ -133,42 +139,49 @@ def history(request):
     ]
     return render(request, 'accounts/history.html', {'history_list': history_list})
 
-# Dashboard View
-@login_required
+def admin_only(view_func):
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect("login")
+        if not request.user.is_staff and not request.user.is_superuser:
+            raise PermissionDenied  # or redirect to "home"
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
 def dashboard(request):
     return render(request, 'client/dashboard.html')
 
-# Booking View
 @login_required
+@admin_only
 def booking(request):
     return render(request, 'client/booking.html')
 
-# Event View
 @login_required
+@admin_only
 def event(request):
     return render(request, 'client/event.html')
 
-# Equipment Inventory View
 @login_required
+@admin_only
 def equipment(request):
     return render(request, 'client/equipment.html')
 
-# Equipment Tracking View
 @login_required
+@admin_only
 def tracking(request):
     return render(request, 'client/tracking.html')
 
-#Reviews
 @login_required
+@admin_only
 def reviews(request):
     return render(request, 'client/reviews.html')
 
-#Customer
 @login_required
+@admin_only
 def customer(request):
     return render(request, 'client/customer.html')
 
-#Employee
 @login_required
+@admin_only
 def employee(request):
     return render(request, 'client/employee.html')

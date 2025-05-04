@@ -147,9 +147,12 @@ html, body {
 }
 
 .social-login button:hover {
-  transform: scale(1.1);
+  transform:none;
 }
-
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 .social-login img {
   width: 26px;
   height: 26px;

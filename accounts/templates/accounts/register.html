@@ -30,7 +30,7 @@ html, body {
 /* LEFT FORM */
 .register-left {
   width: 100%;
-  max-width: 600px; /* Increased width */
+  max-width: 600px;
   padding: 2rem 2rem;
   background: rgba(255, 255, 255, 0.95);
   display: flex;
@@ -43,7 +43,7 @@ html, body {
 
 .register-title {
   font-family: 'Oswald', sans-serif;
-  font-size: 2rem; /* Smaller title font size */
+  font-size: 2rem;
   color: #6600cc;
   text-align: center;
   margin-bottom: 1.5rem;
@@ -56,6 +56,10 @@ html, body {
 .input-row {
   display: flex;
   gap: 1rem;
+}
+
+.input-row .input-group {
+  flex: 1;
 }
 
 .input-group label {
@@ -92,18 +96,25 @@ html, body {
 .register-btn {
   background-color: #6600cc;
   color: white;
-  padding: 0.75rem;
+  padding: 0.75rem 2.5rem;
   border: none;
   border-radius: 30px;
   font-weight: bold;
   font-size: 1rem;
   cursor: pointer;
-  margin-top: 1rem;
+  margin: 1.5rem auto 0 auto;
+  display: block;
   transition: background-color 0.3s ease;
 }
 
 .register-btn:hover {
   background-color: #470099;
+}
+
+/* DISABLED BUTTON */
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* SEPARATOR */
@@ -143,7 +154,7 @@ html, body {
 }
 
 .social-register button:hover {
-  transform: scale(1.1);
+  transform: none;
 }
 
 .social-register img {
@@ -153,7 +164,6 @@ html, body {
 </style>
 
 <div class="register-page">
-    <!-- Left Section (Form) -->
     <div class="register-left">
         <h2 class="register-title">Create an Account</h2>
 
@@ -182,23 +192,18 @@ html, body {
             </div>
         
             <div class="input-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" placeholder="Enter your username here" required />
-            </div>
-        
-            <div class="input-group">
                 <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" placeholder="Enter your email here" required />
+                <input type="email" id="email" name="email" placeholder="Email" required />
             </div>
         
             <div class="input-group">
                 <label for="phone">Phone Number</label>
-                <input type="text" id="phone" name="phone" placeholder="Enter your phone number here" required />
+                <input type="text" id="phone" name="phone" placeholder="Phone number" required />
             </div>
         
             <div class="input-group">
                 <label for="address">Address</label>
-                <input type="text" id="address" name="address" placeholder="Enter your full address here" required />
+                <input type="text" id="address" name="address" placeholder="Address" required />
             </div>
         
             <div class="input-row">
@@ -224,7 +229,7 @@ html, body {
             <div class="password-stack">
                 <div class="input-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Enter your password here" required />
+                    <input type="password" id="password" name="password" placeholder="Password" required />
                 </div>
                 <div class="input-group">
                     <label for="confirm_password">Confirm Password</label>
@@ -239,10 +244,10 @@ html, body {
             </div>
         
             <div class="social-register">
-                <button type="button" class="google-register">
+                <button type="button" class="google-register" disabled>
                     <img src="{% static 'images/google.png' %}" alt="Google" />
                 </button>
-                <button type="button" class="facebook-register">
+                <button type="button" class="facebook-register" disabled>
                     <img src="{% static 'images/facebook.png' %}" alt="Facebook" />
                 </button>
             </div>
@@ -251,7 +256,6 @@ html, body {
 </div>
 
 <script>
-    // Define the provinces and corresponding cities in CALABARZON (Region 4A)
     const provinceOptions = {
         "Batangas": ["Balayan", "Batangas City", "Bauan", "Calaca", "Calatagan", "Cuenca", "Ibaan", "Lemery", "Lipa", "Lobo", "Mabini", "Malvar", "Mataasnakahoy", "Nasugbu", "Padre Garcia", "Rosario", "San Jose", "San Juan", "San Luis", "San Nicolas", "San Pascual", "Santa Teresita", "Santo Tomas", "Taal", "Talisay", "Tanauan", "Taysan", "Tingloy", "Tuy"],
         "Cavite": ["Alfonso", "Amadeo", "Bacoor", "Carmona", "Cavite City", "Dasmariñas", "General Emilio Aguinaldo", "General Mariano Alvarez", "General Trias", "Imus", "Indang", "Kawit", "Magallanes", "Maragondon", "Mendez", "Naic", "Noveleta", "Rosario", "Silang", "Tagaytay", "Tanza", "Ternate", "Trece Martires"],
@@ -260,15 +264,11 @@ html, body {
         "Rizal": ["Angono", "Antipolo", "Baras", "Binangonan", "Cainta", "Cardona", "Jalajala", "Morong", "Pililla", "Rodriguez", "San Mateo", "Tanay", "Taytay", "Teresa"]
     };
 
-    // Function to update the cities based on the selected province
     function updateCities() {
         const province = document.getElementById("province").value;
         const citySelect = document.getElementById("city");
-
-        // Clear the current cities
         citySelect.innerHTML = '<option value="">Select a City</option>';
 
-        // Add the cities corresponding to the selected province
         if (provinceOptions[province]) {
             provinceOptions[province].forEach(function(city) {
                 const option = document.createElement("option");
@@ -279,5 +279,4 @@ html, body {
         }
     }
 </script>
-
 {% endblock %}

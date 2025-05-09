@@ -25,7 +25,13 @@ SECRET_KEY = 'django-insecure-zdl@v7=e2z5^hk80+yo##^$+t3uzdm3&8-_-dbvs_9ribow@f7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# Security settings (Development)
+CSRF_COOKIE_SECURE = False  # Disable for development only
+SESSION_COOKIE_SECURE = False  # Disable for development only
+
+# Allow localhost during development
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
 
 
 # Application definition
@@ -44,7 +50,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',  # Ensure this line is not commented
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -134,3 +140,4 @@ LOGIN_URL = 'login'  # This should match the name of your login URL pattern
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+LOGIN_URL = 'login'

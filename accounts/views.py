@@ -5,6 +5,8 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from .models import Profile
 from django.core.exceptions import PermissionDenied
+from .models import Booking,ServicePackage
+from django.shortcuts import render, get_object_or_404
 
 # Register View
 def register_view(request):
@@ -15,7 +17,7 @@ def register_view(request):
         first_name = request.POST.get("first_name")
         last_name = request.POST.get("last_name")
         phone = request.POST.get("phone")
-        address = request.POST.get("address")  # <-- added
+        address = request.POST.get("address")
         province = request.POST.get("province")
         city = request.POST.get("city")
 
@@ -33,7 +35,7 @@ def register_view(request):
             Profile.objects.create(
                 user=user,
                 contact_number=phone,
-                address=address,  # <-- added
+                address=address,
                 province=province,
                 city=city
             )
@@ -41,6 +43,7 @@ def register_view(request):
             return redirect("login")
 
     return render(request, "accounts/register.html")
+
 # Login View
 def login_view(request):
     if request.method == "POST":
@@ -56,7 +59,6 @@ def login_view(request):
         if user is not None:
             login(request, user)
             messages.success(request, "Login successful.")
-
             # Redirect admin users to dashboard
             if user.is_superuser or user.is_staff:
                 return redirect("dashboard")
@@ -77,9 +79,218 @@ def logout_view(request):
 def home(request):
     return render(request, "accounts/home.html")
 
-# Services Page
-def services(request):
-    return render(request, "accounts/services.html")
+# Services View
+def services_view(request):
+    packages = [
+        {"title": "Basic Birthday Sound System", "description": "For small birthday parties up to 50 guests.", "price": "₱3,000", "equipment": [
+        "2 Speakers (50-100 watts)",
+        "1 Wired Microphone",
+        "Mixer Console (2 channels)",
+        "Cables & Connectors",
+        "1-hour Event Duration"
+    ]},
+    {"title": "Standard Birthday Sound System", "description": "For medium birthday parties up to 100 guests.", "price": "₱5,000", "equipment": [
+        "4 Speakers (100-300 watts)",
+        "2 Wireless Microphones",
+        "Mixer Console (4 channels)",
+        "Subwoofer",
+        "Sound System Setup & Testing",
+        "2-hour Event Duration"
+    ]},
+    {"title": "Premium Birthday Sound System", "description": "For large birthday parties up to 150 guests.", "price": "₱8,000", "equipment": [
+        "6 Speakers (300-500 watts)",
+        "3 Wireless Microphones",
+        "Mixer Console with Effects (6 channels)",
+        "2 Subwoofers",
+        "Stage Monitors",
+        "Sound System Setup & Testing",
+        "3-hour Event Duration"
+    ]},
+    {"title": "Basic Wedding Sound System", "description": "For small weddings up to 100 guests.", "price": "₱7,000", "equipment": [
+        "4 Speakers (100-200 watts)",
+        "2 Wireless Microphones",
+        "Mixer Console (4 channels)",
+        "Subwoofer",
+        "Sound System Setup & Testing",
+        "1-hour Event Duration"
+    ]},
+    {"title": "Standard Wedding Sound System", "description": "For medium weddings up to 200 guests.", "price": "₱10,000", "equipment": [
+        "6 Speakers (200-400 watts)",
+        "3 Wireless Microphones",
+        "Mixer Console (6 channels)",
+        "2 Subwoofers",
+        "Sound System Setup & Testing",
+        "2-hour Event Duration"
+    ]},
+    {"title": "Premium Wedding Sound System", "description": "For large weddings up to 500 guests.", "price": "₱15,000", "equipment": [
+        "8 Speakers (400-600 watts)",
+        "4 Wireless Microphones",
+        "Mixer Console with Effects (8 channels)",
+        "4 Subwoofers",
+        "Stage Monitors",
+        "Sound System Setup & Testing",
+        "3-hour Event Duration"
+    ]},
+    {"title": "Basic Corporate Event Sound System", "description": "For corporate events up to 50 guests.", "price": "₱4,000", "equipment": [
+        "2 Speakers (50-100 watts)",
+        "1 Wired Microphone",
+        "Mixer Console (2 channels)",
+        "Cables & Connectors",
+        "Sound System Setup & Testing",
+        "1-hour Event Duration"
+    ]},
+    {"title": "Standard Corporate Event Sound System", "description": "For corporate events up to 150 guests.", "price": "₱6,500", "equipment": [
+        "4 Speakers (100-300 watts)",
+        "2 Wireless Microphones",
+        "Mixer Console (4 channels)",
+        "Subwoofer",
+        "Sound System Setup & Testing",
+        "2-hour Event Duration"
+    ]},
+    {"title": "Premium Corporate Event Sound System", "description": "For corporate events up to 300 guests.", "price": "₱10,500", "equipment": [
+        "6 Speakers (300-500 watts)",
+        "3 Wireless Microphones",
+        "Mixer Console with Effects (6 channels)",
+        "2 Subwoofers",
+        "Stage Monitors",
+        "Sound System Setup & Testing",
+        "3-hour Event Duration"
+    ]},
+    {"title": "Basic Concert Sound System", "description": "For small concerts up to 100 guests.", "price": "₱7,500", "equipment": [
+        "4 Speakers (200-400 watts)",
+        "3 Wireless Microphones",
+        "Mixer Console (4 channels)",
+        "Subwoofer",
+        "Stage Monitors",
+        "Sound System Setup & Testing",
+        "2-hour Event Duration"
+    ]},
+    {"title": "Standard Concert Sound System", "description": "For medium concerts up to 300 guests.", "price": "₱12,000", "equipment": [
+        "6 Speakers (300-600 watts)",
+        "4 Wireless Microphones",
+        "Mixer Console with Effects (6 channels)",
+        "2 Subwoofers",
+        "Stage Monitors",
+        "Sound System Setup & Testing",
+        "3-hour Event Duration"
+    ]},
+    {"title": "Premium Concert Sound System", "description": "For large concerts up to 1,000 guests.", "price": "₱20,000", "equipment": [
+        "8 Speakers (600-800 watts)",
+        "6 Wireless Microphones",
+        "Mixer Console with Effects (8 channels)",
+        "4 Subwoofers",
+        "Stage Monitors",
+        "Sound System Setup & Testing",
+        "5-hour Event Duration"
+    ]},
+    {"title": "Basic Seminar Sound System", "description": "For seminars up to 50 guests.", "price": "₱3,500", "equipment": [
+        "2 Speakers (50-100 watts)",
+        "1 Wired Microphone",
+        "Mixer Console (2 channels)",
+        "Cables & Connectors",
+        "1-hour Event Duration"
+    ]},
+    {"title": "Standard Seminar Sound System", "description": "For seminars up to 150 guests.", "price": "₱5,500", "equipment": [
+        "4 Speakers (100-300 watts)",
+        "2 Wireless Microphones",
+        "Mixer Console (4 channels)",
+        "Subwoofer",
+        "Sound System Setup & Testing",
+        "2-hour Event Duration"
+    ]},
+    {"title": "Premium Seminar Sound System", "description": "For seminars up to 300 guests.", "price": "₱9,000", "equipment": [
+        "6 Speakers (300-500 watts)",
+        "3 Wireless Microphones",
+        "Mixer Console with Effects (6 channels)",
+        "2 Subwoofers",
+        "Stage Monitors",
+        "Sound System Setup & Testing",
+        "3-hour Event Duration"
+    ]},
+    {"title": "Basic Conference Sound System", "description": "For conferences up to 50 guests.", "price": "₱4,000", "equipment": [
+        "2 Speakers (50-100 watts)",
+        "1 Wired Microphone",
+        "Mixer Console (2 channels)",
+        "Cables & Connectors",
+        "Sound System Setup & Testing",
+        "1-hour Event Duration"
+    ]},
+    {"title": "Standard Conference Sound System", "description": "For conferences up to 200 guests.", "price": "₱7,000", "equipment": [
+        "4 Speakers (100-300 watts)",
+        "2 Wireless Microphones",
+        "Mixer Console (4 channels)",
+        "Subwoofer",
+        "Sound System Setup & Testing",
+        "2-hour Event Duration"
+    ]},
+    {"title": "Premium Conference Sound System", "description": "For conferences up to 500 guests.", "price": "₱12,500", "equipment": [
+        "6 Speakers (300-500 watts)",
+        "3 Wireless Microphones",
+        "Mixer Console with Effects (6 channels)",
+        "2 Subwoofers",
+        "Stage Monitors",
+        "Sound System Setup & Testing",
+        "3-hour Event Duration"
+    ]},
+    {"title": "Custom Sound System Package", "description": "For customized event requirements, price varies.", "price": "Varies", "equipment": [
+        "Tailored Speaker Setup",
+        "Custom Microphones",
+        "Custom Mixer Console",
+        "Stage Monitors",
+        "Subwoofers",
+        "Full Setup & Testing",
+        "Duration as per requirement"
+    ]},
+    {"title": "Basic Graduation Sound System", "description": "For small graduation events up to 100 guests.", "price": "₱6,000", "equipment": [
+        "4 Speakers (100-300 watts)",
+        "2 Wireless Microphones",
+        "Mixer Console (4 channels)",
+        "Subwoofer",
+        "Sound System Setup & Testing",
+        "2-hour Event Duration"
+    ]},
+    {"title": "Standard Graduation Sound System", "description": "For medium graduation events up to 200 guests.", "price": "₱9,000", "equipment": [
+        "6 Speakers (200-400 watts)",
+        "3 Wireless Microphones",
+        "Mixer Console (6 channels)",
+        "2 Subwoofers",
+        "Sound System Setup & Testing",
+        "2-hour Event Duration"
+    ]},
+    {"title": "Premium Graduation Sound System", "description": "For large graduation events up to 500 guests.", "price": "₱14,000", "equipment": [
+        "8 Speakers (400-600 watts)",
+        "4 Wireless Microphones",
+        "Mixer Console with Effects (8 channels)",
+        "4 Subwoofers",
+        "Stage Monitors",
+        "Sound System Setup & Testing",
+        "3-hour Event Duration"
+    ]},
+    {"title": "Basic Awarding Ceremony Sound System", "description": "For small awarding ceremonies up to 50 guests.", "price": "₱4,500", "equipment": [
+        "2 Speakers (50-100 watts)",
+        "1 Wired Microphone",
+        "Mixer Console (2 channels)",
+        "Cables & Connectors",
+        "Sound System Setup & Testing",
+        "1-hour Event Duration"
+    ]},
+    {"title": "Standard Awarding Ceremony Sound System", "description": "For medium awarding ceremonies up to 150 guests.", "price": "₱7,000", "equipment": [
+        "4 Speakers (100-300 watts)",
+        "2 Wireless Microphones",
+        "Mixer Console (4 channels)",
+        "Subwoofer",
+        "Sound System Setup & Testing",
+        "2-hour Event Duration"
+    ]},
+    # Add remaining packages here...
+    ]
+    
+    range_values = list(range(1, len(packages) + 1))
+
+    return render(request, 'accounts/services.html', {
+        'packages': packages,
+        'range_values': range_values
+    })
 
 # About Us Page
 def aboutus(request):
@@ -135,22 +346,71 @@ def history(request):
     ]
     return render(request, 'accounts/history.html', {'history_list': history_list})
 
+@login_required  # Ensure the user is logged in (this should be sufficient for regular users)
+def create_booking(request):
+    if request.method == "POST":
+        selected_package = request.POST.get("selected_package")
+        full_name = request.POST.get("full_name")
+        email = request.POST.get("email")
+        contact_number = request.POST.get("contact_number")
+        event_date = request.POST.get("event_date")
+        event_time = request.POST.get("event_time")
+        event_type = request.POST.get("event_type")
+        location = request.POST.get("location")
+        audience_size = request.POST.get("audience_size")
+
+        try:
+            # Fetch the service package based on the title
+            package = ServicePackage.objects.get(title=selected_package)
+        except ServicePackage.DoesNotExist:
+            messages.error(request, f"The selected package '{selected_package}' does not exist.")
+            return redirect('services')  # Redirect back to services page
+
+        # Create and save the booking
+        booking = Booking.objects.create(
+            user=request.user,  # Ensure the booking is linked to the logged-in user
+            package=package,
+            full_name=full_name,
+            email=email,
+            contact_number=contact_number,
+            event_date=event_date,
+            event_time=event_time,
+            event_type=event_type,
+            location=location,
+            audience_size=audience_size,
+        )
+
+        messages.success(request, f"Your booking for {selected_package} has been successfully created!")
+        return redirect("home")  # Redirect to the bookings page (or wherever you want)
+    return redirect("services")  # Redirect back to services page if method is not POST
+
 def admin_only(view_func):
     def wrapper(request, *args, **kwargs):
         if not request.user.is_authenticated:
+            print("User is not authenticated.")  # Debugging line
             return redirect("login")
         if not request.user.is_staff and not request.user.is_superuser:
-            raise PermissionDenied  # or redirect to "home"
+            print(f"User {request.user.username} does not have admin privileges.")  # Debugging line
+            raise PermissionDenied  # User is denied access
         return view_func(request, *args, **kwargs)
     return wrapper
 
-def dashboard(request):
-    return render(request, 'client/dashboard.html')
+# Admin Dashboard
 
 @login_required
 @admin_only
+def dashboard(request):
+    # Fetch the user's bookings
+    user_bookings = Booking.objects.filter(user=request.user)
+
+    return render(request, 'client/dashboard.html', {'bookings': user_bookings})
+
+# Admin Views
+@login_required
+@admin_only  # Restrict to admin users
 def booking(request):
-    return render(request, 'client/booking.html')
+    bookings = Booking.objects.all()  # Fetch all bookings for admin
+    return render(request, 'client/booking.html', {'bookings': bookings})
 
 @login_required
 @admin_only
@@ -181,3 +441,34 @@ def customer(request):
 @admin_only
 def employee(request):
     return render(request, 'client/employee.html')
+
+@login_required
+def view_booking(request, booking_id):
+    # Use get_object_or_404 to avoid the 404 error if booking doesn't exist
+    booking = get_object_or_404(Booking, id=booking_id)
+    
+    return render(request, 'client/view_booking.html', {'booking': booking})
+
+# Accept Booking: Marks a booking as accepted
+@login_required
+def accept_booking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+
+    # Update the status to 'Accepted'
+    booking.status = 'Accepted'
+    booking.save()
+
+    messages.success(request, f"Booking {booking.id} has been successfully accepted.")
+    return redirect('booking')  # Redirect to the booking list page or booking details page
+
+
+@login_required
+def reject_booking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+
+    # Update the status to 'Rejected'
+    booking.status = 'Rejected'
+    booking.save()
+
+    messages.success(request, f"Booking {booking.id} has been rejected.")
+    return redirect('booking')  # Redirect to the booking list page or booking details page

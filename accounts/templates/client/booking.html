@@ -9,51 +9,57 @@
       <select><option>Today</option></select>
       <select><option>2024</option></select>
     </div>
-  </header>
+</header>
 
-  <table class="booking-table">
+<table class="booking-table">
     <thead>
-      <tr>
-        <th>Event Type</th>
-        <th>Customer Name</th>
-        <th>Event Type</th>
-        <th>Event Date</th>
-        <th>Location</th>
-        <th>Status</th>
-        <th>Action</th>
-      </tr>
+        <tr>
+            <th>Event Type</th>
+            <th>Customer Name</th>
+            <th>Event Date</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
     </thead>
     <tbody>
-      <tr>
-        <td>Birthday</td>
-        <td>Aimee Rose</td>
-        <td>Wedding</td>
-        <td>July 22, 3033</td>
-        <td>Lucena, Quezon</td>
-        <td><span class="badge processing">Processing</span></td>
-        <td class="actions">
-          <button class="accept">Accept</button>
-          <button class="reject">Reject</button>
-          <button class="view">View</button>
-        </td>
-      </tr>
-      <tr>
-        <td>Wedding</td>
-        <td>Christian</td>
-        <td>Wedding</td>
-        <td>July 22, 3033</td>
-        <td>Lucena, Quezon</td>
-        <td><span class="badge not-processed">Not Processed</span></td>
-        <td class="actions">
-          <button class="accept">Accept</button>
-          <button class="reject">Reject</button>
-          <button class="view">View</button>
-        </td>
-      </tr>
+        {% for booking in bookings %}
+            <tr>
+                <td>{{ booking.package.title }}</td>
+                <td>{{ booking.full_name }}</td>
+                <td>{{ booking.event_date }}</td>
+                <td>{{ booking.location }}</td>
+                <td>
+                    <span class="badge {% if booking.status == 'Processing' %}processing{% elif booking.status == 'Accepted' %}accepted{% elif booking.status == 'Rejected' %}rejected{% else %}not-processed{% endif %}">
+                        {{ booking.status }}
+                    </span>
+                </td>
+                <td class="actions">
+                    <!-- View button links to the booking details page -->
+                    <a href="{% url 'view_booking' booking.id %}" class="view">
+                        <i class="fa fa-eye"></i> View
+                    </a>
+
+                    {% if booking.status == 'Processing' %}
+                        <!-- Accept button (Only visible for Processing bookings) -->
+                        <a href="{% url 'accept_booking' booking.id %}" class="accept">
+                            <i class="fa fa-check"></i> Accept
+                        </a>
+                        <!-- Reject button (Only visible for Processing bookings) -->
+                        <a href="{% url 'reject_booking' booking.id %}" class="reject">
+                            <i class="fa fa-times"></i> Reject
+                        </a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="6">You have no bookings yet.</td>
+            </tr>
+        {% endfor %}
     </tbody>
-  </table>
-</main>
-</div>
+</table>
+
 <style>
     .header {
       display: flex;
@@ -91,34 +97,55 @@
     }
 
     .processing {
-      background-color: #28a745;
+      background-color: #28a745;  /* Green for Processing */
+    }
+
+    .accepted {
+      background-color: #17a2b8;  /* Blue for Accepted */
+    }
+
+    .rejected {
+      background-color: #dc3545;  /* Red for Rejected */
     }
 
     .not-processed {
-      background-color: #dc3545;
+      background-color: #6c757d;  /* Grey for Not Processed */
     }
 
-    .actions button {
-      margin-right: 5px;
-      padding: 5px 10px;
-      border: none;
-      border-radius: 12px;
-      color: white;
-      font-size: 0.85em;
-      cursor: pointer;
+    .actions {
+        display: flex;
+        justify-content: flex-start;
+        gap: 10px; /* Adds space between buttons */
     }
 
-    .actions .accept {
-      background-color: #28a745;
-    }
-
-    .actions .reject {
-      background-color: #dc3545;
+    .actions a {
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-size: 1em;
+        color: white;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center; /* Aligns icon with text */
+        gap: 8px; /* Space between icon and text */
     }
 
     .actions .view {
-      background-color: #333;
+        background-color: #333;
+    }
+
+    .actions .accept {
+        background-color: #28a745;  /* Green */
+    }
+
+    .actions .reject {
+        background-color: #dc3545;  /* Red */
+    }
+
+    /* Font Awesome Icon Styling */
+    .actions i {
+        font-size: 1.2em;
     }
 </style>
+
 {% endblock %}
- 

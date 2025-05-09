@@ -8,33 +8,30 @@
     <h2>OUR SERVICES</h2>
     <div class="title-line"></div>
     <div class="services-grid">
-        {% for i in "12345678" %}
+        {% for package in packages %}
         <div class="service-item">
             <img src="{% static 'images/speaker1.jpg' %}" alt="Service Image">
-            <h3>Package {{ forloop.counter }}</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-            {% if user.is_authenticated %}
-                <button class="book-now" data-package="Package {{ forloop.counter }}">Book Now</button>
-            {% else %}
-                <button class="login-first" onclick="window.location.href='{% url 'login' %}'">Login First</button>
-            {% endif %}
-        </div>
-        {% endfor %}
-    </div>
-    <button class="see-more" id="see-more-btn">See more</button>
-</section>
+            <h3>Package {{ forloop.counter }}: {{ package.title }}</h3>
+            <p>{{ package.description }}</p>
+            <p><strong>Price: </strong>{{ package.price }}</p>
+            
+            <!-- Equipment List - Initially Hidden -->
+            <div class="equipment-list" style="display: none;">
+                <h4>Included Equipment:</h4>
+                <ul>
+                    {% for item in package.equipment %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <!-- See More Button with the same style as the 'Book Now' button -->
+            <button class="see-more-btn" onclick="toggleEquipmentVisibility({{ forloop.counter }})">
+                See More
+            </button>
 
-<section class="services" id="more-services" style="display: none;">
-    <h2>OUR SERVICES</h2>
-    <div class="title-line"></div>
-    <div class="services-grid">
-        {% for i in "12345678901234567890" %}
-        <div class="service-item">
-            <img src="{% static 'images/speaker1.jpg' %}" alt="Service Image">
-            <h3>Package {{ forloop.counter }}</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
             {% if user.is_authenticated %}
-                <button class="book-now" data-package="Package {{ forloop.counter }}">Book Now</button>
+                <button class="book-now" data-package="Package {{ forloop.counter }}" onclick="openBookingForm('{{ package.title }}')">Book Now</button>
             {% else %}
                 <button class="login-first" onclick="window.location.href='{% url 'login' %}'">Login First</button>
             {% endif %}
@@ -48,9 +45,8 @@
     <div class="booking-content">
         <span class="close-btn" onclick="closeBookingForm()">&times;</span>
         <h2>Book a Service</h2>
-        <form method="POST" action="#">
+        <form method="POST" action="{% url 'create_booking' %}">
             {% csrf_token %}
-
             <label for="selected_package">Package Selected</label>
             <input type="text" id="selected_package" name="selected_package" readonly>
 
@@ -85,9 +81,6 @@
             <label for="audience_size">Expected Number of Guests</label>
             <input type="number" id="audience_size" name="audience_size" min="1" required>
 
-            <label for="additional_notes">Additional Notes</label>
-            <textarea id="additional_notes" name="additional_notes" rows="3"></textarea>
-
             <button type="submit" class="submit-booking">Submit Booking Request</button>
         </form>
     </div>
@@ -112,31 +105,31 @@
 
 <!-- JavaScript -->
 <script>
-    document.getElementById("see-more-btn").addEventListener("click", function () {
-        const moreServices = document.getElementById("more-services");
-        moreServices.style.display = (moreServices.style.display === "none" || moreServices.style.display === "") ? "block" : "none";
-        moreServices.scrollIntoView({ behavior: "smooth" });
-    });
+    function toggleEquipmentVisibility(packageIndex) {
+        var equipmentList = document.querySelectorAll('.service-item')[packageIndex-1].querySelector('.equipment-list');
+        if (equipmentList.style.display === "none" || equipmentList.style.display === "") {
+            equipmentList.style.display = "block";
+        } else {
+            equipmentList.style.display = "none";
+        }
+    }
 
-    const bookButtons = document.querySelectorAll(".book-now");
-    const modal = document.getElementById("booking-modal");
-    const packageInput = document.getElementById("selected_package");
-
-    bookButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            const packageName = btn.getAttribute("data-package");
-            packageInput.value = packageName;
-            modal.style.display = "flex";
-        });
-    });
+    function openBookingForm(packageTitle) {
+        var modal = document.getElementById('booking-modal');
+        var packageInput = document.getElementById('selected_package');
+        packageInput.value = packageTitle;
+        modal.style.display = "flex";
+    }
 
     function closeBookingForm() {
+        var modal = document.getElementById('booking-modal');
         modal.style.display = "none";
     }
 
     window.addEventListener("click", function (e) {
+        var modal = document.getElementById('booking-modal');
         if (e.target === modal) {
-            modal.style.display = "none";
+            closeBookingForm();
         }
     });
 </script>
@@ -228,6 +221,24 @@
     .booking-content h2 {
         font-size: 1.5rem;
     }
+}
+
+.see-more-btn {
+    background-color: #23194f;
+    color: white;
+    padding: 8px 16px; /* Reduced padding */
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem; /* Reduced font size */
+    transition: background 0.3s ease;
+    margin-top: 10px;
+    width: auto; /* Allow button to adjust its width based on content */
+    display: inline-block; /* To keep it inline with other elements */
+}
+
+.see-more-btn:hover {
+    background-color: #3a2d7c;
 }
 </style>
 {% endblock %}

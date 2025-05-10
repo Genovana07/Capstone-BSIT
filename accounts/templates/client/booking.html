@@ -13,51 +13,58 @@
 
 <table class="booking-table">
     <thead>
-        <tr>
-            <th>Event Type</th>
-            <th>Customer Name</th>
-            <th>Event Date</th>
-            <th>Location</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    </thead>
+<tr>
+    <th>Package</th>
+    <th>Customer Name</th>
+    <th>Event Type</th> <!-- ✅ Added -->
+    <th>Event Date</th>
+    <th>Location</th>
+    <th>Status</th>
+    <th>Price</th>
+    <th>Action</th>
+</tr>
+</thead>
     <tbody>
-        {% for booking in bookings %}
-            <tr>
-                <td>{{ booking.package.title }}</td>
-                <td>{{ booking.full_name }}</td>
-                <td>{{ booking.event_date }}</td>
-                <td>{{ booking.location }}</td>
-                <td>
-                    <span class="badge {% if booking.status == 'Processing' %}processing{% elif booking.status == 'Accepted' %}accepted{% elif booking.status == 'Rejected' %}rejected{% else %}not-processed{% endif %}">
-                        {{ booking.status }}
-                    </span>
-                </td>
-                <td class="actions">
-                    <!-- View button links to the booking details page -->
-                    <a href="{% url 'view_booking' booking.id %}" class="view">
-                        <i class="fa fa-eye"></i> View
-                    </a>
+    {% for booking in bookings %}
+        <tr>
+            <td>{{ booking.package.title }}</td>
+            <td>{{ booking.full_name }}</td>
+            <td>{{ booking.event_type }}</td> <!-- ✅ Added -->
+            <td>{{ booking.event_date }}</td>
+            <td>{{ booking.location }}</td>
+            <td>
+                
+                    <span class="badge 
+                            {% if booking.status == 'Processing' %}processing
+                            {% elif booking.status == 'Accepted' %}accepted
+                            {% elif booking.status == 'Rejected' %}rejected
+                            {% elif booking.status == 'Cancelled' %}cancelled
+                            {% else %}not-processed{% endif %}">
+                            {{ booking.status }}
+                        </span>
 
-                    {% if booking.status == 'Processing' %}
-                        <!-- Accept button (Only visible for Processing bookings) -->
-                        <a href="{% url 'accept_booking' booking.id %}" class="accept">
-                            <i class="fa fa-check"></i> Accept
-                        </a>
-                        <!-- Reject button (Only visible for Processing bookings) -->
-                        <a href="{% url 'reject_booking' booking.id %}" class="reject">
-                            <i class="fa fa-times"></i> Reject
-                        </a>
-                    {% endif %}
-                </td>
-            </tr>
-        {% empty %}
-            <tr>
-                <td colspan="6">You have no bookings yet.</td>
-            </tr>
-        {% endfor %}
-    </tbody>
+            </td>
+            <td>{{ booking.price }}</td>
+            <td class="actions">
+                <a href="{% url 'view_booking' booking.id %}" class="view">
+                    <i class="fa fa-eye"></i> View
+                </a>
+                {% if booking.status == 'Processing' %}
+                    <a href="{% url 'accept_booking' booking.id %}" class="accept">
+                        <i class="fa fa-check"></i> Accept
+                    </a>
+                    <a href="{% url 'reject_booking' booking.id %}" class="reject">
+                        <i class="fa fa-times"></i> Reject
+                    </a>
+                {% endif %}
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="8">You have no bookings yet.</td>
+        </tr>
+    {% endfor %}
+</tbody>
 </table>
 
 <style>
@@ -95,7 +102,9 @@
       font-size: 0.9em;
       color: white;
     }
-
+    .cancelled {
+     background-color: #6c757d; /* Gray */
+}
     .processing {
       background-color: #28a745;  /* Green for Processing */
     }

@@ -329,24 +329,50 @@ def profile(request):
 
     return render(request, 'accounts/profile.html')
 
-# My Bookings Page
 @login_required
 def mybookings(request):
-    booking_list = [
-        {'id': 1312213, 'date_booked': 'April 16, 2024', 'event_datetime': 'April 16, 2024', 'status': 'Pending', 'total': 20000},
-        {'id': 1312214, 'date_booked': 'April 17, 2024', 'event_datetime': 'April 25, 2024', 'status': 'Approved', 'total': 30000}
-    ]
+    bookings = Booking.objects.filter(user=request.user).order_by('-created_at')
+
+    booking_list = []
+    for b in bookings:
+        booking_list.append({
+            'id': b.id,  # ✅ add this line
+            'event_datetime': f"{b.event_date.strftime('%B %d, %Y')} at {b.event_time.strftime('%I:%M %p')}",
+            'date_booked': b.created_at.strftime('%B %d, %Y'),
+            'status': b.status,
+            'total': b.price,
+            'event_type': b.event_type,
+            'package_title': b.package.title,
+        })
+
     return render(request, 'accounts/mybookings.html', {'booking_list': booking_list})
 
+@login_required
+def view_mybooking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+    return render(request, 'accounts/view_mybooking.html', {'booking': booking})
+
 # History Page
+
 @login_required
 def history(request):
-    history_list = [
-        {'id': 1312213, 'event_date': 'April 16, 2024', 'package': 'Birthday Package', 'status': 'Completed', 'total': 20000}
-    ]
+    bookings = Booking.objects.filter(user=request.user).exclude(status='Processing').order_by('-event_date')
+
+    history_list = []
+    for booking in bookings:
+        history_list.append({
+            'id': booking.id,
+            'customer_name': booking.full_name,
+            'date_booked': booking.created_at.strftime('%B %d, %Y'),
+            'package': booking.package.title,
+            'event_date': booking.event_date.strftime('%B %d, %Y'),
+            'total': booking.price,
+            'rating': '⭐ Rate'  # Placeholder for rating system
+        })
+
     return render(request, 'accounts/history.html', {'history_list': history_list})
 
-@login_required  # Ensure the user is logged in (this should be sufficient for regular users)
+@login_required
 def create_booking(request):
     if request.method == "POST":
         selected_package = request.POST.get("selected_package")
@@ -360,15 +386,13 @@ def create_booking(request):
         audience_size = request.POST.get("audience_size")
 
         try:
-            # Fetch the service package based on the title
             package = ServicePackage.objects.get(title=selected_package)
         except ServicePackage.DoesNotExist:
             messages.error(request, f"The selected package '{selected_package}' does not exist.")
-            return redirect('services')  # Redirect back to services page
+            return redirect('services')
 
-        # Create and save the booking
-        booking = Booking.objects.create(
-            user=request.user,  # Ensure the booking is linked to the logged-in user
+        Booking.objects.create(
+            user=request.user,
             package=package,
             full_name=full_name,
             email=email,
@@ -378,11 +402,13 @@ def create_booking(request):
             event_type=event_type,
             location=location,
             audience_size=audience_size,
+            price=package.price
         )
 
         messages.success(request, f"Your booking for {selected_package} has been successfully created!")
-        return redirect("home")  # Redirect to the bookings page (or wherever you want)
-    return redirect("services")  # Redirect back to services page if method is not POST
+        return redirect("mybookings")  # Redirect to user's booking page
+
+    return redirect("services")
 
 def admin_only(view_func):
     def wrapper(request, *args, **kwargs):
@@ -400,10 +426,25 @@ def admin_only(view_func):
 @login_required
 @admin_only
 def dashboard(request):
-    # Fetch the user's bookings
-    user_bookings = Booking.objects.filter(user=request.user)
+    bookings = Booking.objects.all()
+    booking_count = bookings.count()
+    pending_count = bookings.filter(status="Processing").count()
 
-    return render(request, 'client/dashboard.html', {'bookings': user_bookings})
+    def parse_price(price):
+        try:
+            return float(str(price).replace('₱', '').replace(',', '').strip())
+        except:
+            return 0.0
+
+    revenue = sum(parse_price(b.price) for b in bookings)
+    profit = revenue * 0.5  # or your actual formula
+
+    return render(request, 'client/dashboard.html', {
+        'booking_count': booking_count,
+        'revenue': revenue,
+        'profit': profit,
+        'pending_count': pending_count,
+    })
 
 # Admin Views
 @login_required
@@ -472,3 +513,14 @@ def reject_booking(request, booking_id):
 
     messages.success(request, f"Booking {booking.id} has been rejected.")
     return redirect('booking')  # Redirect to the booking list page or booking details page
+
+@login_required
+def cancel_booking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+    if booking.status == "Processing":
+        booking.status = "Cancelled"
+        booking.save()
+        messages.success(request, f"Booking #{booking.id} has been cancelled.")
+    else:
+        messages.warning(request, "Only bookings with 'Processing' status can be cancelled.")
+    return redirect('mybookings')

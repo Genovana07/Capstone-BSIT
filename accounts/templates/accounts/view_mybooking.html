@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Booking Details</h2>
+<ul>
+  <li><strong>Package:</strong> {{ booking.package.title }}</li>
+  <li><strong>Event Type:</strong> {{ booking.event_type }}</li>
+  <li><strong>Date:</strong> {{ booking.event_date }}</li>
+  <li><strong>Time:</strong> {{ booking.event_time }}</li>
+  <li><strong>Location:</strong> {{ booking.location }}</li>
+  <li><strong>Status:</strong> {{ booking.status }}</li>
+  <li><strong>Total:</strong> ₱{{ booking.price }}</li>
+</ul>
+<a href="{% url 'mybookings' %}">← Back to My Bookings</a>
+{% endblock %}

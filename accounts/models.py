@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 class Profile(models.Model):
@@ -24,19 +25,22 @@ class ServicePackage(models.Model):
 
 class Booking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    package = models.ForeignKey(ServicePackage, on_delete=models.CASCADE)
+    package = models.ForeignKey('ServicePackage', on_delete=models.CASCADE)
     full_name = models.CharField(max_length=100)
     email = models.EmailField()
-    contact_number = models.CharField(max_length=15)
+    contact_number = models.CharField(max_length=20)
     event_date = models.DateField()
     event_time = models.TimeField()
-    event_type = models.CharField(max_length=50)
+    event_type = models.CharField(max_length=100)
     location = models.CharField(max_length=255)
-    audience_size = models.PositiveIntegerField()
-    status = models.CharField(max_length=20, default='Processing')
+    audience_size = models.IntegerField()
+    status = models.CharField(max_length=50, default='Processing')
+    price = models.CharField(max_length=20)  # Added price
+    created_at = models.DateTimeField(auto_now_add=True, null=True)  # ✅ Add this here
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"Booking by {self.full_name} for {self.package.title}"
+        return f"Booking {self.id} by {self.full_name}"
 
 
 class BookingStatus(models.Model):

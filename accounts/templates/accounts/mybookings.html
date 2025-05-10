@@ -4,48 +4,47 @@
 {% block content %}
 <style>
   .container {
-        display: flex;
-        min-height: 100vh;
-        font-family: 'MavenPro', sans-serif;
-    }
+    display: flex;
+    min-height: 100vh;
+    font-family: 'MavenPro', sans-serif;
+  }
 
-    /* Sidebar */
-    .sidebar {
-        width: 240px;
-        background-color: #ffffff;
-        padding: 40px 20px;
-        border-right: 1px solid #ddd;
-    }
+  /* Sidebar */
+  .sidebar {
+    width: 240px;
+    background-color: #ffffff;
+    padding: 40px 20px;
+    border-right: 1px solid #ddd;
+  }
 
-    .sidebar ul {
-        list-style: none;
-        padding: 0;
-    }
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+  }
 
-    .sidebar li {
-        display: flex;
-        align-items: center;
-        margin-bottom: 25px;
-        font-size: 18px;
-    }
+  .sidebar li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 18px;
+  }
 
-    .sidebar li img {
-        width: 24px;
-        height: 24px;
-        margin-right: 12px;
-    }
+  .sidebar li img {
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+  }
 
-    .sidebar li span a {
-        color: #23194f;
-        font-weight: 500;
-        font-size: 16px;
-        text-decoration: none;
-    }
+  .sidebar li span a {
+    color: #23194f;
+    font-weight: 500;
+    font-size: 16px;
+    text-decoration: none;
+  }
 
-    .sidebar li span a:hover {
-        color: #3a2d7c;
-    }
-
+  .sidebar li span a:hover {
+    color: #3a2d7c;
+  }
 
   /* Main Section */
   .main {
@@ -114,41 +113,47 @@
     text-transform: capitalize;
   }
 
-  .status.pending {
-    background-color: #d4aa00;
+  .status.accepted {
+    background-color: #28a745; /* Green */
   }
 
-  .status.approved {
-    background-color: #28a745;
+  .status.rejected {
+    background-color: #dc3545; /* Red */
   }
 
-  .status.cancelled {
-    background-color: #dc3545;
+  .status.processing {
+    background-color: #007bff; /* Blue */
   }
+
+  .status.default {
+    background-color: #6c757d; /* Gray */
+  }
+  .cancelled {
+  background-color: #6c757d; /* Gray */
+}
 </style>
 
 <div class="container">
-
   <!-- Sidebar -->
   <aside class="sidebar">
-      <ul>
-          <li>
-              <img src="{% static 'images/profile-user.png' %}" alt="User Icon">
-              <span><a href="{% url 'profile' %}">Profile</a></span>
-          </li>
-          <li>
-              <img src="{% static 'images/open-book.png' %}" alt="Bookings Icon">
-              <span><a href="{% url 'mybookings' %}">My Bookings</a></span>
-          </li>
-          <li>
-              <img src="{% static 'images/history.png' %}" alt="History Icon">
-              <span><a href="{% url 'history' %}">History</a></span>
-          </li>
-          <li>
-              <img src="{% static 'images/logout.png' %}" alt="Logout Icon">
-              <span><a href="{% url 'logout' %}">Logout</a></span>
-          </li>
-      </ul>
+    <ul>
+      <li>
+        <img src="{% static 'images/profile-user.png' %}" alt="User Icon">
+        <span><a href="{% url 'profile' %}">Profile</a></span>
+      </li>
+      <li>
+        <img src="{% static 'images/open-book.png' %}" alt="Bookings Icon">
+        <span><a href="{% url 'mybookings' %}">My Bookings</a></span>
+      </li>
+      <li>
+        <img src="{% static 'images/history.png' %}" alt="History Icon">
+        <span><a href="{% url 'history' %}">History</a></span>
+      </li>
+      <li>
+        <img src="{% static 'images/logout.png' %}" alt="Logout Icon">
+        <span><a href="{% url 'logout' %}">Logout</a></span>
+      </li>
+    </ul>
   </aside>
 
   <!-- Main Content -->
@@ -161,28 +166,42 @@
       <table>
         <thead>
           <tr>
-            <th>Booking ID</th>
             <th>Date Of Booking</th>
             <th>Event Date & Time</th>
             <th>Status</th>
             <th>Total Amount</th>
+            <th>Event Type</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {% for booking in booking_list %}
-          <tr>
-            <td>{{ booking.id }}</td>
-            <td>{{ booking.date_booked }}</td>
-            <td>{{ booking.event_datetime }}</td>
-            <td><span class="status {{ booking.status|lower }}">{{ booking.status }}</span></td>
-            <td>₱{{ booking.total }}</td>
-            <td><a href="#">View</a></td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="6">No bookings found.</td></tr>
-          {% endfor %}
-        </tbody>
+  {% for booking in booking_list %}
+  <tr>
+    <td>{{ booking.date_booked }}</td>
+    <td>{{ booking.event_datetime }}</td>
+    <td>
+      <span class="status 
+        {% if booking.status|lower == 'accepted' %}accepted
+        {% elif booking.status|lower == 'rejected' %}rejected
+        {% elif booking.status|lower == 'processing' %}processing
+        {% else %}default{% endif %}">
+        {{ booking.status }}
+      </span>
+    </td>
+    <td>₱{{ booking.total }}</td>
+    <td>{{ booking.event_type }}</td>  <!-- ✅ Fix is here -->
+    <td><a href="{% url 'view_mybooking' booking.id %}">View</a></td>
+    <td>
+  <a href="{% url 'view_mybooking' booking.id %}">View</a>
+  {% if booking.status == 'Processing' %}
+    | <a href="{% url 'cancel_booking' booking.id %}" onclick="return confirm('Are you sure you want to cancel this booking?');">Cancel</a>
+  {% endif %}
+</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="6">No bookings found.</td></tr>
+  {% endfor %}
+</tbody>
       </table>
     </div>
   </main>

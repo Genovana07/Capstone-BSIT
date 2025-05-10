@@ -17,6 +17,9 @@ urlpatterns = [
     path('mybookings/', views.mybookings, name='mybookings'),  # Only accessible by logged-in users
     path('history/', views.history, name='history'),  # Only accessible by logged-in users
     path('create_booking/', views.create_booking, name='create_booking'),
+    path('mybookings/<int:booking_id>/', views.view_mybooking, name='view_mybooking'),
+    path('cancel-booking/<int:booking_id>/', views.cancel_booking, name='cancel_booking'),
+
 
     # Dashboard page (protected by login_required)
     path('dashboard/', views.dashboard, name='dashboard'),

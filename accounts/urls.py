@@ -33,4 +33,6 @@ urlpatterns = [
     path('customer/', views.customer, name='customer'),
     path('employee/', views.employee, name='employee'),
     path('booking/<int:booking_id>/', views.view_booking, name='view_booking'),
+    path('api/bookings/', views.booking_events_api, name='booking_events_api'),
+    
 ]

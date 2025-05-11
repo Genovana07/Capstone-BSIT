@@ -7,6 +7,8 @@ from .models import Profile
 from django.core.exceptions import PermissionDenied
 from .models import Booking,ServicePackage
 from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.db.models import Count
 
 # Register View
 def register_view(request):
@@ -457,6 +459,42 @@ def booking(request):
 @admin_only
 def event(request):
     return render(request, 'client/event.html')
+
+
+@login_required
+@admin_only
+def booking_events_api(request):
+    # Exclude rejected and cancelled bookings
+    bookings = Booking.objects.exclude(status__in=['Rejected', 'Cancelled'])
+
+    # Calendar events (dashboard)
+    events = []
+    for booking in bookings:
+        events.append({
+            "date": booking.event_date.strftime("%Y-%m-%d"),
+            "type": booking.event_type,
+            "time": booking.event_time.strftime("%H:%M")
+        })
+
+    # Form logic (to limit slots and show available times)
+    grouped = {}
+    for booking in bookings:
+        date_str = booking.event_date.strftime("%Y-%m-%d")
+        time_str = booking.event_time.strftime("%H:%M")
+
+        if date_str not in grouped:
+            grouped[date_str] = {
+                "count": 0,
+                "times": []
+            }
+
+        grouped[date_str]["count"] += 1
+        grouped[date_str]["times"].append(time_str)
+
+    return JsonResponse({
+        "calendar": events,     # For calendar display
+        "form_logic": grouped   # For form logic filtering
+    }, safe=False)
 
 @login_required
 @admin_only

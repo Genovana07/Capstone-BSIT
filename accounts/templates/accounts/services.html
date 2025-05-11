@@ -63,7 +63,9 @@
             <input type="date" id="event_date" name="event_date" required>
 
             <label for="event_time">Event Time</label>
-            <input type="time" id="event_time" name="event_time" required>
+            <select id="event_time" name="event_time" required>
+            <option value="">Select Time</option>
+            </select>
 
             <label for="event_type">Type of Event</label>
             <select id="event_type" name="event_type" required>
@@ -114,7 +116,7 @@
 <!-- JavaScript -->
 <script>
     function toggleEquipmentVisibility(packageIndex) {
-        var equipmentList = document.querySelectorAll('.service-item')[packageIndex-1].querySelector('.equipment-list');
+        var equipmentList = document.querySelectorAll('.service-item')[packageIndex - 1].querySelector('.equipment-list');
         if (equipmentList.style.display === "none" || equipmentList.style.display === "") {
             equipmentList.style.display = "block";
         } else {
@@ -140,7 +142,89 @@
             closeBookingForm();
         }
     });
+
+    // ===============================
+    // Booking Form Logic (updated)
+    // ===============================
+
+    let bookingData = {};
+    const allTimes = [
+        "09:00", "10:00", "11:00", "12:00",
+        "13:00", "14:00", "15:00", "16:00",
+        "17:00", "18:00", "19:00", "20:00"
+    ]; // 24-hour time slots
+
+    function fetchBookings() {
+        fetch('/accounts/api/bookings/')
+            .then(response => response.json())
+            .then(data => {
+                bookingData = data.form_logic; // ✅ use form_logic only
+                setupBookingFormLogic();
+            });
+    }
+
+    function setupBookingFormLogic() {
+        const dateInput = document.getElementById("event_date");
+        const timeSelect = document.getElementById("event_time");
+
+        if (!dateInput || !timeSelect) return;
+
+        const today = new Date().toISOString().split("T")[0];
+        dateInput.setAttribute("min", today);
+
+        dateInput.addEventListener("input", function () {
+            const selectedDate = this.value;
+
+            // Reset time dropdown
+            timeSelect.innerHTML = '<option value="">Select Time</option>';
+
+            const entry = bookingData[selectedDate];
+
+            if (entry) {
+                const { count, times } = entry;
+
+                if (count >= 2) {
+                    alert("This date already has two bookings. Please select another date.");
+                    this.value = "";
+                    return;
+                }
+
+                const available = allTimes.filter(t => !times.includes(t));
+                if (available.length === 0) {
+                    alert("No available time slots left for this date.");
+                    return;
+                }
+
+                available.forEach(time => {
+                    const option = document.createElement("option");
+                    option.value = time;
+                    option.textContent = convertTo12Hour(time);
+                    timeSelect.appendChild(option);
+                });
+            } else {
+                // All times available if no booking yet
+                allTimes.forEach(time => {
+                    const option = document.createElement("option");
+                    option.value = time;
+                    option.textContent = convertTo12Hour(time);
+                    timeSelect.appendChild(option);
+                });
+            }
+        });
+    }
+
+    function convertTo12Hour(time24) {
+        const [hour, minute] = time24.split(':');
+        const h = parseInt(hour);
+        const suffix = h >= 12 ? 'PM' : 'AM';
+        const adjusted = h % 12 === 0 ? 12 : h % 12;
+        return `${adjusted}:${minute} ${suffix}`;
+    }
+
+    // Initial load
+    fetchBookings();
 </script>
+
 
 <!-- External CSS -->
 <link rel="stylesheet" href="{% static 'css/services.css' %}">

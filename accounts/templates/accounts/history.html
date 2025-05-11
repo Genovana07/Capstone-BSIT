@@ -4,71 +4,73 @@
 {% block content %}
 <style>
   .container {
-        display: flex;
-        min-height: 100vh;
-        font-family: 'MavenPro', sans-serif;
-    }
+    display: flex;
+    min-height: 100vh;
+    font-family: 'MavenPro', sans-serif;
+    background-color: #f9f9fb;
+  }
 
-    /* Sidebar */
-    .sidebar {
-        width: 240px;
-        background-color: #ffffff;
-        padding: 40px 20px;
-        border-right: 1px solid #ddd;
-    }
+  /* Sidebar */
+  .sidebar {
+    width: 240px;
+    background-color: #ffffff;
+    padding: 40px 20px;
+    border-right: 1px solid #e0e0e0;
+  }
 
-    .sidebar ul {
-        list-style: none;
-        padding: 0;
-    }
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
 
-    .sidebar li {
-        display: flex;
-        align-items: center;
-        margin-bottom: 25px;
-        font-size: 18px;
-    }
+  .sidebar li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 18px;
+  }
 
-    .sidebar li img {
-        width: 24px;
-        height: 24px;
-        margin-right: 12px;
-    }
+  .sidebar li img {
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+  }
 
-    .sidebar li span a {
-        color: #23194f;
-        font-weight: 500;
-        font-size: 16px;
-        text-decoration: none;
-    }
+  .sidebar li span a {
+    color: #23194f;
+    font-weight: 500;
+    font-size: 16px;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
 
-    .sidebar li span a:hover {
-        color: #3a2d7c;
-    }
-
+  .sidebar li span a:hover {
+    color: #7a3cff;
+  }
 
   /* Main Content */
   .main-content {
     flex-grow: 1;
     padding: 60px;
-    background-color: #fff;
+    background-color: #fcfcff;
   }
 
   .main-content h2 {
-    font-size: 24px;
-    font-weight: bold;
-    color: #23194f;
+    font-size: 26px;
+    font-weight: 700;
+    color: #1e144e;
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 30px;
+    gap: 12px;
+    margin-bottom: 40px;
   }
 
   .table-container {
-    background-color: #fff7f5;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background-color: #ffffff;
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
     overflow-x: auto;
   }
 
@@ -81,40 +83,24 @@
 
   th, td {
     text-align: left;
-    padding: 14px 12px;
-    border-bottom: 1px solid #eee;
+    padding: 16px 14px;
+    border-bottom: 1px solid #f0f0f0;
   }
 
   th {
+    background-color: #f4ecff;
+    color: #23194f;
     font-weight: 600;
-    color: #444;
-    background-color: #fef0ec;
-  }
-
-  tr:last-child td {
-    border-bottom: none;
-  }
-
-  .status {
-    padding: 6px 14px;
-    border-radius: 20px;
+    text-transform: uppercase;
     font-size: 13px;
-    font-weight: bold;
-    color: white;
-    display: inline-block;
-    text-transform: capitalize;
   }
 
-  .status.completed {
-    background-color: #00c853;
-  }
-
-  .status.cancelled {
-    background-color: #ff1744;
+  tr:hover {
+    background-color: #faf8ff;
   }
 
   a {
-    color: #3a2d7c;
+    color: #7a3cff;
     text-decoration: none;
     font-weight: 600;
   }
@@ -125,60 +111,58 @@
 </style>
 
 <div class="container">
-
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <ul>
-            <li>
-                <img src="{% static 'images/profile-user.png' %}" alt="User Icon">
-                <span><a href="{% url 'profile' %}">Profile</a></span>
-            </li>
-            <li>
-                <img src="{% static 'images/open-book.png' %}" alt="Bookings Icon">
-                <span><a href="{% url 'mybookings' %}">My Bookings</a></span>
-            </li>
-            <li>
-                <img src="{% static 'images/history.png' %}" alt="History Icon">
-                <span><a href="{% url 'history' %}">History</a></span>
-            </li>
-            <li>
-                <img src="{% static 'images/logout.png' %}" alt="Logout Icon">
-                <span><a href="{% url 'logout' %}">Logout</a></span>
-            </li>
-        </ul>
-    </aside>
-
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <ul>
+      <li>
+        <img src="{% static 'images/profile-user.png' %}" alt="User Icon">
+        <span><a href="{% url 'profile' %}">Profile</a></span>
+      </li>
+      <li>
+        <img src="{% static 'images/open-book.png' %}" alt="Bookings Icon">
+        <span><a href="{% url 'mybookings' %}">My Bookings</a></span>
+      </li>
+      <li>
+        <img src="{% static 'images/history.png' %}" alt="History Icon">
+        <span><a href="{% url 'history' %}">History</a></span>
+      </li>
+      <li>
+        <img src="{% static 'images/logout.png' %}" alt="Logout Icon">
+        <span><a href="{% url 'logout' %}">Logout</a></span>
+      </li>
+    </ul>
+  </aside>
 
   <!-- Main Section -->
   <main class="main-content">
-    <h2><span class="icon">🕓</span> History</h2>
+    <h2><span class="icon">🕓</span> Booking History</h2>
 
     <div class="table-container">
       <table>
         <thead>
-  <tr>
-    <th>Customer Name</th>
-    <th>Date of Booking</th>
-    <th>Package Items</th>
-    <th>Event Date</th>
-    <th>Total Amount</th>
-    <th>Rating</th>
-  </tr>
-</thead>
-<tbody>
-  {% for booking in history_list %}
-  <tr>
-    <td>{{ booking.customer_name }}</td>
-    <td>{{ booking.date_booked }}</td>
-    <td>{{ booking.package }}</td>
-    <td>{{ booking.event_date }}</td>
-    <td>₱{{ booking.total }}</td>
-    <td><a href="#">{{ booking.rating }}</a></td>
-  </tr>
-  {% empty %}
-  <tr><td colspan="6">No history found.</td></tr>
-  {% endfor %}
-</tbody>
+          <tr>
+            <th>Customer Name</th>
+            <th>Date of Booking</th>
+            <th>Package Items</th>
+            <th>Event Date</th>
+            <th>Total Amount</th>
+            <th>Rating</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for booking in history_list %}
+          <tr>
+            <td>{{ booking.customer_name }}</td>
+            <td>{{ booking.date_booked }}</td>
+            <td>{{ booking.package }}</td>
+            <td>{{ booking.event_date }}</td>
+            <td>₱{{ booking.total }}</td>
+            <td><a href="#">{{ booking.rating }}</a></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6">No history found.</td></tr>
+          {% endfor %}
+        </tbody>
       </table>
     </div>
   </main>

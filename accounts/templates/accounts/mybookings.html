@@ -7,19 +7,20 @@
     display: flex;
     min-height: 100vh;
     font-family: 'MavenPro', sans-serif;
+    background-color: #f9f9fb;
   }
 
-  /* Sidebar */
   .sidebar {
     width: 240px;
     background-color: #ffffff;
     padding: 40px 20px;
-    border-right: 1px solid #ddd;
+    border-right: 1px solid #e0e0e0;
   }
 
   .sidebar ul {
     list-style: none;
     padding: 0;
+    margin: 0;
   }
 
   .sidebar li {
@@ -40,128 +41,113 @@
     font-weight: 500;
     font-size: 16px;
     text-decoration: none;
+    transition: color 0.3s ease;
   }
 
   .sidebar li span a:hover {
-    color: #3a2d7c;
+    color: #7a3cff;
   }
 
-  /* Main Section */
-  .main {
-    flex: 1;
-    background-color: #fff;
+  .main-content {
+    flex-grow: 1;
     padding: 60px;
+    background-color: #fcfcff;
   }
 
-  .main h2 {
-    font-size: 24px;
-    font-weight: bold;
-    color: #23194f;
+  .main-content h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1e144e;
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 30px;
+    gap: 12px;
+    margin-bottom: 40px;
   }
 
-  /* Table Card */
   .table-container {
-    background-color: #fff8f8;
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    background-color: #ffffff;
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    overflow-x: auto;
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
     font-size: 15px;
+    background-color: white;
+    min-width: 960px;
   }
 
-  thead th {
+  th, td {
     text-align: left;
-    padding: 12px 8px;
-    border-bottom: 2px solid #ddd;
-    color: #444;
+    padding: 16px 14px;
+    border-bottom: 1px solid #f0f0f0;
   }
 
-  tbody td {
-    padding: 14px 8px;
-    border-bottom: 1px solid #eee;
-    vertical-align: middle;
-  }
-
-  tbody tr:last-child td {
-    border-bottom: none;
-  }
-
-  tbody a {
-    color: #3a2d7c;
+  th {
+    background-color: #f4ecff;
+    color: #23194f;
     font-weight: 600;
-    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 13px;
   }
 
-  tbody a:hover {
-    text-decoration: underline;
+  tr:hover {
+    background-color: #faf8ff;
   }
 
   .status {
-    padding: 6px 14px;
-    border-radius: 20px;
+    padding: 6px 16px;
+    border-radius: 30px;
     font-size: 13px;
     font-weight: bold;
     color: white;
+    display: inline-block;
     text-transform: capitalize;
   }
 
   .status.accepted {
-    background-color: #28a745; /* Green */
+    background-color: #28a745;
   }
 
   .status.rejected {
-    background-color: #dc3545; /* Red */
+    background-color: #dc3545;
   }
 
   .status.processing {
-    background-color: #007bff; /* Blue */
+    background-color: #007bff;
   }
 
+  .status.cancelled,
   .status.default {
-    background-color: #6c757d; /* Gray */
+    background-color: #6c757d;
   }
-  .cancelled {
-  background-color: #6c757d; /* Gray */
-}
+
+  a {
+    color: #7a3cff;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
 </style>
 
 <div class="container">
-  <!-- Sidebar -->
   <aside class="sidebar">
     <ul>
-      <li>
-        <img src="{% static 'images/profile-user.png' %}" alt="User Icon">
-        <span><a href="{% url 'profile' %}">Profile</a></span>
-      </li>
-      <li>
-        <img src="{% static 'images/open-book.png' %}" alt="Bookings Icon">
-        <span><a href="{% url 'mybookings' %}">My Bookings</a></span>
-      </li>
-      <li>
-        <img src="{% static 'images/history.png' %}" alt="History Icon">
-        <span><a href="{% url 'history' %}">History</a></span>
-      </li>
-      <li>
-        <img src="{% static 'images/logout.png' %}" alt="Logout Icon">
-        <span><a href="{% url 'logout' %}">Logout</a></span>
-      </li>
+      <li><img src="{% static 'images/profile-user.png' %}" alt="User Icon"> <span><a href="{% url 'profile' %}">Profile</a></span></li>
+      <li><img src="{% static 'images/open-book.png' %}" alt="Bookings Icon"> <span><a href="{% url 'mybookings' %}">My Bookings</a></span></li>
+      <li><img src="{% static 'images/history.png' %}" alt="History Icon"> <span><a href="{% url 'history' %}">History</a></span></li>
+      <li><img src="{% static 'images/logout.png' %}" alt="Logout Icon"> <span><a href="{% url 'logout' %}">Logout</a></span></li>
     </ul>
   </aside>
 
-  <!-- Main Content -->
-  <main class="main">
-    <h2>
-      <img src="{% static 'images/open-book.png' %}" width="22"> My Bookings
-    </h2>
-
+  <main class="main-content">
+    <h2><span class="icon">🕓</span> My Bookings</h2>
     <div class="table-container">
       <table>
         <thead>
@@ -171,37 +157,32 @@
             <th>Status</th>
             <th>Total Amount</th>
             <th>Event Type</th>
-            <th></th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-  {% for booking in booking_list %}
-  <tr>
-    <td>{{ booking.date_booked }}</td>
-    <td>{{ booking.event_datetime }}</td>
-    <td>
-      <span class="status 
-        {% if booking.status|lower == 'accepted' %}accepted
-        {% elif booking.status|lower == 'rejected' %}rejected
-        {% elif booking.status|lower == 'processing' %}processing
-        {% else %}default{% endif %}">
-        {{ booking.status }}
-      </span>
-    </td>
-    <td>₱{{ booking.total }}</td>
-    <td>{{ booking.event_type }}</td>  <!-- ✅ Fix is here -->
-    <td><a href="{% url 'view_mybooking' booking.id %}">View</a></td>
-    <td>
-  <a href="{% url 'view_mybooking' booking.id %}">View</a>
-  {% if booking.status == 'Processing' %}
-    | <a href="{% url 'cancel_booking' booking.id %}" onclick="return confirm('Are you sure you want to cancel this booking?');">Cancel</a>
-  {% endif %}
-</td>
-  </tr>
-  {% empty %}
-  <tr><td colspan="6">No bookings found.</td></tr>
-  {% endfor %}
-</tbody>
+          {% for booking in booking_list %}
+          <tr>
+            <td>{{ booking.date_booked }}</td>
+            <td>{{ booking.event_datetime }}</td>
+            <td>
+              <span class="status {% if booking.status|lower == 'accepted' %}accepted{% elif booking.status|lower == 'rejected' %}rejected{% elif booking.status|lower == 'processing' %}processing{% elif booking.status|lower == 'cancelled' %}cancelled{% else %}default{% endif %}">
+                {{ booking.status }}
+              </span>
+            </td>
+            <td>₱{{ booking.total }}</td>
+            <td>{{ booking.event_type }}</td>
+            <td>
+              <a href="{% url 'view_mybooking' booking.id %}">View</a>
+              {% if booking.status == 'Processing' %}
+              | <a href="{% url 'cancel_booking' booking.id %}" onclick="return confirm('Are you sure you want to cancel this booking?');">Cancel</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6">No bookings found.</td></tr>
+          {% endfor %}
+        </tbody>
       </table>
     </div>
   </main>

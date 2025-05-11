@@ -26,15 +26,90 @@ body {
     background-color: var(--light-color);
     color: var(--text-color);
 }
+.audioman-logo {
+    font-family: 'MavenPro', sans-serif;
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: white;
+    line-height: 1.4;
+}
 
-main {
+.audioman-logo .text-white {
+    color: #ffffff;
+}
+
+.audioman-logo .text-yellow {
+    color: #000000;
+    background-color: #f1c40f;
+    padding: 2px 6px;
+    margin-left: 2px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.audioman-logo .text-sub {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 5px;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.audioman-logo .subline {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #ddd;
     margin-top: 10px;
+    text-transform: uppercase;
+    line-height: 1.3;
+}
+.main-section {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     text-align: center;
-    background-color: var(--secondary-color);
-    padding: 60px 20px;
+    padding: 100px 20px;
+    background-image: url('../images/eme2.jpg'); /* Replace with actual image */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    position: relative;
+    z-index: 1;
+    color: white; /* Ensures all direct text is white */
+}
+
+.main-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0,0,0,0.5); /* Optional overlay for readability */
+    z-index: -1;
+}
+
+.main-section .tagline,
+.main-section .main-heading,
+.main-section .description {
+    color: white;
+}
+
+.book-now {
+    background-color: white;
+    color: #23194f;
+    font-size: 1rem;
+    border: none;
+    padding: 12px 30px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.book-now:hover {
+    background-color: #ddd;
+    color: #000;
 }
 
 .tagline {
@@ -76,6 +151,29 @@ main {
 
 .book-now:hover {
     background-color: var(--accent-color);
+}
+/* Video above hidden gallery */
+.video-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 40px;
+    margin-bottom: -20px;
+}
+
+.video-section video {
+    max-width: 90%;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+#lightbox-modal img {
+    width: auto;
+    height: auto;
+    max-width: 95vw;
+    max-height: 95vh;
+    border-radius: 8px;
+    animation: zoomIn 0.3s ease-in-out;
+    box-shadow: 0 0 30px rgba(255,255,255,0.3);
 }
 .container {
     background: var(--highlight-bg);
@@ -211,88 +309,122 @@ main {
 .testimonials-container {
     background-color: var(--secondary-color);
     border-radius: 12px;
-    padding: 60px 30px;
+    padding: 80px 30px;
     margin: 70px auto;
-    max-width: 1000px;
+    max-width: 1200px;
     text-align: center;
-}
+    overflow: hidden;
+  }
 
-.carousel {
+  .carousel {
     display: flex;
     align-items: center;
-    justify-content: center;
-    margin-top: 30px;
-}
+    width: 100%;
+  }
 
-.cards {
+  .cards {
     display: flex;
-    gap: 15px;
+    gap: 20px;
     overflow-x: auto;
-    padding-bottom: 10px;
-}
+    scroll-behavior: smooth;
+    padding: 30px 0;
+    width: 100%;
+  }
 
-.card {
+  .card {
     background: white;
-    padding: 20px;
+    padding: 32px;
     border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 220px;
-    flex-shrink: 0;
-    text-align: left;
-}
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    min-width: 300px;
+    flex: 0 0 auto;
+    transition: transform 0.3s ease;
+  }
 
-.customer-info {
+  .card:hover {
+    transform: translateY(-5px);
+  }
+
+  .customer-info {
     display: flex;
     align-items: center;
-    margin-top: 15px;
-}
+    margin-top: 20px;
+    gap: 10px;
+  }
 
-.customer-info img {
-    width: 28px;
-    height: 28px;
+  .customer-info img {
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    margin-right: 10px;
-}
+  }
 
-.rating {
+  .rating {
     margin-left: auto;
     color: gold;
     font-size: 1.1rem;
-}
+  }
+
+  .dots {
+    margin-top: 20px;
+  }
+
+  .dot {
+    height: 12px;
+    width: 12px;
+    margin: 0 4px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .dot.active {
+    background-color: var(--primary-color);
+  }
 
 .faq-container {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding: 50px;
+    padding: 60px 40px;
     background-color: white;
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 60px auto;
     gap: 40px;
-}
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  }
 
-.faq-content h2 {
-    color: var(--primary-color);
-    font-size: 2rem;
-}
+  .faq-content {
+    flex: 1;
+  }
 
-.faq-content p {
-    font-size: 1.1rem;
-    color: var(--text-color);
-    margin-bottom: 15px;
-}
-
-.faq-content select {
-    width: 100%;
-    padding: 12px;
-    font-size: 1rem;
+  .faq-list details {
+    margin-bottom: 16px;
+    background: #f7f7f7;
+    padding: 15px 20px;
     border-radius: 8px;
-    border: 1px solid #bbb;
-    background-color: #eee;
-    margin-bottom: 10px;
-}
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
 
-.faq-image img {
+  .faq-list details[open] {
+    background: #e8f0fe;
+  }
+
+  .faq-list summary {
+    font-weight: bold;
+    color: var(--primary-color);
+    font-size: 1.05rem;
+  }
+
+  .faq-list p {
+    margin-top: 10px;
+    font-size: 0.95rem;
+    color: #444;
+  }
+
+  .faq-image img {
     max-width: 100%;
-    border-radius: 10px;
-}
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  }

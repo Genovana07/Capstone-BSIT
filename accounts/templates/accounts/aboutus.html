@@ -4,105 +4,99 @@
 {% block title %}About Us{% endblock %}
 
 {% block content %}
-<main class="container">
-    <h1 class="title">ABOUT US</h1>
-    <hr class="line" />
+<main class="container about-container">
+  <h1 class="title">About <span>Us</span></h1>
+  <hr class="line" />
 
-    <div class="content">
-        <div class="image-box">
-            <img src="{% static 'images/speaker1.jpg' %}" alt="Image">
-        </div>
-        <div class="text-box">
-            <h2 class="history">History</h2>
-            <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.
-            </p>
-            <button class="read-more">&#9698; Read more</button>
-        </div>
+  <div class="content">
+    <div class="image-box">
+      <img src="{% static 'images/speaker1.jpg' %}" alt="Image">
     </div>
+    <div class="text-box">
+      <h2 class="history">History</h2>
+      <p>
+        Audioman began as a small passion project and grew into a full-fledged production company. Today, we proudly serve a wide variety of events—delivering premium sound and lighting with professional service.
+      </p>
+      <button class="read-more">&#9698; Read more</button>
+    </div>
+  </div>
 </main>
 
 <section class="mission-vision-values container">
-    <div class="box">
-        <img src="{% static 'images/mission.png' %}" alt="Mission Icon">
-        <h2>Our <span class="highlight">Mission</span></h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-    </div>
-    <div class="box">
-        <img src="{% static 'images/view.png' %}" alt="Vision Icon">
-        <h2>Our <span class="highlight">Vision</span></h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-    </div>
-    <div class="box">
-        <img src="{% static 'images/values.png' %}" alt="Values Icon">
-        <h2>Our <span class="highlight">Values</span></h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-    </div>
+  <div class="box">
+    <img src="{% static 'images/mission.png' %}" alt="Mission Icon">
+    <h2>Our <span class="highlight">Mission</span></h2>
+    <p>To deliver world-class audio and lighting experiences that elevate every event and inspire every audience.</p>
+  </div>
+  <div class="box">
+    <img src="{% static 'images/view.png' %}" alt="Vision Icon">
+    <h2>Our <span class="highlight">Vision</span></h2>
+    <p>To be the most trusted and innovative events solution provider in the country.</p>
+  </div>
+  <div class="box">
+    <img src="{% static 'images/values.png' %}" alt="Values Icon">
+    <h2>Our <span class="highlight">Values</span></h2>
+    <p>We value professionalism, creativity, commitment, and exceptional customer service in everything we do.</p>
+  </div>
 </section>
 
 <h2 class="choose-us-title">Why Choose Us?</h2>
 <section class="why-choose-us">
-    <div class="info-box">
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.</p>
-    </div>
-    <div class="info-box">
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.</p>
-    </div>
-    <div class="info-box">
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.</p>
-    </div>
+  <div class="info-box">
+    <p>Experienced team with over 10 years in the events industry.</p>
+  </div>
+  <div class="info-box">
+    <p>State-of-the-art equipment tailored for events of all sizes.</p>
+  </div>
+  <div class="info-box">
+    <p>Trusted by major brands and countless happy clients.</p>
+  </div>
 </section>
 
-<section class="team-section">
+  <section class="team-section">
     <h2 class="team-title">Meet <span>Our Team</span></h2>
     <p class="team-description">
-        We are a passionate team dedicated to delivering outstanding service and creating unforgettable event experiences.
+        We are a passionate team dedicated to delivering outstanding service and unforgettable event experiences.
     </p>
 
-    <div class="carousel">
-        <button class="prev">&#10094;</button>
+    <div class="team-carousel-wrapper">
         <div class="team-members">
-            {% for member in team_members %}
+            {% for i in "1234567890" %}
             <div class="member">
-                <img src="{% static 'images/speaker1.jpg' %}" alt="Team Member">
-                <p>{{ member.name }}</p>
+                <img src="{% static 'images/speaker1.jpg' %}" alt="Team Member {{ i }}">
+                <p>Member {{ i }}</p>
             </div>
             {% endfor %}
         </div>
-        <button class="next">&#10095;</button>
-    </div>
-
-    <div class="carousel-indicators">
-        <span class="dot active"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
     </div>
 </section>
 
 <footer class="footer">
-    <div class="logo">YOUR LOGO<br /><small>Your Tagging here</small></div>
-    <div class="column">
-        <h3>Title here</h3>
-        <p>text</p>
-        <p>text</p>
-        <p>text</p>
-    </div>
-    <div class="column">
-        <h3>Title here</h3>
-        <p>text</p>
-        <p>text</p>
-        <p>text</p>
-    </div>
-    <div class="column">
-        <h3>Contact Us</h3>
-        <p>info@company.com</p>
-        <p>123-456-7890</p>
-    </div>
+  <div class="logo">
+    <span style="color: white; font-weight: bold; font-size: 1.5rem;">AUDIO</span><span style="background-color: #f1c40f; color: black; font-weight: bold; padding: 2px 6px; margin-left: 4px; border-radius: 3px; font-size: 1.5rem;">MAN</span><br>
+    <small style="color: white; text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Lights & Sounds</small>
+    <div style="font-size: 0.7rem; color: #ddd; margin-top: 10px; text-transform: uppercase;">Owned and Operated by: Audioman Events and Entertainment Corp.</div>
+  </div>
+  <div class="column">
+    <h3>Services</h3>
+    <p>Sound System Rental</p>
+    <p>Lighting Design</p>
+    <p>Event Production</p>
+  </div>
+  <div class="column">
+    <h3>Company</h3>
+    <p>About Us</p>
+    <p>Careers</p>
+    <p>Blog</p>
+  </div>
+  <div class="column">
+    <h3>Contact Us</h3>
+    <p>info@studioflow.com</p>
+    <p>+63 912 345 6789</p>
+  </div>
 </footer>
 
 <link rel="stylesheet" href="{% static 'css/aboutus.css' %}">
-
 <!-- ✅ Footer Styling -->
 <style>
 .footer {

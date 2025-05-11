@@ -8,7 +8,7 @@
     <h2 class="tagline">Rent. <span>Set the Mood.</span></h2>
     <h1 class="main-heading">Make the Magic Happen.</h1>
     <p class="description">StudioFlow provides top-quality sound and lighting equipment for any event, big or small.</p>
-    
+
     <a href="{% url 'services' %}">
         <button class="book-now">BOOK NOW</button>
     </a>
@@ -34,11 +34,13 @@
 </div>
 
 <!-- Hidden Additional Gallery -->
-<div id="container1" class="container1" style="display: none;">
+ <div id="container1" class="container1" style="display: none;">
     <div class="title-container">
         <h2 class="title">Event Highlights</h2>
     </div>
-
+    <div class="video-section">
+  <video src="{% static 'videos/bg video.mp4' %}" controls autoplay muted></video>
+</div>
     <div class="gallery1">
         {% for _ in "1234567890" %}
         <div class="item1">
@@ -49,55 +51,61 @@
     </div>
 </div>
 
-<!-- Testimonials Section -->
 <div class="testimonials-container">
-    <h2 class="title">Testimonials <span class="line"></span></h2>
-    <div class="carousel">
-        <button class="prev" onclick="moveCarousel(-1)">&#x2039;</button>
-        <div class="cards" id="testimonial-cards">
-            {% for _ in "1234" %}
-            <div class="card">
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                <div class="customer-info">
-                    <img src="{% static 'images/user-icon.png' %}" alt="User">
-                    <span>Customer Name</span>
-                    <span class="rating">⭐ 4.9</span>
-                </div>
-            </div>
-            {% endfor %}
+  <h2 class="title">Testimonials <span class="line"></span></h2>
+  <div class="carousel">
+    <div class="cards" id="testimonial-cards">
+      {% for i in "1234567890" %}
+      <div class="card">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Testimonial #{{ forloop.counter }}</p>
+        <div class="customer-info">
+          <img src="{% static 'images/user-icon.png' %}" alt="User">
+          <span>Customer {{ forloop.counter }}</span>
+          <span class="rating">⭐ 4.9</span>
         </div>
-        <button class="next" onclick="moveCarousel(1)">&#x203A;</button>
+      </div>
+      {% endfor %}
     </div>
-    <div class="dots">
-        {% for _ in "123" %}
-        <span class="dot{% if forloop.first %} active{% endif %}"></span>
-        {% endfor %}
-    </div>
+  </div>
+  <div class="dots">
+    {% for i in "1234" %}
+    <span class="dot{% if forloop.first %} active{% endif %}"></span>
+    {% endfor %}
+  </div>
 </div>
 
-<!-- FAQ Section -->
+<!-- Improved FAQ Section -->
 <div class="faq-container">
-    <div class="faq-content">
-        <h2>FAQ’s</h2>
-        <p>Everything You Need to Know</p>
-        {% for _ in "123" %}
-        <select>
-            <option>Lorem ipsum dolor sit amet?</option>
-        </select>
-        {% endfor %}
+  <div class="faq-content">
+    <h2 class="title">FAQs <span class="line"></span></h2>
+    <p>Got questions? We've got answers.</p>
+    <div class="faq-list">
+      {% for _ in "123" %}
+      <details>
+        <summary>What services do you offer?</summary>
+        <p>We provide premium sound and lighting equipment rental, setup, and event production services.</p>
+      </details>
+      {% endfor %}
     </div>
-    <div class="faq-image">
-        <img src="{% static 'images/speaker1.jpg' %}" alt="FAQ Illustration" onclick="openLightbox(this.src)" style="cursor: zoom-in;">
-    </div>
+  </div>
+  <div class="faq-image">
+    <img src="{% static 'images/speaker1.jpg' %}" alt="FAQ Illustration" onclick="openLightbox(this.src)" style="cursor: zoom-in;">
+  </div>
 </div>
+
 
 <!-- Lightbox Modal -->
-<div id="lightbox-modal" onclick="closeLightbox()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:9999;">
-    <img id="lightbox-img" style="max-width:90%; max-height:90%; border-radius:10px;">
+<div id="lightbox-modal" onclick="closeLightbox()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); justify-content:center; align-items:center; z-index:9999;">
+    <img id="lightbox-img">
+    <span onclick="closeLightbox()" style="position:absolute;top:20px;right:30px;font-size:2rem;color:white;cursor:pointer;">&times;</span>
 </div>
 
 <footer class="footer">
-    <div class="logo">StudioFlow<br><small>Sound. Light. Mood.</small></div>
+    <div class="logo">
+        <span style="color: white; font-weight: bold; font-size: 1.5rem;">AUDIO</span><span style="background-color: #f1c40f; color: black; font-weight: bold; padding: 2px 6px; margin-left: 4px; border-radius: 3px; font-size: 1.5rem;">MAN</span><br>
+        <small style="color: white; text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Lights & Sounds</small>
+        <div style="font-size: 0.7rem; color: #ddd; margin-top: 10px; text-transform: uppercase;">Owned and Operated by: Audioman Events and Entertainment Corp.</div>
+    </div>
     <div class="column">
         <h3>Services</h3>
         <p>Sound System Rental</p>
@@ -118,36 +126,55 @@
 </footer>
 
 <script>
-    // Scroll to the next event section
     function scrollToContainer1() {
         var container = document.getElementById("container1");
         container.style.display = "block";
         container.scrollIntoView({ behavior: "smooth" });
     }
 
-    // Open the lightbox modal
     function openLightbox(src) {
         const modal = document.getElementById("lightbox-modal");
         const img = document.getElementById("lightbox-img");
         img.src = src;
+        img.style.width = '100%';
+        img.style.height = 'auto';
         modal.style.display = "flex";
     }
 
-    // Close the lightbox modal
     function closeLightbox() {
         document.getElementById("lightbox-modal").style.display = "none";
     }
 
-    // Carousel movement (previous and next)
     let currentIndex = 0;
     function moveCarousel(direction) {
         const cards = document.getElementById("testimonial-cards").children;
         const totalCards = cards.length;
-        currentIndex = (currentIndex + direction + totalCards) % totalCards; // Cycle through the carousel
+        currentIndex = (currentIndex + direction + totalCards) % totalCards;
         const cardWidth = cards[0].offsetWidth;
         document.getElementById("testimonial-cards").style.transform = `translateX(-${cardWidth * currentIndex}px)`;
     }
 </script>
+
+<style>
+   #lightbox-modal img {
+    width: 80vw;
+    height: 80vh;
+    object-fit: contain;
+    border-radius: 8px;
+    animation: zoomIn 0.3s ease-in-out;
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+</style>
 
 <link rel="stylesheet" href="{% static 'css/home.css' %}">
 {% endblock %}

@@ -62,11 +62,15 @@
             <label for="event_date">Event Date</label>
             <input type="date" id="event_date" name="event_date" required>
 
-            <label for="event_time">Event Time</label>
+            <label for="event_time">Start Time</label>
             <select id="event_time" name="event_time" required>
-            <option value="">Select Time</option>
+            <option value="">Select Start Time</option>
             </select>
 
+            <label for="end_time">End Time</label>
+            <select id="end_time" name="end_time" required>
+            <option value="">Select End Time</option>
+            </select>
             <label for="event_type">Type of Event</label>
             <select id="event_type" name="event_type" required>
                 <option value="">Select</option>
@@ -144,7 +148,7 @@
     });
 
     // ===============================
-    // Booking Form Logic (updated)
+    // Booking Form Logic (with end time)
     // ===============================
 
     let bookingData = {};
@@ -158,7 +162,7 @@
         fetch('/accounts/api/bookings/')
             .then(response => response.json())
             .then(data => {
-                bookingData = data.form_logic; // ✅ use form_logic only
+                bookingData = data.form_logic;
                 setupBookingFormLogic();
             });
     }
@@ -166,8 +170,9 @@
     function setupBookingFormLogic() {
         const dateInput = document.getElementById("event_date");
         const timeSelect = document.getElementById("event_time");
+        const endTimeSelect = document.getElementById("end_time");
 
-        if (!dateInput || !timeSelect) return;
+        if (!dateInput || !timeSelect || !endTimeSelect) return;
 
         const today = new Date().toISOString().split("T")[0];
         dateInput.setAttribute("min", today);
@@ -175,10 +180,12 @@
         dateInput.addEventListener("input", function () {
             const selectedDate = this.value;
 
-            // Reset time dropdown
-            timeSelect.innerHTML = '<option value="">Select Time</option>';
+            timeSelect.innerHTML = '<option value="">Select Start Time</option>';
+            endTimeSelect.innerHTML = '<option value="">Select End Time</option>';
 
             const entry = bookingData[selectedDate];
+
+            let available = [...allTimes];
 
             if (entry) {
                 const { count, times } = entry;
@@ -189,27 +196,44 @@
                     return;
                 }
 
-                const available = allTimes.filter(t => !times.includes(t));
+                available = allTimes.filter(t => !times.includes(t));
                 if (available.length === 0) {
                     alert("No available time slots left for this date.");
                     return;
                 }
-
-                available.forEach(time => {
-                    const option = document.createElement("option");
-                    option.value = time;
-                    option.textContent = convertTo12Hour(time);
-                    timeSelect.appendChild(option);
-                });
-            } else {
-                // All times available if no booking yet
-                allTimes.forEach(time => {
-                    const option = document.createElement("option");
-                    option.value = time;
-                    option.textContent = convertTo12Hour(time);
-                    timeSelect.appendChild(option);
-                });
             }
+
+            available.forEach(time => {
+                const option = document.createElement("option");
+                option.value = time;
+                option.textContent = convertTo12Hour(time);
+                timeSelect.appendChild(option);
+            });
+
+            endTimeSelect.innerHTML = '<option value="">Select End Time</option>';
+        });
+
+        timeSelect.addEventListener("change", function () {
+            const start = this.value;
+            const selectedDate = dateInput.value;
+            endTimeSelect.innerHTML = '<option value="">Select End Time</option>';
+
+            if (!start) return;
+
+            const entry = bookingData[selectedDate];
+            const bookedTimes = entry ? entry.times : [];
+
+            const startIndex = allTimes.indexOf(start);
+            const possibleEnds = allTimes.slice(startIndex + 1);
+
+            const availableEnds = possibleEnds.filter(t => !bookedTimes.includes(t));
+
+            availableEnds.forEach(endTime => {
+                const option = document.createElement("option");
+                option.value = endTime;
+                option.textContent = convertTo12Hour(endTime);
+                endTimeSelect.appendChild(option);
+            });
         });
     }
 
@@ -224,6 +248,7 @@
     // Initial load
     fetchBookings();
 </script>
+
 
 
 <!-- External CSS -->

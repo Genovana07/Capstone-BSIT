@@ -9,10 +9,11 @@ from .models import Booking,ServicePackage
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.db.models import Count
+from datetime import datetime, timedelta
 
-# Register View
 def register_view(request):
     if request.method == "POST":
+        username = request.POST.get("username")
         email = request.POST.get("email")
         password = request.POST.get("password")
         confirm_password = request.POST.get("confirm_password")
@@ -23,17 +24,30 @@ def register_view(request):
         province = request.POST.get("province")
         city = request.POST.get("city")
 
-        if password != confirm_password:
+        # Validation
+        if not username:
+            messages.error(request, "Username is required.")
+        elif not email:
+            messages.error(request, "Email is required.")
+        elif not password or not confirm_password:
+            messages.error(request, "Password and confirmation are required.")
+        elif password != confirm_password:
             messages.error(request, "Passwords do not match.")
+        elif User.objects.filter(username=username).exists():
+            messages.error(request, "Username already taken.")
         elif User.objects.filter(email=email).exists():
             messages.error(request, "Email already in use.")
         else:
+            # Create user
             user = User.objects.create_user(
+                username=username,
                 email=email,
                 password=password,
                 first_name=first_name,
                 last_name=last_name
             )
+
+            # Create profile
             Profile.objects.create(
                 user=user,
                 contact_number=phone,
@@ -41,6 +55,7 @@ def register_view(request):
                 province=province,
                 city=city
             )
+
             messages.success(request, "Registration successful. You can now log in.")
             return redirect("login")
 
@@ -374,6 +389,7 @@ def history(request):
 
     return render(request, 'accounts/history.html', {'history_list': history_list})
 
+
 @login_required
 def create_booking(request):
     if request.method == "POST":
@@ -393,6 +409,14 @@ def create_booking(request):
             messages.error(request, f"The selected package '{selected_package}' does not exist.")
             return redirect('services')
 
+        # Convert event_time to datetime object
+        event_time_obj = datetime.strptime(event_time, "%H:%M")
+
+        # Calculate end time (Assuming 4 hours duration)
+        end_time_obj = event_time_obj + timedelta(hours=4)
+        end_time = end_time_obj.time()  # Get just the time part
+
+        # Create the booking
         Booking.objects.create(
             user=request.user,
             package=package,
@@ -401,6 +425,7 @@ def create_booking(request):
             contact_number=contact_number,
             event_date=event_date,
             event_time=event_time,
+            end_time=end_time,  # Save the calculated end_time
             event_type=event_type,
             location=location,
             audience_size=audience_size,
@@ -460,14 +485,10 @@ def booking(request):
 def event(request):
     return render(request, 'client/event.html')
 
-
-@login_required
-@admin_only
+@login_required  # ✅ Only this is needed
 def booking_events_api(request):
-    # Exclude rejected and cancelled bookings
     bookings = Booking.objects.exclude(status__in=['Rejected', 'Cancelled'])
 
-    # Calendar events (dashboard)
     events = []
     for booking in bookings:
         events.append({
@@ -476,7 +497,6 @@ def booking_events_api(request):
             "time": booking.event_time.strftime("%H:%M")
         })
 
-    # Form logic (to limit slots and show available times)
     grouped = {}
     for booking in bookings:
         date_str = booking.event_date.strftime("%Y-%m-%d")
@@ -492,8 +512,8 @@ def booking_events_api(request):
         grouped[date_str]["times"].append(time_str)
 
     return JsonResponse({
-        "calendar": events,     # For calendar display
-        "form_logic": grouped   # For form logic filtering
+        "calendar": events,
+        "form_logic": grouped
     }, safe=False)
 
 @login_required

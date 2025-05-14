@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-
+from datetime import datetime, timedelta
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -31,16 +31,22 @@ class Booking(models.Model):
     contact_number = models.CharField(max_length=20)
     event_date = models.DateField()
     event_time = models.TimeField()
+    end_time = models.TimeField(null=True, blank=True)  # Keep end_time field
     event_type = models.CharField(max_length=100)
     location = models.CharField(max_length=255)
     audience_size = models.IntegerField()
     status = models.CharField(max_length=50, default='Processing')
-    price = models.CharField(max_length=20)  # Added price
-    created_at = models.DateTimeField(auto_now_add=True, null=True)  # ✅ Add this here
+    price = models.CharField(max_length=20)
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"Booking {self.id} by {self.full_name}"
+    
+    # Function to calculate end time based on event time (assuming 4 hours event duration)
+    def calculate_end_time(self):
+        start_time = timezone.make_aware(datetime.combine(self.event_date, self.event_time))
+        end_time = start_time + timedelta(hours=4)
+        return end_time.time()
 
 
 class BookingStatus(models.Model):

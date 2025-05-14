@@ -119,7 +119,7 @@
     }
   }
 </style>
-  <script>
+ <script>
   const calendar = document.getElementById("calendar");
   const monthLabel = document.getElementById("month-name");
   const yearLabel = document.getElementById("year");
@@ -139,7 +139,7 @@
     fetch('/accounts/api/bookings/')
       .then(response => response.json())
       .then(data => {
-        bookings = data.calendar;  // ✅ use the correct key
+        bookings = data.calendar;
         renderCalendar(currentDate);
       });
   }
@@ -185,11 +185,33 @@
           const eventDiv = document.createElement("div");
           eventDiv.style.fontSize = "0.75rem";
           eventDiv.style.marginTop = "4px";
-          eventDiv.style.backgroundColor = "#d1f0e6";
           eventDiv.style.borderRadius = "4px";
           eventDiv.style.padding = "2px 4px";
           eventDiv.style.wordBreak = "break-word";
-          eventDiv.textContent = `${event.type} - ${convertTo12Hour(event.time)}`;
+
+          // 🎨 Color based on event type
+          let bgColor = "#e2e8f0"; // default gray
+          switch (event.type.toLowerCase()) {
+            case "wedding":
+              bgColor = "#ffe4e1"; // soft pink
+              break;
+            case "birthday":
+              bgColor = "#e9d5ff"; // light violet
+              break;
+            case "corporate":
+              bgColor = "#c7f9cc"; // light green
+              break;
+            case "concert":
+              bgColor = "#bae6fd"; // light blue
+              break;
+            case "other":
+              bgColor = "#fef08a"; // yellow
+              break;
+          }
+
+          eventDiv.style.backgroundColor = bgColor;
+
+          eventDiv.textContent = `${event.type} - ${convertTo12Hour(event.time)}${event.end_time ? " - " + convertTo12Hour(event.end_time) : ""}`;
           dayBox.appendChild(eventDiv);
         });
       }

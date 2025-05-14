@@ -16,7 +16,6 @@
         font-family: 'MavenPro', sans-serif;
     }
 
-    /* Sidebar */
     .sidebar {
         width: 240px;
         background-color: #ffffff;
@@ -53,7 +52,6 @@
         color: #3a2d7c;
     }
 
-    /* Main Profile Section */
     .main {
         flex: 1;
         padding: 60px;
@@ -63,7 +61,12 @@
     .profile-header {
         display: flex;
         align-items: center;
-        margin-bottom: 40px;
+        margin-bottom: 20px;
+    }
+
+    .profile-info {
+        display: flex;
+        flex-direction: column;
     }
 
     .profile-img {
@@ -74,13 +77,20 @@
         margin-right: 20px;
     }
 
+    .edit-picture-btn {
+        font-size: 14px;
+        color: #4A90E2;
+        text-decoration: underline;
+        cursor: pointer;
+        margin-top: 4px;
+    }
+
     .username {
         font-size: 24px;
         font-weight: bold;
         color: #23194f;
     }
 
-    /* Form Layout */
     .form-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -99,7 +109,8 @@
         color: #555;
     }
 
-    .form-group input {
+    .form-group input,
+    .form-group select {
         padding: 14px 16px;
         font-size: 16px;
         border: 1px solid #ccc;
@@ -110,33 +121,24 @@
     .form-group.full-width {
         grid-column: span 2;
     }
-    .form-group select {
-    padding: 14px 16px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background-color: #fff;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-}
-.update-btn {
-    background-color: #4CAF50; /* Green color */
-    color: white;
-    padding: 14px 20px;
-    margin-top: 20px;
-    border: none;
-    border-radius: 8px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 100%;
-}
 
-.update-btn:hover {
-    background-color: #45a049;
-}
+    .update-btn {
+        background-color: #4CAF50;
+        color: white;
+        padding: 14px 20px;
+        margin-top: 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        width: 100%;
+    }
+
+    .update-btn:hover {
+        background-color: #45a049;
+    }
 
     @media (max-width: 768px) {
         .container {
@@ -160,72 +162,64 @@
 </style>
 
 <div class="container">
-
-    <!-- Sidebar -->
     <aside class="sidebar">
         <ul>
-            <li>
-                <img src="{% static 'images/profile-user.png' %}" alt="User Icon">
-                <span><a href="{% url 'profile' %}">Profile</a></span>
-            </li>
-            <li>
-                <img src="{% static 'images/open-book.png' %}" alt="Bookings Icon">
-                <span><a href="{% url 'mybookings' %}">My Bookings</a></span>
-            </li>
-            <li>
-                <img src="{% static 'images/history.png' %}" alt="History Icon">
-                <span><a href="{% url 'history' %}">History</a></span>
-            </li>
-            <li>
-                <img src="{% static 'images/logout.png' %}" alt="Logout Icon">
-                <span><a href="{% url 'logout' %}">Logout</a></span>
-            </li>
+            <li><img src="{% static 'images/profile-user.png' %}"><span><a href="{% url 'profile' %}">Profile</a></span></li>
+            <li><img src="{% static 'images/open-book.png' %}"><span><a href="{% url 'mybookings' %}">My Bookings</a></span></li>
+            <li><img src="{% static 'images/history.png' %}"><span><a href="{% url 'history' %}">History</a></span></li>
+            <li><img src="{% static 'images/logout.png' %}"><span><a href="{% url 'logout' %}">Logout</a></span></li>
         </ul>
     </aside>
 
-    <!-- Main Content -->
     <main class="main">
         <div class="profile-header">
-            <img src="{% static 'images/profile-user.png' %}" alt="Profile Icon" class="profile-img">
-            <div class="username">Hello, {{ user.username }}</div>
-        </div>
+    {% if user.profile.profile_picture %}
+        <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" class="profile-img" id="current-profile-pic">
+    {% else %}
+        <img src="{% static 'images/profile-user.png' %}" alt="Default Profile Icon" class="profile-img" id="current-profile-pic">
+    {% endif %}
+    <div class="profile-info">
+        <div class="username">Hello, {{ user.username }}</div>
+        <span class="edit-picture-btn" onclick="document.getElementById('id_profile_picture').click()">Edit Profile Picture</span>
+    </div>
+</div>
 
         {% if messages %}
-        {% for message in messages %}
-          <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
-      
-        <form method="POST" class="form-grid">
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" class="form-grid">
             {% csrf_token %}
-        
+
             <div class="form-group">
                 <label for="first-name">First Name</label>
                 <input type="text" id="first-name" name="first_name" value="{{ user.first_name }}">
             </div>
-        
+
             <div class="form-group">
                 <label for="last-name">Last Name</label>
                 <input type="text" id="last-name" name="last_name" value="{{ user.last_name }}">
             </div>
-        
+
             <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" value="{{ user.username }}" readonly>
             </div>
-        
+
             <div class="form-group">
                 <label for="contact">Phone Number</label>
                 <input type="text" id="contact" name="phone" value="{{ user.profile.contact_number }}">
             </div>
-        
+
             <div class="form-group">
                 <label for="email">Email Address</label>
                 <input type="email" id="email" name="email" value="{{ user.email }}">
             </div>
-        
+
             <div class="form-group">
                 <label for="province">Province</label>
                 <select id="province" name="province">
@@ -236,42 +230,49 @@
                     <option value="Rizal" {% if user.profile.province == "Rizal" %}selected{% endif %}>Rizal</option>
                 </select>
             </div>
-        
+
             <div class="form-group">
-    <label for="city">City</label>
-    <select id="city" name="city">
-        <option value="">Select a City</option>
+                <label for="city">City</label>
+                <select id="city" name="city">
+                    <option value="">Select a City</option>
+                    <option value="Batangas City" {% if user.profile.city == "Batangas City" %}selected{% endif %}>Batangas City</option>
+                    <option value="Lipa" {% if user.profile.city == "Lipa" %}selected{% endif %}>Lipa</option>
+                    <option value="Tagaytay" {% if user.profile.city == "Tagaytay" %}selected{% endif %}>Tagaytay</option>
+                    <option value="Dasmariñas" {% if user.profile.city == "Dasmariñas" %}selected{% endif %}>Dasmariñas</option>
+                    <option value="Calamba" {% if user.profile.city == "Calamba" %}selected{% endif %}>Calamba</option>
+                    <option value="Santa Rosa" {% if user.profile.city == "Santa Rosa" %}selected{% endif %}>Santa Rosa</option>
+                    <option value="Lucena" {% if user.profile.city == "Lucena" %}selected{% endif %}>Lucena</option>
+                    <option value="Tayabas" {% if user.profile.city == "Tayabas" %}selected{% endif %}>Tayabas</option>
+                    <option value="Antipolo" {% if user.profile.city == "Antipolo" %}selected{% endif %}>Antipolo</option>
+                    <option value="San Mateo" {% if user.profile.city == "San Mateo" %}selected{% endif %}>San Mateo</option>
+                    <option value="Taytay" {% if user.profile.city == "Taytay" %}selected{% endif %}>Taytay</option>
+                </select>
+            </div>
 
-        <!-- Batangas Cities -->
-        <option value="Batangas City" {% if user.profile.city == "Batangas City" %}selected{% endif %}>Batangas City</option>
-        <option value="Lipa" {% if user.profile.city == "Lipa" %}selected{% endif %}>Lipa</option>
-
-        <!-- Cavite Cities -->
-        <option value="Tagaytay" {% if user.profile.city == "Tagaytay" %}selected{% endif %}>Tagaytay</option>
-        <option value="Dasmariñas" {% if user.profile.city == "Dasmariñas" %}selected{% endif %}>Dasmariñas</option>
-
-        <!-- Laguna Cities -->
-        <option value="Calamba" {% if user.profile.city == "Calamba" %}selected{% endif %}>Calamba</option>
-        <option value="Santa Rosa" {% if user.profile.city == "Santa Rosa" %}selected{% endif %}>Santa Rosa</option>
-
-        <!-- Quezon Cities -->
-        <option value="Lucena" {% if user.profile.city == "Lucena" %}selected{% endif %}>Lucena</option>
-        <option value="Tayabas" {% if user.profile.city == "Tayabas" %}selected{% endif %}>Tayabas</option>
-
-        <!-- Rizal Cities -->
-        <option value="Antipolo" {% if user.profile.city == "Antipolo" %}selected{% endif %}>Antipolo</option>
-        <option value="San Mateo" {% if user.profile.city == "San Mateo" %}selected{% endif %}>San Mateo</option>
-        <option value="Taytay" {% if user.profile.city == "Taytay" %}selected{% endif %}>Taytay</option>
-    </select>
-</div>
-        
             <div class="form-group full-width">
                 <label for="address">Address</label>
                 <input type="text" id="address" name="address" value="{{ user.profile.address }}">
             </div>
-        
+
+            <div class="form-group full-width" style="display: none;">
+                <label for="id_profile_picture">Upload Profile Picture</label>
+                <input type="file" id="id_profile_picture" name="profile_picture" accept="image/*">
+            </div>
+
             <button type="submit" class="update-btn">Update Profile</button>
         </form>
     </main>
 </div>
+
+<script>
+    // Preview selected image before upload
+    document.getElementById('id_profile_picture').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            const preview = document.getElementById('current-profile-pic');
+            preview.src = URL.createObjectURL(file);
+        }
+    });
+</script>
+
 {% endblock %}

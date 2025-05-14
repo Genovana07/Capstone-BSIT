@@ -22,7 +22,11 @@
             {% if user.is_authenticated %}
             <li class="profile-item">
                 <a href="{% url 'profile' %}" class="profile-link">
-                    <img src="{% static 'images/profile-icon.png' %}" alt="Profile Icon">
+                    {% if user.profile.profile_picture %}
+                        <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" style="width: 30px; height: 30px; border-radius: 50%;">
+                    {% else %}
+                        <img src="{% static 'images/profile-icon.png' %}" alt="Default Icon" style="width: 30px; height: 30px; border-radius: 50%;">
+                    {% endif %}
                     <span class="profile-name">{{ user.username }}</span>
                 </a>
             </li>

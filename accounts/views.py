@@ -10,6 +10,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.db.models import Count
 from datetime import datetime, timedelta
+from django.core.files.storage import FileSystemStorage
 
 def register_view(request):
     if request.method == "POST":
@@ -322,23 +323,27 @@ def aboutus(request):
 def contactus(request):
     return render(request, "accounts/contactus.html")
 
-# Profile Page
 @login_required
 def profile(request):
     if request.method == "POST":
-        # Update User basic info
         user = request.user
+        
+        # Update basic user info
         user.first_name = request.POST.get('first_name')
         user.last_name = request.POST.get('last_name')
         user.email = request.POST.get('email')
         user.save()
 
-        # Update Profile extended info
+        # Update profile picture if one is uploaded
         profile = user.profile
         profile.contact_number = request.POST.get('phone')
         profile.province = request.POST.get('province')
         profile.city = request.POST.get('city')
         profile.address = request.POST.get('address')
+
+        if 'profile_picture' in request.FILES:  # Check if the profile picture is part of the request
+            profile.profile_picture = request.FILES['profile_picture']
+
         profile.save()
 
         messages.success(request, "Profile updated successfully.")
@@ -449,7 +454,6 @@ def admin_only(view_func):
     return wrapper
 
 # Admin Dashboard
-
 @login_required
 @admin_only
 def dashboard(request):
@@ -485,7 +489,7 @@ def booking(request):
 def event(request):
     return render(request, 'client/event.html')
 
-@login_required  # ✅ Only this is needed
+@login_required
 def booking_events_api(request):
     bookings = Booking.objects.exclude(status__in=['Rejected', 'Cancelled'])
 
@@ -494,7 +498,8 @@ def booking_events_api(request):
         events.append({
             "date": booking.event_date.strftime("%Y-%m-%d"),
             "type": booking.event_type,
-            "time": booking.event_time.strftime("%H:%M")
+            "time": booking.event_time.strftime("%H:%M"),
+            "end_time": booking.end_time.strftime("%H:%M") if booking.end_time else None
         })
 
     grouped = {}

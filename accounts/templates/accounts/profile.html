@@ -173,16 +173,16 @@
 
     <main class="main">
         <div class="profile-header">
-    {% if user.profile.profile_picture %}
-        <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" class="profile-img" id="current-profile-pic">
-    {% else %}
-        <img src="{% static 'images/profile-user.png' %}" alt="Default Profile Icon" class="profile-img" id="current-profile-pic">
-    {% endif %}
-    <div class="profile-info">
-        <div class="username">Hello, {{ user.username }}</div>
-        <span class="edit-picture-btn" onclick="document.getElementById('id_profile_picture').click()">Edit Profile Picture</span>
-    </div>
-</div>
+            {% if user.profile.profile_picture %}
+                <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" class="profile-img" id="current-profile-pic">
+            {% else %}
+                <img src="{% static 'images/profile-user.png' %}" alt="Default Profile Icon" class="profile-img" id="current-profile-pic">
+            {% endif %}
+            <div class="profile-info">
+                <div class="username">Hello, {{ user.username }}</div>
+                <span class="edit-picture-btn" onclick="document.getElementById('id_profile_picture').click()">Edit Profile Picture</span>
+            </div>
+        </div>
 
         {% if messages %}
             {% for message in messages %}
@@ -259,20 +259,54 @@
                 <input type="file" id="id_profile_picture" name="profile_picture" accept="image/*">
             </div>
 
-            <button type="submit" class="update-btn">Update Profile</button>
+            <button type="button" class="update-btn">Edit Profile</button>
         </form>
     </main>
 </div>
 
 <script>
-    // Preview selected image before upload
-    document.getElementById('id_profile_picture').addEventListener('change', function (e) {
-        const file = e.target.files[0];
-        if (file) {
-            const preview = document.getElementById('current-profile-pic');
-            preview.src = URL.createObjectURL(file);
-        }
+    document.addEventListener('DOMContentLoaded', function () {
+        const updateBtn = document.querySelector('.update-btn');
+        const form = document.querySelector('.form-grid');
+
+        const fields = form.querySelectorAll('input:not(#username), select');
+        const hiddenFileInput = document.getElementById('id_profile_picture');
+
+        // Disable all fields on load
+        fields.forEach(field => field.disabled = true);
+
+        let isEditing = false;
+
+        updateBtn.addEventListener('click', function (e) {
+            if (!isEditing) {
+                // Enable editing
+                e.preventDefault();
+                fields.forEach(field => field.disabled = false);
+                updateBtn.textContent = 'Update Profile';
+                updateBtn.type = 'submit';
+                isEditing = true;
+            } else {
+                // Submit form on update
+                updateBtn.textContent = 'Edit Profile';
+                isEditing = false;
+                // You can keep the submit type or submit manually
+                // form.submit(); // optional if you use updateBtn.type = 'submit'
+            }
+        });
+
+        // Preview image on file select
+        hiddenFileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const preview = document.getElementById('current-profile-pic');
+                preview.src = URL.createObjectURL(file);
+            }
+        });
+
+        // Open file input when "Edit Profile Picture" is clicked
+        document.querySelector('.edit-picture-btn').addEventListener('click', function () {
+            hiddenFileInput.click();
+        });
     });
 </script>
-
 {% endblock %}

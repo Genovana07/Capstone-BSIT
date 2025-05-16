@@ -26,6 +26,12 @@ class ServicePackage(models.Model):
 
 
 class Booking(models.Model):
+    STATUS_CHOICES = [
+        ('Processing', 'Processing'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     package = models.ForeignKey('ServicePackage', on_delete=models.CASCADE)
     full_name = models.CharField(max_length=100)
@@ -37,23 +43,19 @@ class Booking(models.Model):
     event_type = models.CharField(max_length=100)
     location = models.CharField(max_length=255)
     audience_size = models.IntegerField()
-    status = models.CharField(max_length=50, default='Processing')
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing')
     price = models.CharField(max_length=20)
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"Booking {self.id} by {self.full_name}"
-    
-    # Function to calculate end time based on event time (assuming 4 hours event duration)
+
     def calculate_end_time(self):
         start_time = timezone.make_aware(datetime.combine(self.event_date, self.event_time))
         end_time = start_time + timedelta(hours=4)
         return end_time.time()
 
-
-class BookingStatus(models.Model):
-    booking = models.OneToOneField(Booking, on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, default='Processing')
-
-    def __str__(self):
-        return f"Booking Status for {self.booking.full_name}: {self.status}"
+    @staticmethod
+    def is_day_full(date, max_bookings=2):
+        approved_count = Booking.objects.filter(event_date=date, status='Approved').count()
+        return approved_count >= max_bookings

@@ -393,8 +393,6 @@ def history(request):
         })
 
     return render(request, 'accounts/history.html', {'history_list': history_list})
-
-
 @login_required
 def create_booking(request):
     if request.method == "POST":
@@ -414,14 +412,20 @@ def create_booking(request):
             messages.error(request, f"The selected package '{selected_package}' does not exist.")
             return redirect('services')
 
-        # Convert event_time to datetime object
+        # Check bookings count only for ACCEPTED bookings
+        accepted_bookings_count = Booking.objects.filter(
+            event_date=event_date,
+            status='Accepted'  # Only count accepted bookings
+        ).count()
+
+        if accepted_bookings_count >= 2:
+            messages.error(request, "This date already has two accepted bookings. Please select another date.")
+            return redirect('services')
+
         event_time_obj = datetime.strptime(event_time, "%H:%M")
-
-        # Calculate end time (Assuming 4 hours duration)
         end_time_obj = event_time_obj + timedelta(hours=4)
-        end_time = end_time_obj.time()  # Get just the time part
+        end_time = end_time_obj.time()
 
-        # Create the booking
         Booking.objects.create(
             user=request.user,
             package=package,
@@ -430,18 +434,18 @@ def create_booking(request):
             contact_number=contact_number,
             event_date=event_date,
             event_time=event_time,
-            end_time=end_time,  # Save the calculated end_time
+            end_time=end_time,
             event_type=event_type,
             location=location,
             audience_size=audience_size,
-            price=package.price
+            price=package.price,
+            status='Processing'  # Default status, not accepted yet
         )
 
         messages.success(request, f"Your booking for {selected_package} has been successfully created!")
-        return redirect("mybookings")  # Redirect to user's booking page
+        return redirect("mybookings")
 
     return redirect("services")
-
 def admin_only(view_func):
     def wrapper(request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -491,7 +495,9 @@ def event(request):
 
 @login_required
 def booking_events_api(request):
-    bookings = Booking.objects.exclude(status__in=['Rejected', 'Cancelled'])
+    # Only include accepted bookings to block dates/times
+    accepted_statuses = ['Accepted']  # o ano mang status na ibig sabihin na confirmed na talaga
+    bookings = Booking.objects.filter(status__in=accepted_statuses)
 
     events = []
     for booking in bookings:
@@ -520,7 +526,6 @@ def booking_events_api(request):
         "calendar": events,
         "form_logic": grouped
     }, safe=False)
-
 @login_required
 @admin_only
 def equipment(request):

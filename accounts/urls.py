@@ -24,7 +24,6 @@ urlpatterns = [
     # Admin/Dashboard pages (login required)
     path('dashboard/', views.dashboard, name='dashboard'),
     path('booking/', views.booking, name='booking'),
-    path('booking/<int:booking_id>/', views.view_booking, name='view_booking'),
     path('booking/<int:booking_id>/accept/', views.accept_booking, name='accept_booking'),
     path('booking/<int:booking_id>/reject/', views.reject_booking, name='reject_booking'),
 

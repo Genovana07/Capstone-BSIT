@@ -6,8 +6,8 @@
 <header class="header">
     <h1>Booking Details</h1>
     <div class="filters">
-      <select><option>Today</option></select>
-      <select><option>2024</option></select>
+        <select><option>Today</option></select>
+        <select><option>2024</option></select>
     </div>
 </header>
 
@@ -44,7 +44,8 @@
                 </td>
                 <td>{{ booking.price }}</td>
                 <td class="actions">
-                    <a href="{% url 'view_booking' booking.id %}" class="view">
+                    <!-- Trigger the Modal -->
+                    <a href="javascript:void(0);" class="view" onclick="openModal({{ booking.id }})">
                         <i class="fa fa-eye"></i> View
                     </a>
                     {% if booking.status == 'Processing' %}
@@ -57,6 +58,33 @@
                     {% endif %}
                 </td>
             </tr>
+
+            <!-- Modal for View -->
+            <div id="viewModal{{ booking.id }}" class="modal">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Booking Details for {{ booking.package.title }}</h5>
+                            <button type="button" class="btn-close" onclick="closeModal({{ booking.id }})"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p><strong>Full Name:</strong> {{ booking.full_name }}</p>
+                            <p><strong>Email:</strong> {{ booking.email }}</p>
+                            <p><strong>Contact Number:</strong> {{ booking.contact_number }}</p>
+                            <p><strong>Event Date:</strong> {{ booking.event_date }}</p>
+                            <p><strong>Event Time:</strong> {{ booking.event_time }}</p>
+                            <p><strong>End Time:</strong> {{ booking.end_time|time:"g:i A" }}</p>
+                            <p><strong>Event Type:</strong> {{ booking.event_type }}</p>
+                            <p><strong>Location:</strong> {{ booking.location }}</p>
+                            <p><strong>Audience Size:</strong> {{ booking.audience_size }}</p>
+                            <p><strong>Status:</strong> {{ booking.status }}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary close-btn" onclick="closeModal({{ booking.id }})">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         {% empty %}
             <tr>
                 <td colspan="9">You have no bookings yet.</td>
@@ -67,56 +95,58 @@
 
 <style>
     .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 3%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 3%;
     }
 
     .filters select {
-      padding: 6px 10px;
-      margin-left: 10px;
+        padding: 6px 10px;
+        margin-left: 10px;
     }
 
     .booking-table {
-      width: 100%;
-      margin-top: 30px;
-      border-collapse: collapse;
-      background-color: white;
-      border-radius: 8px;
-      overflow: hidden;
+        width: 100%;
+        margin-top: 30px;
+        border-collapse: collapse;
+        background-color: white;
+        border-radius: 8px;
+        overflow: hidden;
     }
 
     .booking-table th,
     .booking-table td {
-      padding: 15px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
     }
 
     .badge {
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 0.9em;
-      color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        color: white;
     }
+
     .cancelled {
-     background-color: #6c757d; /* Gray */
-}
+        background-color: #6c757d; /* Gray */
+    }
+
     .processing {
-      background-color: #28a745;  /* Green for Processing */
+        background-color: #28a745;  /* Green for Processing */
     }
 
     .accepted {
-      background-color: #17a2b8;  /* Blue for Accepted */
+        background-color: #17a2b8;  /* Blue for Accepted */
     }
 
     .rejected {
-      background-color: #dc3545;  /* Red for Rejected */
+        background-color: #dc3545;  /* Red for Rejected */
     }
 
     .not-processed {
-      background-color: #6c757d;  /* Grey for Not Processed */
+        background-color: #6c757d;  /* Grey for Not Processed */
     }
 
     .actions {
@@ -153,6 +183,98 @@
     .actions i {
         font-size: 1.2em;
     }
+
+    /* Modal Styling */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .modal-dialog {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+        font-size: 1.5em;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .btn-close {
+        background-color: transparent;
+        border: none;
+        font-size: 1.5em;
+        cursor: pointer;
+        color: #999;
+    }
+
+    /* Custom Button Styling */
+    .close-btn {
+        padding: 10px 20px;
+        background-color: #6c757d;
+        color: white;
+        border-radius: 5px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .close-btn:hover {
+        background-color: #5a6268;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
 </style>
+
+<script>
+    // Open Modal
+    function openModal(id) {
+        var modal = document.getElementById('viewModal' + id);
+        modal.style.display = 'flex';
+    }
+
+    // Close Modal
+    function closeModal(id) {
+        var modal = document.getElementById('viewModal' + id);
+        modal.style.display = 'none';
+    }
+
+    // Close Modal when clicking outside of the modal content
+    window.onclick = function(event) {
+        var modals = document.querySelectorAll('.modal');
+        modals.forEach(function(modal) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+</script>
 
 {% endblock %}

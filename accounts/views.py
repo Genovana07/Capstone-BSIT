@@ -11,6 +11,7 @@ from django.http import JsonResponse
 from django.db.models import Count
 from datetime import datetime, timedelta
 from django.core.files.storage import FileSystemStorage
+from .models import Equipment
 
 def register_view(request):
     if request.method == "POST":
@@ -100,12 +101,11 @@ def home(request):
 # Services View
 def services_view(request):
     packages = [
-        {"title": "Basic Birthday Sound System", "description": "For small birthday parties up to 50 guests.", "price": "₱3,000", "equipment": [
+    {"title": "Basic Birthday Sound System", "description": "For small birthday parties up to 50 guests.", "price": "₱3,000", "equipment": [
         "2 Speakers (50-100 watts)",
         "1 Wired Microphone",
         "Mixer Console (2 channels)",
-        "Cables & Connectors",
-        "1-hour Event Duration"
+        "Cables & Connectors (1 set)"
     ]},
     {"title": "Standard Birthday Sound System", "description": "For medium birthday parties up to 100 guests.", "price": "₱5,000", "equipment": [
         "4 Speakers (100-300 watts)",
@@ -113,7 +113,7 @@ def services_view(request):
         "Mixer Console (4 channels)",
         "Subwoofer",
         "Sound System Setup & Testing",
-        "2-hour Event Duration"
+        "Cables & Connectors (2 sets)"
     ]},
     {"title": "Premium Birthday Sound System", "description": "For large birthday parties up to 150 guests.", "price": "₱8,000", "equipment": [
         "6 Speakers (300-500 watts)",
@@ -122,7 +122,7 @@ def services_view(request):
         "2 Subwoofers",
         "Stage Monitors",
         "Sound System Setup & Testing",
-        "3-hour Event Duration"
+        "Cables & Connectors (3 sets)"
     ]},
     {"title": "Basic Wedding Sound System", "description": "For small weddings up to 100 guests.", "price": "₱7,000", "equipment": [
         "4 Speakers (100-200 watts)",
@@ -130,7 +130,7 @@ def services_view(request):
         "Mixer Console (4 channels)",
         "Subwoofer",
         "Sound System Setup & Testing",
-        "1-hour Event Duration"
+        "Cables & Connectors (1 set)"
     ]},
     {"title": "Standard Wedding Sound System", "description": "For medium weddings up to 200 guests.", "price": "₱10,000", "equipment": [
         "6 Speakers (200-400 watts)",
@@ -138,7 +138,7 @@ def services_view(request):
         "Mixer Console (6 channels)",
         "2 Subwoofers",
         "Sound System Setup & Testing",
-        "2-hour Event Duration"
+        "Cables & Connectors (2 sets)"
     ]},
     {"title": "Premium Wedding Sound System", "description": "For large weddings up to 500 guests.", "price": "₱15,000", "equipment": [
         "8 Speakers (400-600 watts)",
@@ -147,15 +147,14 @@ def services_view(request):
         "4 Subwoofers",
         "Stage Monitors",
         "Sound System Setup & Testing",
-        "3-hour Event Duration"
+        "Cables & Connectors (3 sets)"
     ]},
     {"title": "Basic Corporate Event Sound System", "description": "For corporate events up to 50 guests.", "price": "₱4,000", "equipment": [
         "2 Speakers (50-100 watts)",
         "1 Wired Microphone",
         "Mixer Console (2 channels)",
-        "Cables & Connectors",
-        "Sound System Setup & Testing",
-        "1-hour Event Duration"
+        "Cables & Connectors (1 set)",
+        "Sound System Setup & Testing"
     ]},
     {"title": "Standard Corporate Event Sound System", "description": "For corporate events up to 150 guests.", "price": "₱6,500", "equipment": [
         "4 Speakers (100-300 watts)",
@@ -163,7 +162,7 @@ def services_view(request):
         "Mixer Console (4 channels)",
         "Subwoofer",
         "Sound System Setup & Testing",
-        "2-hour Event Duration"
+        "Cables & Connectors (2 sets)"
     ]},
     {"title": "Premium Corporate Event Sound System", "description": "For corporate events up to 300 guests.", "price": "₱10,500", "equipment": [
         "6 Speakers (300-500 watts)",
@@ -172,7 +171,7 @@ def services_view(request):
         "2 Subwoofers",
         "Stage Monitors",
         "Sound System Setup & Testing",
-        "3-hour Event Duration"
+        "Cables & Connectors (3 sets)"
     ]},
     {"title": "Basic Concert Sound System", "description": "For small concerts up to 100 guests.", "price": "₱7,500", "equipment": [
         "4 Speakers (200-400 watts)",
@@ -181,7 +180,7 @@ def services_view(request):
         "Subwoofer",
         "Stage Monitors",
         "Sound System Setup & Testing",
-        "2-hour Event Duration"
+        "Cables & Connectors (2 sets)"
     ]},
     {"title": "Standard Concert Sound System", "description": "For medium concerts up to 300 guests.", "price": "₱12,000", "equipment": [
         "6 Speakers (300-600 watts)",
@@ -190,7 +189,7 @@ def services_view(request):
         "2 Subwoofers",
         "Stage Monitors",
         "Sound System Setup & Testing",
-        "3-hour Event Duration"
+        "Cables & Connectors (3 sets)"
     ]},
     {"title": "Premium Concert Sound System", "description": "For large concerts up to 1,000 guests.", "price": "₱20,000", "equipment": [
         "8 Speakers (600-800 watts)",
@@ -199,14 +198,14 @@ def services_view(request):
         "4 Subwoofers",
         "Stage Monitors",
         "Sound System Setup & Testing",
-        "5-hour Event Duration"
+        "Cables & Connectors (4 sets)"
     ]},
     {"title": "Basic Seminar Sound System", "description": "For seminars up to 50 guests.", "price": "₱3,500", "equipment": [
         "2 Speakers (50-100 watts)",
         "1 Wired Microphone",
         "Mixer Console (2 channels)",
-        "Cables & Connectors",
-        "1-hour Event Duration"
+        "Cables & Connectors (1 set)",
+        "Sound System Setup & Testing"
     ]},
     {"title": "Standard Seminar Sound System", "description": "For seminars up to 150 guests.", "price": "₱5,500", "equipment": [
         "4 Speakers (100-300 watts)",
@@ -214,7 +213,7 @@ def services_view(request):
         "Mixer Console (4 channels)",
         "Subwoofer",
         "Sound System Setup & Testing",
-        "2-hour Event Duration"
+        "Cables & Connectors (2 sets)"
     ]},
     {"title": "Premium Seminar Sound System", "description": "For seminars up to 300 guests.", "price": "₱9,000", "equipment": [
         "6 Speakers (300-500 watts)",
@@ -223,15 +222,14 @@ def services_view(request):
         "2 Subwoofers",
         "Stage Monitors",
         "Sound System Setup & Testing",
-        "3-hour Event Duration"
+        "Cables & Connectors (3 sets)"
     ]},
     {"title": "Basic Conference Sound System", "description": "For conferences up to 50 guests.", "price": "₱4,000", "equipment": [
         "2 Speakers (50-100 watts)",
         "1 Wired Microphone",
         "Mixer Console (2 channels)",
-        "Cables & Connectors",
-        "Sound System Setup & Testing",
-        "1-hour Event Duration"
+        "Cables & Connectors (1 set)",
+        "Sound System Setup & Testing"
     ]},
     {"title": "Standard Conference Sound System", "description": "For conferences up to 200 guests.", "price": "₱7,000", "equipment": [
         "4 Speakers (100-300 watts)",
@@ -239,7 +237,7 @@ def services_view(request):
         "Mixer Console (4 channels)",
         "Subwoofer",
         "Sound System Setup & Testing",
-        "2-hour Event Duration"
+        "Cables & Connectors (2 sets)"
     ]},
     {"title": "Premium Conference Sound System", "description": "For conferences up to 500 guests.", "price": "₱12,500", "equipment": [
         "6 Speakers (300-500 watts)",
@@ -248,16 +246,7 @@ def services_view(request):
         "2 Subwoofers",
         "Stage Monitors",
         "Sound System Setup & Testing",
-        "3-hour Event Duration"
-    ]},
-    {"title": "Custom Sound System Package", "description": "For customized event requirements, price varies.", "price": "Varies", "equipment": [
-        "Tailored Speaker Setup",
-        "Custom Microphones",
-        "Custom Mixer Console",
-        "Stage Monitors",
-        "Subwoofers",
-        "Full Setup & Testing",
-        "Duration as per requirement"
+        "Cables & Connectors (3 sets)"
     ]},
     {"title": "Basic Graduation Sound System", "description": "For small graduation events up to 100 guests.", "price": "₱6,000", "equipment": [
         "4 Speakers (100-300 watts)",
@@ -265,7 +254,7 @@ def services_view(request):
         "Mixer Console (4 channels)",
         "Subwoofer",
         "Sound System Setup & Testing",
-        "2-hour Event Duration"
+        "Cables & Connectors (2 sets)"
     ]},
     {"title": "Standard Graduation Sound System", "description": "For medium graduation events up to 200 guests.", "price": "₱9,000", "equipment": [
         "6 Speakers (200-400 watts)",
@@ -273,7 +262,7 @@ def services_view(request):
         "Mixer Console (6 channels)",
         "2 Subwoofers",
         "Sound System Setup & Testing",
-        "2-hour Event Duration"
+        "Cables & Connectors (2 sets)"
     ]},
     {"title": "Premium Graduation Sound System", "description": "For large graduation events up to 500 guests.", "price": "₱14,000", "equipment": [
         "8 Speakers (400-600 watts)",
@@ -282,15 +271,14 @@ def services_view(request):
         "4 Subwoofers",
         "Stage Monitors",
         "Sound System Setup & Testing",
-        "3-hour Event Duration"
+        "Cables & Connectors (3 sets)"
     ]},
     {"title": "Basic Awarding Ceremony Sound System", "description": "For small awarding ceremonies up to 50 guests.", "price": "₱4,500", "equipment": [
         "2 Speakers (50-100 watts)",
         "1 Wired Microphone",
         "Mixer Console (2 channels)",
-        "Cables & Connectors",
-        "Sound System Setup & Testing",
-        "1-hour Event Duration"
+        "Cables & Connectors (1 set)",
+        "Sound System Setup & Testing"
     ]},
     {"title": "Standard Awarding Ceremony Sound System", "description": "For medium awarding ceremonies up to 150 guests.", "price": "₱7,000", "equipment": [
         "4 Speakers (100-300 watts)",
@@ -298,10 +286,125 @@ def services_view(request):
         "Mixer Console (4 channels)",
         "Subwoofer",
         "Sound System Setup & Testing",
-        "2-hour Event Duration"
+        "Cables & Connectors (2 sets)"
     ]},
-    # Add remaining packages here...
-    ]
+    {"title": "Premium Awarding Ceremony Sound System", "description": "For large awarding ceremonies up to 500 guests.", "price": "₱12,000", "equipment": [
+        "6 Speakers (300-500 watts)",
+        "3 Wireless Microphones",
+        "Mixer Console with Effects (6 channels)",
+        "2 Subwoofers",
+        "Stage Monitors",
+        "Sound System Setup & Testing",
+        "Cables & Connectors (3 sets)"
+    ]},
+    {"title": "Basic Fundraising Event Sound System", "description": "For small fundraising events up to 100 guests.", "price": "₱6,000", "equipment": [
+        "4 Speakers (100-200 watts)",
+        "2 Wireless Microphones",
+        "Mixer Console (4 channels)",
+        "Cables & Connectors (1 set)",
+        "Sound System Setup & Testing"
+    ]},
+    {"title": "Standard Fundraising Event Sound System", "description": "For medium fundraising events up to 200 guests.", "price": "₱9,000", "equipment": [
+        "6 Speakers (200-400 watts)",
+        "3 Wireless Microphones",
+        "Mixer Console (6 channels)",
+        "Subwoofer",
+        "Sound System Setup & Testing",
+        "Cables & Connectors (2 sets)"
+    ]},
+    {"title": "Premium Fundraising Event Sound System", "description": "For large fundraising events up to 500 guests.", "price": "₱14,000", "equipment": [
+        "8 Speakers (400-600 watts)",
+        "4 Wireless Microphones",
+        "Mixer Console with Effects (8 channels)",
+        "2 Subwoofers",
+        "Stage Monitors",
+        "Sound System Setup & Testing",
+        "Cables & Connectors (3 sets)"
+    ]},
+    {"title": "Basic Fashion Show Sound System", "description": "For small fashion shows up to 100 guests.", "price": "₱5,000", "equipment": [
+        "4 Speakers (100-200 watts)",
+        "2 Wireless Microphones",
+        "Mixer Console (4 channels)",
+        "Subwoofer",
+        "Sound System Setup & Testing",
+        "Cables & Connectors (1 set)"
+    ]},
+    {"title": "Standard Fashion Show Sound System", "description": "For medium fashion shows up to 200 guests.", "price": "₱8,000", "equipment": [
+        "6 Speakers (200-400 watts)",
+        "3 Wireless Microphones",
+        "Mixer Console (6 channels)",
+        "Subwoofer",
+        "Stage Monitors",
+        "Sound System Setup & Testing",
+        "Cables & Connectors (2 sets)"
+    ]},
+    {"title": "Premium Fashion Show Sound System", "description": "For large fashion shows up to 500 guests.", "price": "₱12,000", "equipment": [
+        "8 Speakers (400-600 watts)",
+        "4 Wireless Microphones",
+        "Mixer Console with Effects (8 channels)",
+        "2 Subwoofers",
+        "Stage Monitors",
+        "Sound System Setup & Testing",
+        "Cables & Connectors (3 sets)"
+    ]},
+    {"title": "Basic Church Service Sound System", "description": "For small church services up to 100 guests.", "price": "₱4,500", "equipment": [
+        "4 Speakers (100-200 watts)",
+        "2 Wireless Microphones",
+        "Mixer Console (4 channels)",
+        "Cables & Connectors (1 set)",
+        "Sound System Setup & Testing"
+    ]},
+    {"title": "Standard Church Service Sound System", "description": "For medium church services up to 200 guests.", "price": "₱7,500", "equipment": [
+        "6 Speakers (200-400 watts)",
+        "3 Wireless Microphones",
+        "Mixer Console (6 channels)",
+        "Subwoofer",
+        "Sound System Setup & Testing",
+        "Cables & Connectors (2 sets)"
+    ]},
+    {"title": "Premium Church Service Sound System", "description": "For large church services up to 500 guests.", "price": "₱11,000", "equipment": [
+        "8 Speakers (400-600 watts)",
+        "4 Wireless Microphones",
+        "Mixer Console with Effects (8 channels)",
+        "2 Subwoofers",
+        "Stage Monitors",
+        "Sound System Setup & Testing",
+        "Cables & Connectors (3 sets)"
+    ]},
+    {"title": "Basic School Play Sound System", "description": "For small school plays up to 100 guests.", "price": "₱5,000", "equipment": [
+        "4 Speakers (100-200 watts)",
+        "2 Wireless Microphones",
+        "Mixer Console (4 channels)",
+        "Cables & Connectors (1 set)",
+        "Sound System Setup & Testing"
+    ]},
+    {"title": "Standard School Play Sound System", "description": "For medium school plays up to 200 guests.", "price": "₱8,500", "equipment": [
+        "6 Speakers (200-400 watts)",
+        "3 Wireless Microphones",
+        "Mixer Console (6 channels)",
+        "Subwoofer",
+        "Sound System Setup & Testing",
+        "Cables & Connectors (2 sets)"
+    ]},
+    {"title": "Premium School Play Sound System", "description": "For large school plays up to 500 guests.", "price": "₱13,000", "equipment": [
+        "8 Speakers (400-600 watts)",
+        "4 Wireless Microphones",
+        "Mixer Console with Effects (8 channels)",
+        "2 Subwoofers",
+        "Stage Monitors",
+        "Sound System Setup & Testing",
+        "Cables & Connectors (3 sets)"
+    ]},
+    {"title": "Basic Charity Event Sound System", "description": "For small charity events up to 100 guests.", "price": "₱5,500", "equipment": [
+        "4 Speakers (100-200 watts)",
+        "2 Wireless Microphones",
+        "Mixer Console (4 channels)",
+        "Cables & Connectors (1 set)",
+        "Sound System Setup & Testing",
+        "Cables & Connectors (2 sets)"
+    ]}
+]
+
     
     range_values = list(range(1, len(packages) + 1))
 
@@ -496,7 +599,7 @@ def event(request):
 @login_required
 def booking_events_api(request):
     # Only include accepted bookings to block dates/times
-    accepted_statuses = ['Accepted']  # o ano mang status na ibig sabihin na confirmed na talaga
+    accepted_statuses = ['Accepted']
     bookings = Booking.objects.filter(status__in=accepted_statuses)
 
     events = []
@@ -526,10 +629,12 @@ def booking_events_api(request):
         "calendar": events,
         "form_logic": grouped
     }, safe=False)
+
 @login_required
 @admin_only
 def equipment(request):
-    return render(request, 'client/equipment.html')
+    equipment_list = Equipment.objects.all()
+    return render(request, 'client/equipment.html', {'equipment_list': equipment_list})
 
 @login_required
 @admin_only
@@ -553,23 +658,49 @@ def employee(request):
 
 @login_required
 def view_booking(request, booking_id):
-    # Use get_object_or_404 to avoid the 404 error if booking doesn't exist
     booking = get_object_or_404(Booking, id=booking_id)
-    
     return render(request, 'client/view_booking.html', {'booking': booking})
 
-# Accept Booking: Marks a booking as accepted
 @login_required
 def accept_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
 
-    # Update the status to 'Accepted'
+    # Update booking status to 'Accepted'
     booking.status = 'Accepted'
     booking.save()
 
-    messages.success(request, f"Booking {booking.id} has been successfully accepted.")
-    return redirect('booking')  # Redirect to the booking list page or booking details page
+    # Get the equipment associated with the booked service package
+    package = booking.package
+    inventory_updated = True  # Flag to check if inventory updates are successful
 
+    # Loop through all the equipment in the package
+    for package_equipment in package.packageequipment_set.all():
+        equipment = package_equipment.equipment
+        quantity_required = package_equipment.quantity_required
+
+        # Check if there is enough stock available
+        if equipment.quantity_available < quantity_required:
+            messages.error(request, f"Not enough stock for {equipment.name}. Booking cannot be processed.")
+            inventory_updated = False
+            break  # Stop checking further if one equipment is unavailable
+
+        # Deduct the available stock and update the rented quantity
+        equipment.update_quantity(quantity_required)  # This will update the stock
+
+    if inventory_updated:
+        # Add the event to the calendar (this part updates the event in the calendar)
+        events = {
+            "date": booking.event_date.strftime("%Y-%m-%d"),
+            "type": booking.event_type,
+            "time": booking.event_time.strftime("%H:%M"),
+            "end_time": booking.end_time.strftime("%H:%M") if booking.end_time else None
+        }
+        messages.success(request, f"Booking {booking.id} has been successfully accepted and inventory updated.")
+    else:
+        booking.status = 'Processing'
+        booking.save()
+
+    return redirect('booking')  # Redirect to the booking list page or booking details page
 
 @login_required
 def reject_booking(request, booking_id):

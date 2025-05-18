@@ -24,44 +24,26 @@
     </div>
 
     <!-- Inventory Table -->
-    <table class="inventory-table">
-      <thead>
-        <tr>
-          <th>Equipment</th>
-          <th>Event</th>
-          <th>Quantity Available</th>
-          <th>Quantity Rented</th>
-          <th>Condition</th>
-          <th>Rental Price</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Microphone</td>
-          <td>Wedding</td>
-          <td>10</td>
-          <td>2</td>
-          <td>Good</td>
-          <td>₱500</td>
-        </tr>
-        <tr>
-          <td>Projector</td>
-          <td>Conference</td>
-          <td>5</td>
-          <td>1</td>
-          <td>Excellent</td>
-          <td>₱1000</td>
-        </tr>
-        <tr>
-          <td>Speakers</td>
-          <td>Birthday</td>
-          <td>8</td>
-          <td>4</td>
-          <td>Needs Repair</td>
-          <td>₱800</td>
-        </tr>
-      </tbody>
-    </table>
+   <table class="inventory-table">
+  <thead>
+    <tr>
+      <th>Equipment</th>
+      <th>Quantity Available</th>
+      <th>Quantity Rented</th>
+      <th>Condition</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for equipment in equipment_list %}
+    <tr>
+      <td>{{ equipment.name }}</td>
+      <td>{{ equipment.quantity_available }}</td>
+      <td>{{ equipment.quantity_rented }}</td>
+      <td>{{ equipment.condition }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
   </div>
 
   <style>

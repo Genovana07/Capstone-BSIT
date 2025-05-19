@@ -44,7 +44,6 @@
                 </td>
                 <td>{{ booking.price }}</td>
                 <td class="actions">
-                    <!-- Trigger the Modal -->
                     <a href="javascript:void(0);" class="view" onclick="openModal({{ booking.id }})">
                         <i class="fa fa-eye"></i> View
                     </a>
@@ -54,6 +53,11 @@
                         </a>
                         <a href="{% url 'reject_booking' booking.id %}" class="reject">
                             <i class="fa fa-times"></i> Reject
+                        </a>
+                    {% endif %}
+                    {% if booking.status == 'Accepted' %}
+                        <a href="{% url 'complete_booking' booking.id %}" class="complete">
+                            <i class="fa fa-check"></i> Complete
                         </a>
                     {% endif %}
                 </td>
@@ -76,6 +80,7 @@
                             <p><strong>End Time:</strong> {{ booking.end_time|time:"g:i A" }}</p>
                             <p><strong>Event Type:</strong> {{ booking.event_type }}</p>
                             <p><strong>Location:</strong> {{ booking.location }}</p>
+                            <p><strong>Full Address:</strong> {{ booking.fulladdress}}</p>
                             <p><strong>Audience Size:</strong> {{ booking.audience_size }}</p>
                             <p><strong>Status:</strong> {{ booking.status }}</p>
                         </div>

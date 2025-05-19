@@ -16,13 +16,26 @@ class Profile(models.Model):
 
 class Equipment(models.Model):
     name = models.CharField(max_length=200)
-    quantity_available = models.IntegerField(default=0)  # Total quantity available
-    quantity_rented = models.IntegerField(default=0)  # Total quantity rented out
-    condition = models.CharField(max_length=100, choices=[  # Condition field
+    quantity_available = models.IntegerField(default=0)
+    quantity_rented = models.IntegerField(default=0)
+    condition = models.CharField(max_length=100, choices=[
         ('Good', 'Good'),
         ('Needs Repair', 'Needs Repair'),
         ('Excellent', 'Excellent'),
     ], default='Good')
+    
+    # Adding status field to track if the equipment is available, rented, or under maintenance
+    status = models.CharField(max_length=50, choices=[
+        ('Available', 'Available'),
+        ('Rented', 'Rented'),
+        ('Under Maintenance', 'Under Maintenance'),
+    ], default='Available')  # This ensures this field is present in your model
+    
+    # Field to store the last checked out date (nullable if it's not set)
+    last_checked_out_date = models.DateField(null=True, blank=True)
+    
+    # Location where the equipment is currently stored or located (nullable if not set)
+    current_location = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -44,6 +57,14 @@ class Equipment(models.Model):
         self.save()
 
         print(f"Updated {self.name}: {self.quantity_available} available, {self.quantity_rented} rented.")
+
+    def return_stock(self, quantity_rented):
+        """Restore the rented equipment back to inventory."""
+        self.quantity_available += quantity_rented
+        self.quantity_rented -= quantity_rented
+        self.save()
+
+        print(f"Returned {quantity_rented} of {self.name} to inventory. Available: {self.quantity_available}, Rented: {self.quantity_rented}")
 
 class ServicePackage(models.Model):
     title = models.CharField(max_length=100)
@@ -67,6 +88,7 @@ class Booking(models.Model):
         ('Processing', 'Processing'),
         ('Approved', 'Approved'),
         ('Rejected', 'Rejected'),
+        ('Completed', 'Completed'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -79,6 +101,7 @@ class Booking(models.Model):
     end_time = models.TimeField(null=True, blank=True)
     event_type = models.CharField(max_length=100)
     location = models.CharField(max_length=255)
+    fulladdress = models.CharField(max_length=255, blank=True, null=True)
     audience_size = models.IntegerField()
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing')
     price = models.CharField(max_length=20)
@@ -96,3 +119,48 @@ class Booking(models.Model):
     def is_day_full(date, max_bookings=2):
         approved_count = Booking.objects.filter(event_date=date, status='Approved').count()
         return approved_count >= max_bookings
+
+    def return_equipment(self):
+        """Restores rented equipment back to inventory."""
+        if self.status != 'Approved':
+            raise ValueError("Booking is not approved yet.")
+        
+        # Loop through each piece of equipment in the package
+        for package_equipment in self.package.packageequipment_set.all():
+            equipment = package_equipment.equipment
+            quantity_rented = package_equipment.quantity_required  # The quantity that was rented for this package
+
+            # Return the equipment to inventory
+            equipment.return_stock(quantity_rented)
+    
+    def mark_as_completed(self):
+        """Mark the booking as completed and return the equipment to inventory."""
+        self.status = 'Completed'
+        self.save()
+        
+        # Return the equipment to inventory
+        self.return_equipment()
+
+        print(f"Booking {self.id} is marked as completed and equipment has been returned to inventory.")
+    
+    def cancel_booking(self):
+        """Handles booking cancellation and restores equipment to inventory."""
+        if self.status == 'Approved':
+            # Restore rented equipment back to inventory
+            self.return_equipment()
+        
+        self.status = 'Rejected'  # Or you can use another status like 'Cancelled'
+        self.save()
+
+        print(f"Booking {self.id} has been canceled and equipment restored to inventory.")
+
+class InventoryLog(models.Model):
+    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
+    action = models.CharField(max_length=50, choices=[('rented', 'Rented'), ('returned', 'Returned')])
+    quantity = models.IntegerField()
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.action} {self.quantity} of {self.equipment.name} for Booking {self.booking.id}."
+

@@ -8,10 +8,10 @@
     <h1>Dashboard</h1>
     <p>Welcome back, Owner!</p>
     <div class="cards">
-      <div class="card black"><i class="fas fa-calendar-alt"></i> Booking <span>{{ booking_count }}</span></div>
-      <div class="card orange"><i class="fas fa-money-bill"></i> Revenue <span>₱{{ revenue|floatformat:2 }}</span></div>
-      <div class="card black"><i class="fas fa-coins"></i> Profit <span>₱{{ profit|floatformat:2 }}</span></div>
-      <div class="card black"><i class="fas fa-clock"></i> Pending Bookings <span>{{ pending_count }}</span></div>
+      <div class="card card-booking"><i class="fas fa-calendar-alt"></i> Booking <span>{{ booking_count }}</span></div>
+      <div class="card card-revenue"><i class="fas fa-money-bill"></i> Revenue <span>₱{{ revenue|floatformat:2 }}</span></div>
+      <div class="card card-profit"><i class="fas fa-coins"></i> Profit <span>₱{{ profit|floatformat:2 }}</span></div>
+      <div class="card card-pending"><i class="fas fa-clock"></i> Pending Bookings <span>{{ pending_count }}</span></div>
     </div>
   </section>
 
@@ -27,9 +27,9 @@
       <p>From 1-6 Dec, 2025</p>
       <div class="placeholder">[Donut Chart Here]</div>
       <ul class="legend">
-        <li><span class="dot orange"></span> Afternoon - 40%</li>
-        <li><span class="dot yellow"></span> Evening - 32%</li>
-        <li><span class="dot gray"></span> Morning - 28%</li>
+        <li><span class="dot dot-afternoon"></span> Afternoon - 40%</li>
+        <li><span class="dot dot-evening"></span> Evening - 32%</li>
+        <li><span class="dot dot-morning"></span> Morning - 28%</li>
       </ul>
     </div>
   </section>
@@ -51,14 +51,11 @@
       border-radius: 12px;
       color: #fff;
       font-size: 18px;
-    }
-
-    .card.black {
-      background: #000;
-    }
-
-    .card.orange {
-      background: orange;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
     }
 
     .card span {
@@ -67,6 +64,24 @@
       margin-top: 10px;
     }
 
+    /* Card color styles */
+    .card-booking {
+      background: #4CAF50; /* Green for Booking */
+    }
+
+    .card-revenue {
+      background: #3b82f6; /* Blue for Revenue */
+    }
+
+    .card-profit {
+      background: #f59e0b; /* Yellow for Profit */
+    }
+
+    .card-pending {
+      background: #ef4444; /* Red for Pending Bookings */
+    }
+
+    /* Chart and placeholder section */
     .charts {
       display: flex;
       gap: 20px;
@@ -76,7 +91,7 @@
     .bar-chart,
     .donut-chart {
       flex: 1;
-      background: #000;
+      background: #1f2937; /* Dark background for chart areas */
       color: #fff;
       padding: 20px;
       border-radius: 12px;
@@ -84,7 +99,7 @@
 
     .placeholder {
       height: 60%;
-      background: #222;
+      background: #374151; /* Darker placeholder background */
       margin-top: 10px;
       border-radius: 8px;
       display: flex;
@@ -93,6 +108,7 @@
       color: #aaa;
     }
 
+    /* Legend styles */
     .legend {
       margin-top: 20px;
       list-style: none;
@@ -105,21 +121,21 @@
     }
 
     .dot {
-      width: 10px;
-      height: 10px;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
     }
 
-    .dot.orange {
-      background: orange;
+    .dot-afternoon {
+      background: #fb923c; /* Orange for Afternoon */
     }
 
-    .dot.yellow {
-      background: #ffc107;
+    .dot-evening {
+      background: #fbbf24; /* Yellow for Evening */
     }
 
-    .dot.gray {
-      background: #bbb;
+    .dot-morning {
+      background: #9ca3af; /* Light gray for Morning */
     }
   </style>
 {% endblock %}

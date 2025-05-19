@@ -476,7 +476,6 @@ def mybookings(request):
 def view_mybooking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
     return render(request, 'accounts/view_mybooking.html', {'booking': booking})
-
 # History Page
 
 @login_required
@@ -486,13 +485,13 @@ def history(request):
     history_list = []
     for booking in bookings:
         history_list.append({
-            'id': booking.id,
+            'id': booking.id,  # Make sure booking.id is included here
             'customer_name': booking.full_name,
             'date_booked': booking.created_at.strftime('%B %d, %Y'),
             'package': booking.package.title,
             'event_date': booking.event_date.strftime('%B %d, %Y'),
             'total': booking.price,
-            'rating': '⭐ Rate'  # Placeholder for rating system
+            'rating': '⭐ Rate' if booking.status == 'Completed' else 'N/A'  # Placeholder for rating system
         })
 
     return render(request, 'accounts/history.html', {'history_list': history_list})
@@ -507,6 +506,7 @@ def create_booking(request):
         event_time = request.POST.get("event_time")
         event_type = request.POST.get("event_type")
         location = request.POST.get("location")
+        fulladdress = request.POST.get("fulladdress")
         audience_size = request.POST.get("audience_size")
 
         try:
@@ -540,6 +540,7 @@ def create_booking(request):
             end_time=end_time,
             event_type=event_type,
             location=location,
+            fulladdress=fulladdress,
             audience_size=audience_size,
             price=package.price,
             status='Processing'  # Default status, not accepted yet
@@ -639,7 +640,10 @@ def equipment(request):
 @login_required
 @admin_only
 def tracking(request):
-    return render(request, 'client/tracking.html')
+    # Filter bookings with 'Approved' status, exclude 'Completed'
+    bookings = Booking.objects.filter(status='Accepted')  # Only show approved bookings
+
+    return render(request, 'client/tracking.html', {'bookings': bookings})
 
 @login_required
 @admin_only
@@ -723,3 +727,29 @@ def cancel_booking(request, booking_id):
     else:
         messages.warning(request, "Only bookings with 'Processing' status can be cancelled.")
     return redirect('mybookings')
+
+
+def complete_booking(request, id):
+    # Get the booking object by ID
+    booking = get_object_or_404(Booking, id=id)
+
+    # Ensure the booking is either 'Accepted' or 'Processing' before completing it
+    if booking.status in ['Accepted', 'Processing']:
+        # Mark the booking as 'Completed'
+        booking.status = 'Completed'
+        booking.save()
+
+        # Loop through the equipment in the booking and restore it to the inventory
+        for package_equipment in booking.package.packageequipment_set.all():
+            equipment = package_equipment.equipment
+            quantity_rented = package_equipment.quantity_required  # Quantity rented for the package
+
+            # Update the equipment inventory
+            equipment.quantity_available += quantity_rented
+            equipment.quantity_rented -= quantity_rented
+            equipment.save()
+
+            print(f"Returned {quantity_rented} of {equipment.name} to inventory. Available: {equipment.quantity_available}, Rented: {equipment.quantity_rented}")
+
+    # Redirect to the bookings page after completing the booking
+    return redirect('booking')  # Or another appropriate page

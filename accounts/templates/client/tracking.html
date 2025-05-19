@@ -32,36 +32,90 @@
         background: #f5f5f5;
         font-weight: 600;
     }
+
+    /* Style for the map container */
+    .map-container {
+        width: 400px;
+        height: 300px;
+    }
   </style>
-</head>
-<body>
-      <!-- Equipment Tracking Table -->
-      <section class="tracking">
-        <h1>Tracking Equipment</h1>
-        <table>
-          <thead>
+
+  <section class="tracking">
+    <h1>Tracking Bookings</h1>
+    {% if bookings %}
+      <table>
+        <thead>
+          <tr>
+            <th>Package Name</th>
+            <th>Event Date</th>
+            <th>Event Type</th>
+            <th>Full Address</th>
+            <th>Status</th>
+            <th>Map</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for booking in bookings %}
             <tr>
-              <th>Equipment ID</th>
-              <th>Equipment Name</th>
-              <th>Last Checked Out Date</th>
-              <th>Status</th>
-              <th>Current Location</th>
+              <td>{{ booking.package.title }}</td>
+              <td>{{ booking.event_date }}</td>
+              <td>{{ booking.event_type }}</td>
+              <td>{{ booking.fulladdress }}</td>
+              <td>Approved</td>
+              <td>
+                <!-- Embed Leaflet Map based on the location entered in the booking -->
+                <div id="map-{{ booking.id }}" class="map-container"></div>
+                <script>
+                  // Load the map after the Leaflet library has been loaded
+                                function initMap(location, bookingId) {
+                var geocoder = new XMLHttpRequest();
+                var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
+                geocoder.open('GET', url, true);
+                geocoder.onreadystatechange = function () {
+                  if (geocoder.readyState == 4 && geocoder.status == 200) {
+                    var data = JSON.parse(geocoder.responseText);
+                    
+                    // Check the data returned from the geocoding API
+                    console.log('Geocoding Response:', data);
+                    
+                    if (data.length > 0) {
+                      var lat = data[0].lat;
+                      var lon = data[0].lon;
+
+                      // Create a Leaflet map centered at the location
+                      var map = L.map('map-' + bookingId).setView([lat, lon], 15);
+
+                      // Add OpenStreetMap tile layer
+                      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      }).addTo(map);
+
+                      // Add a marker at the location
+                      L.marker([lat, lon]).addTo(map)
+                        .bindPopup('Location: ' + location)
+                        .openPopup();
+                    } else {
+                      console.error('Location not found!');
+                    }
+                  }
+                };
+                geocoder.send();
+              }
+
+                  // Initialize map for each booking dynamically
+                  initMap('{{ booking.location|escapejs }}', '{{ booking.id }}');
+                </script>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td>available, rented, undermaintenance</td>
-              <td></td>
-            </tr>
-            <!-- Add more rows if needed -->
-          </tbody>
-        </table>
-      </section>
-    </main>
-  </div>
-</body>
-</html>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No approved bookings available.</p>
+    {% endif %}
+  </section>
+
+  <!-- Include Leaflet.js and OpenStreetMap API -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 {% endblock %}

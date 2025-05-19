@@ -46,49 +46,95 @@
         <span class="close-btn" onclick="closeBookingForm()">&times;</span>
         <h2>Book a Service</h2>
         <form method="POST" action="{% url 'create_booking' %}">
-            {% csrf_token %}
-            <label for="selected_package">Package Selected</label>
-            <input type="text" id="selected_package" name="selected_package" readonly>
+    {% csrf_token %}
+    
+    <label for="selected_package">Package Selected</label>
+    <input type="text" id="selected_package" name="selected_package" readonly>
 
-            <label for="full_name">Full Name</label>
-            <input type="text" id="full_name" name="full_name" required>
+    <label for="full_name">Full Name</label>
+    <input type="text" id="full_name" name="full_name" required>
 
-            <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" required>
+    <label for="email">Email Address</label>
+    <input type="email" id="email" name="email" required>
 
-            <label for="contact_number">Contact Number</label>
-            <input type="tel" id="contact_number" name="contact_number" required>
+    <label for="contact_number">Contact Number</label>
+    <input type="tel" id="contact_number" name="contact_number" required>
 
-            <label for="event_date">Event Date</label>
-            <input type="date" id="event_date" name="event_date" required>
+    <label for="event_date">Event Date</label>
+    <input type="date" id="event_date" name="event_date" required>
 
-            <label for="event_time">Start Time</label>
-            <select id="event_time" name="event_time" required>
-            <option value="">Select Start Time</option>
-            </select>
+    <label for="event_time">Start Time</label>
+    <select id="event_time" name="event_time" required>
+        <option value="">Select Start Time</option>
+    </select>
 
-            <label for="end_time">End Time</label>
-            <select id="end_time" name="end_time" required>
-            <option value="">Select End Time</option>
-            </select>
-            <label for="event_type">Type of Event</label>
-            <select id="event_type" name="event_type" required>
-                <option value="">Select</option>
-                <option value="Wedding">Wedding</option>
-                <option value="Birthday">Birthday</option>
-                <option value="Corporate">Corporate</option>
-                <option value="Concert">Concert</option>
-                <option value="Other">Other</option>
-            </select>
+    <label for="end_time">End Time</label>
+    <select id="end_time" name="end_time" required>
+        <option value="">Select End Time</option>
+    </select>
 
-            <label for="location">Event Location</label>
-            <input type="text" id="location" name="location" required>
+    <label for="event_type">Type of Event</label>
+    <select id="event_type" name="event_type" required>
+        <option value="">Select</option>
+        <option value="Wedding">Wedding</option>
+        <option value="Birthday">Birthday</option>
+        <option value="Corporate">Corporate</option>
+        <option value="Concert">Concert</option>
+        <option value="Other">Other</option>
+    </select>
 
-            <label for="audience_size">Expected Number of Guests</label>
-            <input type="number" id="audience_size" name="audience_size" min="1" required>
+    <label for="location">Event Location City</label>
+    <input type="text" id="location" name="location" required list="city-suggestions">
 
-            <button type="submit" class="submit-booking">Submit Booking Request</button>
-        </form>
+    <datalist id="city-suggestions">
+        <!-- Suggestions will be dynamically populated by JavaScript -->
+    </datalist>
+
+    <label for="fulladdress">Full Address</label>
+    <input type="text" id="fulladdress" name="fulladdress" required>
+
+    <label for="audience_size">Expected Number of Guests</label>
+    <input type="number" id="audience_size" name="audience_size" min="1" required>
+
+    <button type="submit" class="submit-booking">Submit Booking Request</button>
+</form>
+
+<!-- JavaScript to handle location input -->
+<script>
+    // List of cities in Quezon Province
+    const quezonCities = [
+        "Agdangan", "Alabat", "Atimonan", "Bagumbayan", "Candelaria", "Catanauan", 
+        "Dolores", "General Luna", "General Nakar", "Gumaca", "Infanta", "Jomalig", 
+        "Laguna", "Lucban", "Lucena", "Macalelon", "Mauban", "Mulanay", "Pagbilao", 
+        "Pitogo", "Quezon", "Real", "Sampaloc", "Tiaong", "Unisan"
+    ];
+
+    // Populate the suggestions in the datalist
+    const citySuggestions = document.getElementById('city-suggestions');
+    quezonCities.forEach(city => {
+        const option = document.createElement("option");
+        option.value = city;
+        citySuggestions.appendChild(option);
+    });
+
+    // Optional: filter the suggestions based on user input
+    const locationInput = document.getElementById("location");
+    locationInput.addEventListener('input', function() {
+        const searchTerm = locationInput.value.toLowerCase();
+        const filteredCities = quezonCities.filter(city => city.toLowerCase().includes(searchTerm));
+
+        // Clear previous suggestions
+        citySuggestions.innerHTML = '';
+
+        // Add filtered cities to suggestions
+        filteredCities.forEach(city => {
+            const option = document.createElement("option");
+            option.value = city;
+            citySuggestions.appendChild(option);
+        });
+    });
+</script>
+
     </div>
 </div>
 

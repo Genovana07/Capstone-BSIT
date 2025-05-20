@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import datetime, timedelta
+import datetime
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -125,12 +126,10 @@ class Booking(models.Model):
         if self.status != 'Approved':
             raise ValueError("Booking is not approved yet.")
         
-        # Loop through each piece of equipment in the package
         for package_equipment in self.package.packageequipment_set.all():
             equipment = package_equipment.equipment
-            quantity_rented = package_equipment.quantity_required  # The quantity that was rented for this package
+            quantity_rented = package_equipment.quantity_required  
 
-            # Return the equipment to inventory
             equipment.return_stock(quantity_rented)
     
     def mark_as_completed(self):
@@ -138,7 +137,6 @@ class Booking(models.Model):
         self.status = 'Completed'
         self.save()
         
-        # Return the equipment to inventory
         self.return_equipment()
 
         print(f"Booking {self.id} is marked as completed and equipment has been returned to inventory.")
@@ -146,10 +144,9 @@ class Booking(models.Model):
     def cancel_booking(self):
         """Handles booking cancellation and restores equipment to inventory."""
         if self.status == 'Approved':
-            # Restore rented equipment back to inventory
             self.return_equipment()
         
-        self.status = 'Rejected'  # Or you can use another status like 'Cancelled'
+        self.status = 'Rejected'
         self.save()
 
         print(f"Booking {self.id} has been canceled and equipment restored to inventory.")
@@ -164,3 +161,13 @@ class InventoryLog(models.Model):
     def __str__(self):
         return f"{self.action} {self.quantity} of {self.equipment.name} for Booking {self.booking.id}."
 
+
+class Review(models.Model):
+    customer_name = models.CharField(max_length=255, default='Anonymous')
+    booking_date = models.DateField(default=datetime.date.today)
+    event_type = models.CharField(max_length=255, default='Unknown')
+    rating = models.IntegerField(default=5)
+    comment = models.TextField(default='No comment.')
+
+    def __str__(self):
+        return f"Review by {self.customer_name} on {self.booking_date}"

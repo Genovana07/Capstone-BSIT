@@ -27,6 +27,9 @@ urlpatterns = [
     path('booking/<int:booking_id>/accept/', views.accept_booking, name='accept_booking'),
     path('booking/<int:booking_id>/reject/', views.reject_booking, name='reject_booking'),
     path('complete_booking/<int:id>/', views.complete_booking, name='complete_booking'),
+    path('submit-review/', views.submit_review, name='submit_review'),
+    path('reviews/delete/<int:review_id>/', views.delete_review, name='delete_review'),
+
 
     path('event/', views.event, name='event'),
     path('equipment/', views.equipment, name='equipment'),
@@ -35,7 +38,6 @@ urlpatterns = [
     path('customer/', views.customer, name='customer'),
     path('employee/', views.employee, name='employee'),
 
-    # API endpoint
     path('api/bookings/', views.booking_events_api, name='booking_events_api'),
 ]
 

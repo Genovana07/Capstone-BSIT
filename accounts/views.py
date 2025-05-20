@@ -12,6 +12,11 @@ from django.db.models import Count
 from datetime import datetime, timedelta
 from django.core.files.storage import FileSystemStorage
 from .models import Equipment
+from .models import Review
+from django.db.models import Avg
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_protect
+from datetime import datetime
 
 def register_view(request):
     if request.method == "POST":
@@ -648,7 +653,17 @@ def tracking(request):
 @login_required
 @admin_only
 def reviews(request):
-    return render(request, 'client/reviews.html')
+    # Fetch all reviews from the database
+    reviews = Review.objects.all()
+
+    # Calculate the average rating of all reviews
+    average_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+
+    # Pass the reviews and average rating to the template
+    return render(request, 'client/reviews.html', {
+        'reviews': reviews,
+        'average_rating': round(average_rating, 1),
+    })
 
 @login_required
 @admin_only
@@ -704,18 +719,17 @@ def accept_booking(request, booking_id):
         booking.status = 'Processing'
         booking.save()
 
-    return redirect('booking')  # Redirect to the booking list page or booking details page
+    return redirect('booking') 
 
 @login_required
 def reject_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
 
-    # Update the status to 'Rejected'
     booking.status = 'Rejected'
     booking.save()
 
     messages.success(request, f"Booking {booking.id} has been rejected.")
-    return redirect('booking')  # Redirect to the booking list page or booking details page
+    return redirect('booking')  
 
 @login_required
 def cancel_booking(request, booking_id):
@@ -728,28 +742,57 @@ def cancel_booking(request, booking_id):
         messages.warning(request, "Only bookings with 'Processing' status can be cancelled.")
     return redirect('mybookings')
 
-
+@login_required
 def complete_booking(request, id):
-    # Get the booking object by ID
     booking = get_object_or_404(Booking, id=id)
 
-    # Ensure the booking is either 'Accepted' or 'Processing' before completing it
     if booking.status in ['Accepted', 'Processing']:
-        # Mark the booking as 'Completed'
         booking.status = 'Completed'
         booking.save()
 
-        # Loop through the equipment in the booking and restore it to the inventory
         for package_equipment in booking.package.packageequipment_set.all():
             equipment = package_equipment.equipment
-            quantity_rented = package_equipment.quantity_required  # Quantity rented for the package
+            quantity_rented = package_equipment.quantity_required  
 
-            # Update the equipment inventory
             equipment.quantity_available += quantity_rented
             equipment.quantity_rented -= quantity_rented
             equipment.save()
 
             print(f"Returned {quantity_rented} of {equipment.name} to inventory. Available: {equipment.quantity_available}, Rented: {equipment.quantity_rented}")
+    return redirect('booking')  
 
-    # Redirect to the bookings page after completing the booking
-    return redirect('booking')  # Or another appropriate page
+@login_required
+@csrf_protect
+def submit_review(request):
+    if request.method == 'POST':
+        # Collect data from the form
+        customer_name = request.POST.get('customerName')
+        booking_date = datetime.now().date()  
+        rating = request.POST.get('rating')
+        event_type = request.POST.get('eventType')
+        comment = request.POST.get('comment')
+
+        if not customer_name or not booking_date or not rating or not event_type or not comment:
+            return HttpResponse("All fields are required!", status=400)
+
+        review = Review.objects.create(
+            customer_name=customer_name,
+            booking_date=booking_date, 
+            rating=rating,
+            event_type=event_type,
+            comment=comment
+        )
+
+       
+        return redirect('history')  
+
+    return redirect('home')  
+
+@login_required
+@admin_only
+def delete_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    
+    review.delete()
+    
+    return redirect('reviews')  

@@ -37,6 +37,8 @@
   <style>
     .dashboard-header {
       margin: 30px 0;
+      font-family: 'Arial', sans-serif;
+      color: #2e3b4e; /* Darker text color for better readability */
     }
 
     .cards {
@@ -56,6 +58,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
     }
 
     .card span {
@@ -64,54 +67,59 @@
       margin-top: 10px;
     }
 
-    /* Card color styles */
+    /* Updated Card Color Styles */
     .card-booking {
-      background: #4CAF50; /* Green for Booking */
+      background: #4CAF50; /* Light green for Booking */
     }
 
     .card-revenue {
-      background: #3b82f6; /* Blue for Revenue */
+      background: #3b82f6; /* Light blue for Revenue */
     }
 
     .card-profit {
-      background: #f59e0b; /* Yellow for Profit */
+      background: #f59e0b; /* Warm yellow for Profit */
     }
 
     .card-pending {
-      background: #ef4444; /* Red for Pending Bookings */
+      background: #f87171; /* Soft red for Pending Bookings */
     }
 
-    /* Chart and placeholder section */
+    /* Chart and Placeholder Section */
     .charts {
       display: flex;
       gap: 20px;
       height: 60%;
+      margin-top: 30px;
     }
 
     .bar-chart,
     .donut-chart {
       flex: 1;
-      background: #1f2937; /* Dark background for chart areas */
-      color: #fff;
+      background: #f3f4f6; /* Light gray for chart areas */
+      color: #333;
       padding: 20px;
       border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
     }
 
     .placeholder {
       height: 60%;
-      background: #374151; /* Darker placeholder background */
+      background: #e5e7eb; /* Lighter gray for placeholder */
       margin-top: 10px;
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: #aaa;
+      font-size: 16px;
     }
 
-    /* Legend styles */
+    /* Legend Styles */
     .legend {
       margin-top: 20px;
       list-style: none;
+      font-size: 14px;
+      color: #333;
     }
 
     .legend li {
@@ -127,7 +135,7 @@
     }
 
     .dot-afternoon {
-      background: #fb923c; /* Orange for Afternoon */
+      background: #ffb84d; /* Soft orange for Afternoon */
     }
 
     .dot-evening {
@@ -135,7 +143,7 @@
     }
 
     .dot-morning {
-      background: #9ca3af; /* Light gray for Morning */
+      background: #6b7280; /* Neutral gray for Morning */
     }
   </style>
 {% endblock %}

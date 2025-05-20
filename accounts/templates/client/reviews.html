@@ -1,120 +1,149 @@
 {% extends 'client-base.html' %}
+{% load custom_filters %}
 
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-{% load static %} <!-- Add this line to load the static files -->
+{% load static %}
 
 <style>
 /* Review Summary */
-    .review-summary {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #fff;
-        padding: 20px 30px;
-        border-bottom: 3px solid black;
-        margin-bottom: 20px;
-    }
-    .divider {
-        width: 1px;
-        height: 60px;
-        background-color: black;
-        margin: 0 30px;
-    }
+.review-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 20px 30px;
+    border-bottom: 3px solid black;
+    margin-bottom: 20px;
+}
 
-    .review-count,
-    .average-rating {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
+.divider {
+    width: 1px;
+    height: 60px;
+    background-color: black;
+    margin: 0 30px;
+}
 
-    .review-count h2,
-    .average-rating h2 {
-        font-size: 18px;
-        font-weight: 700;
-    }
+.review-count,
+.average-rating {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
 
-    .review-number,
-    .rating-number {
-        font-size: 24px;
-        font-weight: bold;
-    }
+.review-count h2,
+.average-rating h2 {
+    font-size: 18px;
+    font-weight: 700;
+}
 
-    .growth {
-        font-size: 14px;
-        color: green;
-        margin-left: 8px;
-    }
+.review-number,
+.rating-number {
+    font-size: 24px;
+    font-weight: bold;
+}
 
-    .stars {
-        color: gold;
-        margin-left: 10px;
-        font-size: 20px;
-    }
+.growth {
+    font-size: 14px;
+    color: green;
+    margin-left: 8px;
+}
 
-    .filter-box {
-        background-color: #f2f2f2;
-        padding: 8px 14px;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 500;
-        color: #333;
-    }
+.stars {
+    color: gold;
+    margin-left: 10px;
+    font-size: 20px;
+}
 
-    /* Review List */
-    .reviews-list {
-        background: #fff;
-        padding: 20px;
-        border-radius: 12px;
-        margin-top: 2%;
-    }
+.filter-box {
+    background-color: #f2f2f2;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
 
-    .review-card {
-        display: flex;
-        padding: 20px 0;
-        border-bottom: 1px solid #ddd;
-    }
+/* Review List */
+.reviews-list {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 2%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
 
-    .review-card:last-child {
-        border-bottom: none;
-    }
+.review-card {
+    display: flex;
+    padding: 20px;
+    border-bottom: 1px solid #ddd;
+    align-items: center;
+    justify-content: space-between;
+}
 
-    .reviewer-avatar {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        margin-right: 20px;
-        object-fit: cover;
-    }
+.review-card:last-child {
+    border-bottom: none;
+}
 
-    .review-details {
-        flex: 1;
-    }
+.reviewer-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-right: 20px;
+    object-fit: cover;
+}
 
-    .review-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 10px;
-    }
+.review-details {
+    flex-grow: 1;
+}
 
-    .review-header strong {
-        font-size: 16px;
-    }
+.review-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
 
-    .review-header .date {
-        margin-left: auto;
-        color: #888;
-        font-size: 14px;
-    }
-  </style>
+.review-header strong {
+    font-size: 16px;
+}
 
-  <div class="review-summary">
+.review-header .date {
+    margin-left: auto;
+    color: #888;
+    font-size: 14px;
+}
+
+.stars {
+    display: flex;
+    gap: 5px;
+    font-size: 18px;
+}
+
+/* Delete Button Styling */
+.delete-button {
+    background-color: red;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.delete-button:hover {
+    background-color: darkred;
+}
+</style>
+
+<!-- Review Summary -->
+<div class="review-summary">
     <div class="review-count">
         <h2>Reviews</h2>
-        <p class="review-number">10.0k <span class="growth">📈 +2%</span></p>
+        <p class="review-number">{{ reviews.count }} <span class="growth">📈 +2%</span></p>
         <p class="review-label">Growth in Review this year</p>
     </div>
     <div class="divider"></div>
@@ -122,7 +151,7 @@
     <div class="average-rating">
         <h2>Average Rating</h2>
         <div class="rating-number">
-            4.0 <span class="stars">★★★★★</span>
+            {{ average_rating }} <span class="stars">★★★★★</span>
         </div>
         <p>Average Rating This Year</p>
     </div>
@@ -130,34 +159,31 @@
     <div class="filter-box">
         March 2024 - March 2025
     </div>
-  </div>
+</div>
 
-  <div class="reviews-list">
+<!-- Reviews List -->
+<div class="reviews-list">
+    {% for review in reviews %}
     <div class="review-card">
         <img src="{% static 'images/profile-icon.png' %}" alt="Reviewer" class="reviewer-avatar">
         <div class="review-details">
             <div class="review-header">
-                <strong>Christian Genovana</strong>
-                <span>Type Of Event</span>
-                <span class="stars">★★★★★</span>
-                <span class="date">2022-07-1</span>
+                <strong>{{ review.customer_name }}</strong>
+                <span>{{ review.event_type }}</span>
+                <span class="stars">
+                    {% for i in review.rating|rangefilter %}
+                        ★
+                    {% endfor %}
+                </span>
+                <span class="date">{{ review.booking_date }}</span>
             </div>
-            <p>Great job on your work! The content is well-organized and clearly presents the main ideas...</p>
+            <p>{{ review.comment }}</p>
+            <a href="{% url 'delete_review' review.id %}" class="delete-button">Delete</a>
         </div>
     </div>
+    {% empty %}
+    <p>No reviews yet.</p>
+    {% endfor %}
+</div>
 
-    <!-- More reviews can be added here -->
-    <div class="review-card">
-        <img src="{% static 'images/profile-icon.png' %}" alt="Reviewer" class="reviewer-avatar">
-        <div class="review-details">
-            <div class="review-header">
-                <strong>Christian Genovana</strong>
-                <span>Type Of Event</span>
-                <span class="stars">★★★★★</span>
-                <span class="date">2022-07-1</span>
-            </div>
-            <p>Great job on your work! The content is well-organized and clearly presents the main ideas...</p>
-        </div>
-    </div>
-  </div>
 {% endblock %}

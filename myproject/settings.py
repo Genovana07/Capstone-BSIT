@@ -141,3 +141,4 @@ LOGIN_URL = 'login'  # This should match the name of your login URL pattern
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
+

@@ -194,37 +194,6 @@ button:disabled {
   color: #fff;
   font-size: 1.6rem;
 }
-
-/* Success/Error Message Styling */
-.messages {
-  position: absolute;
-  top: 20px; /* Position it slightly below the top */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  text-align: center;
-  z-index: 1000; /* Ensure it stays on top of other elements */
-}
-
-.alert {
-  padding: 10px;
-  margin-bottom: 15px;
-  border-radius: 5px;
-  font-size: 1rem;
-  max-width: 400px;
-  margin: 10px auto;
-}
-
-.alert-success {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.alert-error {
-  background-color: #f44336;
-  color: white;
-}
-
 /* RESPONSIVE */
 @media (max-width: 1024px) {
   .login-page {

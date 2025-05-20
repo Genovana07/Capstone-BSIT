@@ -184,14 +184,8 @@
             </div>
         </div>
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-
+        <!-- Removed the messages block from the profile page to prevent it from showing the login success message -->
+        
         <form method="POST" enctype="multipart/form-data" class="form-grid">
             {% csrf_token %}
 

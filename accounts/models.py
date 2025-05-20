@@ -171,3 +171,5 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review by {self.customer_name} on {self.booking_date}"
+    
+    

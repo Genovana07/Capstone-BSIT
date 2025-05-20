@@ -189,6 +189,37 @@
     color: #ffcc00;
   }
 
+  .messages {
+    display: none; /* Ensure it's hidden by default */
+    position: fixed;
+    top: 20px; /* Adjust the position to be right below the navbar */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30%;  /* Adjust the width for compact display */
+    padding: 8px 15px;  /* Adjust the padding */
+    background-color: #4CAF50;  /* Default to success color */
+    color: white;
+    font-size: 14px;
+    text-align: center;
+    border-radius: 6px;
+    z-index: 9999;
+    box-shadow: none; /* No shadow */
+}
+
+.alert-success {
+    background-color: #4CAF50;  /* Green background for success */
+}
+
+.alert-error {
+    background-color: #f44336;  /* Red background for error */
+}
+
+.alert {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 35px;  /* Height to match the compact design */
+}
 </style>
 
 <div class="container">
@@ -214,7 +245,17 @@
     </ul>
   </aside>
 
-  <!-- Main Section -->
+  <!-- Success/Error Messages -->
+  {% if messages %}
+    <div class="messages" id="messageContainer">
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+  {% endif %}
+
   <main class="main-content">
     <h2><span class="icon">🕓</span> Booking History</h2>
 
@@ -237,7 +278,7 @@
             <td>{{ booking.date_booked }}</td>
             <td>{{ booking.package }}</td>
             <td>{{ booking.event_date }}</td>
-            <td>₱{{ booking.total }}</td>
+            <td>{{ booking.total }}</td>
             <td><a href="javascript:void(0);" onclick="openModal('{{ booking.customer_name }}', '{{ booking.date_booked }}', '{{ booking.rating }}', '{{ booking.package }}', '{{ booking.event_date }}')">{{ booking.rating }}</a></td>
           </tr>
           {% empty %}
@@ -258,7 +299,7 @@
     </div>
     <form method="post" action="{% url 'submit_review' %}">
     {% csrf_token %}
-    
+
     <div class="form-group">
         <label for="customerName">Name</label>
         <input type="text" id="customerName" name="customerName" readonly>
@@ -292,47 +333,20 @@
 
     <button type="submit">Submit</button>
 </form>
-
-<!-- Modal for Rating -->
-<div id="ratingModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <span>Rating Details</span>
-      <span class="close" onclick="closeModal()">×</span>
-    </div>
-    <form action="#" method="post">
-      <div class="form-group">
-        <label for="customerName">Name</label>
-        <input type="text" id="customerName" name="customerName" readonly>
-      </div>
-      <div class="form-group">
-        <label for="bookingDate">Date of Booking</label>
-        <input type="text" id="bookingDate" name="bookingDate" readonly>
-      </div>
-      <div class="form-group">
-        <label for="eventRating">Rating (Stars)</label>
-        <div class="rating">
-          <input type="radio" id="star5" name="rating" value="5"><label for="star5">★</label>
-          <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
-          <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
-          <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
-          <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="eventType">Type of Event</label>
-        <input type="text" id="eventType" name="eventType" readonly>
-      </div>
-      <div class="form-group">
-        <label for="comment">Comment</label>
-        <textarea id="comment" name="comment" placeholder="Leave a comment..."></textarea>
-      </div>
-      <button type="submit">Submit</button>
-    </form>
   </div>
 </div>
 
 <script>
+  document.addEventListener('DOMContentLoaded', function () {
+        const messageContainer = document.querySelector('.messages');
+        if (messageContainer) {
+            messageContainer.style.display = 'block';  
+            setTimeout(function() {
+                messageContainer.style.display = 'none';
+            }, 2000); 
+        }
+    });
+
   function openModal(name, bookingDate, rating, eventType, comment) {
     document.getElementById('ratingModal').style.display = 'flex';
     document.getElementById('customerName').value = name;

@@ -9,6 +9,17 @@
 </head>
 <body>
 
+<!-- Success/Error Messages -->
+{% if messages %}
+    <div class="messages" id="messageContainer">
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
 <header class="nav-header">
     <div class="logo">
         <span class="text-white">AUDIO</span><span class="text-yellow">MAN</span>
@@ -39,6 +50,53 @@
 </header>
 
 {% block content %}{% endblock %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const messageContainer = document.getElementById('messageContainer');
+        
+        if (messageContainer) {
+            setTimeout(function() {
+                messageContainer.style.display = 'none'; // Hide the message after 2 seconds
+            }, 2000); // 2 seconds delay
+        }
+    });
+</script>
+
+<style>
+/* Style for the message container */
+.messages {
+    position: fixed;
+    top: 60px; /* Position the message right below the navbar */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30%;  /* Adjusted width for a more reasonable size */
+    padding: 8px 15px;  /* Adjusted padding for a compact and balanced look */
+    color: white;
+    font-size: 14px;  /* Standard font size */
+    text-align: center;
+    border-radius: 6px;  /* Rounded corners */
+    z-index: 9999;
+}
+
+/* Success message with green background */
+.alert-success {
+    background-color: #4CAF50;  /* Green background for success */
+}
+
+/* Error message with red background */
+.alert-error {
+    background-color: #f44336;  /* Red background for error */
+}
+
+/* Optional: For equal height on both success and error messages */
+.alert {
+    display: flex;
+    align-items: center;  /* Center the text vertically */
+    justify-content: center;  /* Center the text horizontally */
+    height: 35px;  /* Set height to match the compact design */
+}
+</style>
 
 </body>
 </html>

@@ -127,15 +127,28 @@
 .delete-button {
     background-color: red;
     color: white;
-    padding: 8px 12px;
+    padding: 8px 14px;
     border-radius: 6px;
     font-weight: bold;
     text-decoration: none;
     display: inline-block;
+    margin-top: 10px;
+    align-self: flex-end; /* Align the button to the right */
+    transition: background-color 0.3s ease;
 }
 
 .delete-button:hover {
     background-color: darkred;
+}
+
+.delete-button:active {
+    background-color: crimson;
+}
+
+.delete-button-container {
+    display: flex;
+    justify-content: flex-end; /* Align the button to the right */
+    margin-top: 10px; /* Add space between the date and delete button */
 }
 </style>
 
@@ -153,7 +166,7 @@
         <div class="rating-number">
             {{ average_rating }} <span class="stars">★★★★★</span>
         </div>
-        <p>Average Rating This Year</p>
+        <p>Average Rating This Month</p>
     </div>
 
     <div class="filter-box">
@@ -178,7 +191,10 @@
                 <span class="date">{{ review.booking_date }}</span>
             </div>
             <p>{{ review.comment }}</p>
-            <a href="{% url 'delete_review' review.id %}" class="delete-button">Delete</a>
+            <!-- Delete button aligned to the right -->
+            <div class="delete-button-container">
+                <a href="{% url 'delete_review' review.id %}" class="delete-button">Delete</a>
+            </div>
         </div>
     </div>
     {% empty %}

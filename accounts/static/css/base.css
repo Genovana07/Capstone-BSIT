@@ -121,3 +121,25 @@ nav ul li a:hover {
         margin-left: 0;
     }
 }
+.messages {
+        position: fixed;
+        top: 10%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        padding: 15px;
+        background-color: #4CAF50;
+        color: white;
+        font-size: 18px;
+        text-align: center;
+        border-radius: 8px;
+        z-index: 9999;
+    }
+
+    .alert-success {
+        background-color: #4CAF50;
+    }
+
+    .alert-error {
+        background-color: #f44336;
+    }

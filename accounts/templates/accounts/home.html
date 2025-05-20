@@ -39,8 +39,8 @@
         <h2 class="title">Event Highlights</h2>
     </div>
     <div class="video-section">
-  <video src="{% static 'videos/bg video.mp4' %}" controls autoplay muted></video>
-</div>
+        <video src="{% static 'videos/bg video.mp4' %}" controls autoplay muted></video>
+    </div>
     <div class="gallery1">
         {% for _ in "1234567890" %}
         <div class="item1">
@@ -92,7 +92,6 @@
     <img src="{% static 'images/speaker1.jpg' %}" alt="FAQ Illustration" onclick="openLightbox(this.src)" style="cursor: zoom-in;">
   </div>
 </div>
-
 
 <!-- Lightbox Modal -->
 <div id="lightbox-modal" onclick="closeLightbox()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); justify-content:center; align-items:center; z-index:9999;">
@@ -154,27 +153,5 @@
         document.getElementById("testimonial-cards").style.transform = `translateX(-${cardWidth * currentIndex}px)`;
     }
 </script>
-
-<style>
-   #lightbox-modal img {
-    width: 80vw;
-    height: 80vh;
-    object-fit: contain;
-    border-radius: 8px;
-    animation: zoomIn 0.3s ease-in-out;
-}
-
-@keyframes zoomIn {
-    from {
-        transform: scale(0.7);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-</style>
-
 <link rel="stylesheet" href="{% static 'css/home.css' %}">
 {% endblock %}

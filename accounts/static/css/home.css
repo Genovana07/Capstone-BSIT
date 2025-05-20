@@ -2,7 +2,7 @@
 
 @font-face {
     font-family: 'MavenPro';
-    src: url('../fonts/MavenPro-Regular.ttf') format('truetype');
+    src: url("{% static 'fonts/MavenPro-Regular.ttf' %}") format('truetype');
 }
 
 :root {
@@ -428,3 +428,4 @@ body {
     border-radius: 12px;
     box-shadow: 0 6px 18px rgba(0,0,0,0.1);
   }
+  

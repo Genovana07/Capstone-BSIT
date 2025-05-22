@@ -214,9 +214,9 @@
                 <input type="email" id="email" name="email" value="{{ user.email }}">
             </div>
 
-            <div class="form-group">
+             <div class="form-group">
                 <label for="province">Province</label>
-                <select id="province" name="province">
+                <select id="province" name="province" onchange="updateCities()" disabled>
                     <option value="Batangas" {% if user.profile.province == "Batangas" %}selected{% endif %}>Batangas</option>
                     <option value="Cavite" {% if user.profile.province == "Cavite" %}selected{% endif %}>Cavite</option>
                     <option value="Laguna" {% if user.profile.province == "Laguna" %}selected{% endif %}>Laguna</option>
@@ -227,19 +227,8 @@
 
             <div class="form-group">
                 <label for="city">City</label>
-                <select id="city" name="city">
+                <select id="city" name="city" disabled>
                     <option value="">Select a City</option>
-                    <option value="Batangas City" {% if user.profile.city == "Batangas City" %}selected{% endif %}>Batangas City</option>
-                    <option value="Lipa" {% if user.profile.city == "Lipa" %}selected{% endif %}>Lipa</option>
-                    <option value="Tagaytay" {% if user.profile.city == "Tagaytay" %}selected{% endif %}>Tagaytay</option>
-                    <option value="Dasmariñas" {% if user.profile.city == "Dasmariñas" %}selected{% endif %}>Dasmariñas</option>
-                    <option value="Calamba" {% if user.profile.city == "Calamba" %}selected{% endif %}>Calamba</option>
-                    <option value="Santa Rosa" {% if user.profile.city == "Santa Rosa" %}selected{% endif %}>Santa Rosa</option>
-                    <option value="Lucena" {% if user.profile.city == "Lucena" %}selected{% endif %}>Lucena</option>
-                    <option value="Tayabas" {% if user.profile.city == "Tayabas" %}selected{% endif %}>Tayabas</option>
-                    <option value="Antipolo" {% if user.profile.city == "Antipolo" %}selected{% endif %}>Antipolo</option>
-                    <option value="San Mateo" {% if user.profile.city == "San Mateo" %}selected{% endif %}>San Mateo</option>
-                    <option value="Taytay" {% if user.profile.city == "Taytay" %}selected{% endif %}>Taytay</option>
                 </select>
             </div>
 
@@ -259,7 +248,45 @@
 </div>
 
 <script>
+     function updateCities() {
+        const province = document.getElementById('province').value;
+        const citySelect = document.getElementById('city');
+        let cities = [];
+
+        const provinceCities = {
+            "Batangas": ["Balayan", "Batangas City", "Bauan", "Calaca", "Calatagan", "Cuenca", "Ibaan", "Lemery", "Lipa", "Lobo", "Mabini", "Malvar", "Mataasnakahoy", "Nasugbu", "Padre Garcia", "Rosario", "San Jose", "San Juan", "San Luis", "San Nicolas", "San Pascual", "Santa Teresita", "Santo Tomas", "Taal", "Talisay", "Tanauan", "Taysan", "Tingloy", "Tuy"],
+            "Cavite": ["Alfonso", "Amadeo", "Bacoor", "Carmona", "Cavite City", "Dasmariñas", "General Emilio Aguinaldo", "General Mariano Alvarez", "General Trias", "Imus", "Indang", "Kawit", "Magallanes", "Maragondon", "Mendez", "Naic", "Noveleta", "Rosario", "Silang", "Tagaytay", "Tanza", "Ternate", "Trece Martires"],
+            "Laguna": ["Alaminos", "Bay", "Biñan", "Cabuyao", "Calamba", "Calauan", "Cavinti", "Famy", "Kalayaan", "Liliw", "Los Baños", "Luisiana", "Lumban", "Mabitac", "Magdalena", "Majayjay", "Nagcarlan", "Paete", "Pagsanjan", "Pakil", "Pangil", "Pila", "Rizal", "San Pablo", "San Pedro", "Santa Cruz", "Santa Maria", "Santa Rosa", "Siniloan", "Victoria"],
+            "Quezon": ["Agdangan", "Alabat", "Atimonan", "Buenavista", "Burdeos", "Calauag", "Candelaria", "Catanauan", "Dolores", "General Luna", "General Nakar", "Guinayangan", "Gumaca", "Infanta", "Jomalig", "Lopez", "Lucban", "Lucena", "Macalelon", "Mauban", "Mulanay", "Padre Burgos", "Pagbilao", "Panukulan", "Patnanungan", "Perez", "Pitogo", "Plaridel", "Polillo", "Quezon", "Real", "Sampaloc", "San Andres", "San Antonio", "San Francisco", "San Narciso", "Sariaya", "Tagkawayan", "Tayabas", "Tiaong", "Unisan"],
+            "Rizal": ["Angono", "Antipolo", "Baras", "Binangonan", "Cainta", "Cardona", "Jalajala", "Morong", "Pililla", "Rodriguez", "San Mateo", "Tanay", "Taytay", "Teresa"]
+        };
+
+        // If a province is selected, update cities
+        if (provinceCities[province]) {
+            cities = provinceCities[province];
+        }
+
+        // Clear the current city options
+        citySelect.innerHTML = ''; 
+        let defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Select a City';
+        citySelect.appendChild(defaultOption);
+
+        // Populate the city options based on the selected province
+        cities.forEach(city => {
+            let option = document.createElement('option');
+            option.value = city;
+            option.textContent = city;
+            if (city === '{{ user.profile.city }}') {
+                option.selected = true; // Pre-select the user's current city
+            }
+            citySelect.appendChild(option);
+        });
+    }
     document.addEventListener('DOMContentLoaded', function () {
+        updateCities();
+
         const updateBtn = document.querySelector('.update-btn');
         const form = document.querySelector('.form-grid');
 

@@ -60,6 +60,9 @@
                             <i class="fa fa-check"></i> Complete
                         </a>
                     {% endif %}
+                    <a href="{% url 'delete_booking' booking.id %}" class="delete" onclick="return confirm('Are you sure you want to delete this booking?');">
+                        <i class="fa fa-trash"></i> Delete
+                    </a>
                 </td>
             </tr>
 
@@ -256,7 +259,26 @@
     .close-btn:hover {
         background-color: #5a6268;
     }
+    .delete {
+        background-color: #dc3545;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-size: 1em;
+        color: white;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
 
+    .delete:hover {
+        background-color: #c82333;
+    }
+
+    .delete i {
+        font-size: 1.2em;
+    }
     @keyframes fadeIn {
         from {
             opacity: 0;

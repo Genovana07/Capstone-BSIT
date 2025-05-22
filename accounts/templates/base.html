@@ -9,7 +9,6 @@
 </head>
 <body>
 
-<!-- Success/Error Messages -->
 {% if messages %}
     <div class="messages" id="messageContainer">
         {% for message in messages %}
@@ -41,6 +40,9 @@
                     <span class="profile-name">{{ user.username }}</span>
                 </a>
             </li>
+            {% if user.is_staff %}
+                <li><a href="{% url 'admin_dashboard' %}" class="dashboard-btn">Dashboard</a></li>
+            {% endif %}
             {% else %}
                 <li><a href="{% url 'register' %}">Register</a></li>
                 <li><a href="{% url 'login' %}">Login</a></li>
@@ -57,44 +59,108 @@
         
         if (messageContainer) {
             setTimeout(function() {
-                messageContainer.style.display = 'none'; // Hide the message after 2 seconds
-            }, 2000); // 2 seconds delay
+                messageContainer.style.display = 'none';
+            }, 2000);
         }
     });
 </script>
 
 <style>
-/* Style for the message container */
+.nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    width: 100%;
+}
+
+nav ul {
+    display: flex;
+    gap: 15px;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+}
+
+nav ul li {
+    list-style: none;
+}
+
+.nav-header .profile-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.dashboard-btn {
+    background-color: #4CAF50;
+    padding: 12px 24px;
+    border-radius: 6px;
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 15px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.dashboard-btn:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+}
+
+.dashboard-btn:active {
+    transform: translateY(2px);
+}
+
+.profile-link img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-item .profile-name {
+    line-height: 30px;
+}
+
 .messages {
     position: fixed;
-    top: 60px; /* Position the message right below the navbar */
+    top: 60px;
     left: 50%;
     transform: translateX(-50%);
-    width: 30%;  /* Adjusted width for a more reasonable size */
-    padding: 8px 15px;  /* Adjusted padding for a compact and balanced look */
+    width: 30%;
+    padding: 8px 15px;
     color: white;
-    font-size: 14px;  /* Standard font size */
+    font-size: 14px;
     text-align: center;
-    border-radius: 6px;  /* Rounded corners */
+    border-radius: 6px;
     z-index: 9999;
 }
 
-/* Success message with green background */
-.alert-success {
-    background-color: #4CAF50;  /* Green background for success */
-}
-
-/* Error message with red background */
 .alert-error {
-    background-color: #f44336;  /* Red background for error */
+    background-color: #f44336 !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
-/* Optional: For equal height on both success and error messages */
+.alert-success {
+    background-color: #4CAF50 !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
 .alert {
     display: flex;
-    align-items: center;  /* Center the text vertically */
-    justify-content: center;  /* Center the text horizontally */
-    height: 35px;  /* Set height to match the compact design */
+    align-items: center;
+    justify-content: center;
+    height: 35px;
 }
 </style>
 

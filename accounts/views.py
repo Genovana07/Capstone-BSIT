@@ -796,3 +796,13 @@ def delete_review(request, review_id):
     review.delete()
     
     return redirect('reviews')  
+
+def delete_booking(request, id):
+    booking = get_object_or_404(Booking, id=id)
+    booking.delete()
+    return redirect('booking')  # Redirect back to the booking list page
+
+
+def admin_dashboard(request):
+    # Add logic for the dashboard here
+    return render(request, 'client/dashboard.html')

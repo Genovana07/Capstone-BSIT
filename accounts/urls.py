@@ -39,6 +39,8 @@ urlpatterns = [
     path('employee/', views.employee, name='employee'),
 
     path('api/bookings/', views.booking_events_api, name='booking_events_api'),
+    path('delete_booking/<int:id>/', views.delete_booking, name='delete_booking'),
+    path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
 ]
 
 

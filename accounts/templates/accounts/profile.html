@@ -10,7 +10,7 @@
         src: url("{% static 'fonts/MavenPro-Regular.ttf' %}") format('truetype');
     }
 
-    .container {
+        .container {
         display: flex;
         min-height: 100vh;
         font-family: 'MavenPro', sans-serif;
@@ -111,8 +111,8 @@
 
     .form-group input,
     .form-group select {
-        padding: 14px 16px;
-        font-size: 16px;
+        padding: 12px 14px;
+        font-size: 14px;
         border: 1px solid #ccc;
         border-radius: 6px;
         background-color: #fff;
@@ -125,21 +125,50 @@
     .update-btn {
         background-color: #4CAF50;
         color: white;
-        padding: 14px 20px;
+        padding: 10px 16px;
         margin-top: 20px;
         border: none;
         border-radius: 8px;
-        font-size: 18px;
+        font-size: 16px;
         font-weight: bold;
         cursor: pointer;
         transition: background-color 0.3s ease;
         width: 100%;
+        max-width: 300px;
     }
 
     .update-btn:hover {
         background-color: #45a049;
     }
+    .request-admin-btn {
+        background-color: #fbbf24;
+        color: white;
+        padding: 8px 12px;
+        font-size: 14px;
+        font-weight: bold;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        width: auto;
+        max-width: 220px;
+        margin-top: 10px;
+    }
 
+    .request-admin-btn:hover {
+        background-color: #f59e0b;
+        transform: translateY(-2px);
+    }
+
+    .request-admin-btn:active {
+        background-color: #eab308;
+        transform: translateY(0);
+    }
+
+    .request-admin-btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.5);
+    }
     @media (max-width: 768px) {
         .container {
             flex-direction: column;
@@ -158,16 +187,32 @@
         .form-grid {
             grid-template-columns: 1fr;
         }
+
+        .update-btn {
+            width: auto;
+            margin: 0 auto;
+        }
     }
 </style>
-
 <div class="container">
     <aside class="sidebar">
         <ul>
-            <li><img src="{% static 'images/profile-user.png' %}"><span><a href="{% url 'profile' %}">Profile</a></span></li>
-            <li><img src="{% static 'images/open-book.png' %}"><span><a href="{% url 'mybookings' %}">My Bookings</a></span></li>
-            <li><img src="{% static 'images/history.png' %}"><span><a href="{% url 'history' %}">History</a></span></li>
-            <li><img src="{% static 'images/logout.png' %}"><span><a href="{% url 'logout' %}">Logout</a></span></li>
+            <li>
+                <img src="{% static 'images/profile-user.png' %}" alt="Profile Icon">
+                <span><a href="{% url 'profile' %}">Profile</a></span>
+            </li>
+            <li>
+                <img src="{% static 'images/open-book.png' %}" alt="Bookings Icon">
+                <span><a href="{% url 'mybookings' %}">My Bookings</a></span>
+            </li>
+            <li>
+                <img src="{% static 'images/history.png' %}" alt="History Icon">
+                <span><a href="{% url 'history' %}">History</a></span>
+            </li>
+            <li>
+                <img src="{% static 'images/logout.png' %}" alt="Logout Icon">
+                <span><a href="{% url 'logout' %}">Logout</a></span>
+            </li>
         </ul>
     </aside>
 
@@ -186,7 +231,8 @@
 
         <!-- Removed the messages block from the profile page to prevent it from showing the login success message -->
         
-        <form method="POST" enctype="multipart/form-data" class="form-grid">
+        <!-- Update Profile Form -->
+        <form method="POST" enctype="multipart/form-data" class="form-grid" action="{% url 'update_profile' %}">
             {% csrf_token %}
 
             <div class="form-group">
@@ -214,7 +260,7 @@
                 <input type="email" id="email" name="email" value="{{ user.email }}">
             </div>
 
-             <div class="form-group">
+            <div class="form-group">
                 <label for="province">Province</label>
                 <select id="province" name="province" onchange="updateCities()" disabled>
                     <option value="Batangas" {% if user.profile.province == "Batangas" %}selected{% endif %}>Batangas</option>
@@ -242,8 +288,24 @@
                 <input type="file" id="id_profile_picture" name="profile_picture" accept="image/*">
             </div>
 
-            <button type="button" class="update-btn">Edit Profile</button>
+            <div class="form-group full-width">
+                <button type="submit" class="update-btn">Update Profile</button>
+            </div>
         </form>
+
+                <!-- Request Admin Access Form (Separate Form) -->
+            {% if not user.is_staff and not user.profile.requested_admin %}
+                <form method="POST" action="{% url 'request_admin_access' %}">
+                    {% csrf_token %}
+                    <div class="form-group full-width">
+                        <button type="submit" class="request-admin-btn">
+                            Request Admin Access
+                        </button>
+                    </div>
+                </form>
+            {% elif user.profile.requested_admin %}
+                <p class="text-blue-600 mt-2 italic">Admin access request pending approval.</p>
+            {% endif %}
     </main>
 </div>
 

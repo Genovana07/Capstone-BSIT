@@ -2,6 +2,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
+from .views import request_admin_access_view, admin_requests_view
 
 urlpatterns = [
     # Public pages (no login required)
@@ -20,6 +21,7 @@ urlpatterns = [
     path('cancel-booking/<int:booking_id>/', views.cancel_booking, name='cancel_booking'),
     path('history/', views.history, name='history'),
     path('create_booking/', views.create_booking, name='create_booking'),
+    path('profile/update/', views.update_profile, name='update_profile'),
 
     # Admin/Dashboard pages (login required)
     path('dashboard/', views.dashboard, name='dashboard'),
@@ -40,7 +42,9 @@ urlpatterns = [
 
     path('api/bookings/', views.booking_events_api, name='booking_events_api'),
     path('delete_booking/<int:id>/', views.delete_booking, name='delete_booking'),
-    path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('request-admin/', views.request_admin_access_view, name='request_admin_access'),
+    path('admin/requests/', views.admin_requests_view, name='admin_requests_view'),
+    path('approve-admin/<int:user_id>/', views.approve_admin, name='approve_admin'),
 ]
 
 

@@ -41,7 +41,7 @@
                 </a>
             </li>
             {% if user.is_staff %}
-                <li><a href="{% url 'admin_dashboard' %}" class="dashboard-btn">Dashboard</a></li>
+                <li><a href="{% url 'dashboard' %}" class="dashboard-btn">Dashboard</a></li>
             {% endif %}
             {% else %}
                 <li><a href="{% url 'register' %}">Register</a></li>

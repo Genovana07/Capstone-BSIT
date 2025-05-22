@@ -800,9 +800,57 @@ def delete_review(request, review_id):
 def delete_booking(request, id):
     booking = get_object_or_404(Booking, id=id)
     booking.delete()
-    return redirect('booking')  # Redirect back to the booking list page
+    return redirect('booking')
+
+from django.contrib.auth.decorators import user_passes_test
 
 
-def admin_dashboard(request):
-    # Add logic for the dashboard here
-    return render(request, 'client/dashboard.html')
+@login_required
+def request_admin_access_view(request):
+    if request.method == 'POST':
+        profile = request.user.profile
+        profile.requested_admin = True
+        profile.save()
+        messages.success(request, "Your admin access request has been submitted.")
+    return redirect('profile')
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def admin_requests_view(request):
+    requested_profiles = Profile.objects.filter(requested_admin=True, user__is_staff=False)
+    return render(request, 'client/admin_request.html', {'requested_profiles': requested_profiles})
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def approve_admin(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    user.is_staff = True
+    user.save()
+    profile = user.profile
+    profile.requested_admin = False
+    profile.save()
+    messages.success(request, f"{user.username} has been promoted to admin.")
+    return redirect('admin_requests_view')
+
+@login_required
+def update_profile(request):
+    if request.method == 'POST':
+        user = request.user
+        profile = user.profile
+        
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+        user.email = request.POST.get('email', user.email)
+        profile.contact_number = request.POST.get('phone', profile.contact_number)
+        profile.address = request.POST.get('address', profile.address)
+        # For file upload (profile picture)
+        if 'profile_picture' in request.FILES:
+            profile.profile_picture = request.FILES['profile_picture']
+        
+        user.save()
+        profile.save()
+        
+        messages.success(request, "Profile updated successfully!")
+        return redirect('profile')  # Or wherever you want to redirect after update
+
+    return render(request, 'accounts/profile.html')  # or your profile template

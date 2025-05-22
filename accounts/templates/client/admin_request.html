@@ -1,0 +1,86 @@
+{% extends 'client-base.html' %}
+{% block title %}Admin Access Requests{% endblock %}
+{% block content %}
+<style>
+    h2{
+        margin-top: 40px;
+    }
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    li {
+        background-color: white;
+        border-radius: 10px;
+        padding: 1.25rem; 
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border-left-width: 4px;
+        border-left-color: #60a5fa;
+    }
+    li:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    .approve-btn {
+        background-color: #10b981;
+        color: white;
+        padding: 10px 15px;
+        font-size: 14px;
+        font-weight: bold;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .approve-btn:hover {
+        background-color: #059669;
+        transform: translateY(-2px);
+    }
+
+    .approve-btn:active {
+        background-color: #047857;
+        transform: translateY(0);
+    }
+    h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1.5rem;
+    }
+    p {
+        color: #4b5563;
+    }
+    p.text-gray-500 {
+        font-size: 1.125rem;
+        color: #6b7280;
+    }
+</style>
+
+<h2 class="text-3xl font-extrabold mb-6 text-gray-800">Admin Access Requests</h2>
+
+{% if requested_profiles %}
+    <ul class="space-y-6">
+        {% for profile in requested_profiles %}
+            <li class="p-5 border-l-4 border-blue-600 rounded-lg shadow-lg bg-white hover:shadow-xl transition-all">
+                <div class="flex justify-between items-center">
+                    <div class="space-y-2">
+                        <p class="text-lg font-semibold text-gray-800"><strong>Name:</strong> {{ profile.user.get_full_name }}</p>
+                        <p class="text-sm text-gray-600"><strong>Username:</strong> {{ profile.user.username }}</p>
+                        <p class="text-sm text-gray-600"><strong>Email:</strong> {{ profile.user.email }}</p>
+                    </div>
+                    <form method="POST" action="{% url 'approve_admin' profile.user.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="approve-btn">
+                            Approve
+                        </button>
+                    </form>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="text-gray-500 text-lg">No admin requests at the moment.</p>
+{% endif %}
+{% endblock %}

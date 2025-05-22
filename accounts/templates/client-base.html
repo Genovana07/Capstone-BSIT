@@ -188,15 +188,19 @@
       </div>
 
       <nav class="nav">
-        <a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="{% url 'booking' %}"><i class="fas fa-calendar-alt"></i> Booking</a>
-        <a href="{% url 'event' %}"><i class="fas fa-calendar"></i> Event</a>
-        <a href="{% url 'equipment' %}"><i class="fas fa-box"></i> Equipment Inventory</a>
-        <a href="{% url 'tracking' %}"><i class="fas fa-eye"></i> Equipment Tracking</a>
-        <a href="{% url 'reviews' %}"><i class="fas fa-star"></i> Review</a>
-        <a href="{% url 'customer' %}"><i class="fas fa-users"></i> Customer</a>
-        <a href="{% url 'employee' %}"><i class="fas fa-user"></i> Employee</a>
-      </nav>
+    <a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a>
+    <a href="{% url 'booking' %}"><i class="fas fa-calendar-alt"></i> Booking</a>
+    <a href="{% url 'event' %}"><i class="fas fa-calendar"></i> Event</a>
+    <a href="{% url 'equipment' %}"><i class="fas fa-box"></i> Equipment Inventory</a>
+    <a href="{% url 'tracking' %}"><i class="fas fa-eye"></i> Equipment Tracking</a>
+    <a href="{% url 'reviews' %}"><i class="fas fa-star"></i> Review</a>
+    <a href="{% url 'customer' %}"><i class="fas fa-users"></i> Customer</a>
+    <a href="{% url 'employee' %}"><i class="fas fa-user"></i> Employee</a>
+
+    {% if user.is_superuser %}
+        <a href="{% url 'admin_requests_view' %}"><i class="fas fa-user-shield"></i> Admin Requests</a>
+    {% endif %}
+</nav>
     </aside>
 
     <!-- Main Content -->

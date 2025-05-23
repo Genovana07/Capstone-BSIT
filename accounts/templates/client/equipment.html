@@ -3,163 +3,219 @@
 {% block title %}Inventory List{% endblock %}
 
 {% block content %}
-<!-- Inventory Header -->
+<div class="inventory-container">
+    <!-- Inventory Header -->
     <div class="inventory-header">
-      <h1>Inventory List</h1>
-      <div class="filters">
-        <div class="filter-item">
-          <div class="stock-status">In Stock</div>
+        <h1>Inventory List</h1>
+        <div class="filters">
+            <div class="filter-item">
+                <div class="stock-status">In Stock</div>
+            </div>
+            <div class="filter-item">
+                <div class="search-box">
+                    <input type="text" placeholder="Search" />
+                    <button><i class="fa fa-search"></i></button>
+                </div>
+            </div>
+            <div class="filter-item">
+                <div class="status-btn">Status</div>
+                <div class="status-btn">All</div>
+            </div>
         </div>
-        <div class="filter-item">
-          <div class="search-box">
-            <input type="text" placeholder="Search" />
-            <button><i class="fa fa-search"></i></button>
-          </div>
-        </div>
-        <div class="filter-item">
-          <div class="status-btn">Status</div>
-          <div class="status-btn">All</div>
-        </div>
-      </div>
     </div>
 
     <!-- Inventory Table -->
-   <table class="inventory-table">
-  <thead>
-    <tr>
-      <th>Equipment</th>
-      <th>Quantity Available</th>
-      <th>Quantity Rented</th>
-      <th>Condition</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for equipment in equipment_list %}
-    <tr>
-      <td>{{ equipment.name }}</td>
-      <td>{{ equipment.quantity_available }}</td>
-      <td>{{ equipment.quantity_rented }}</td>
-      <td>{{ equipment.condition }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-  </div>
+    <table class="inventory-table">
+        <thead>
+            <tr>
+                <th>Equipment</th>
+                <th>Quantity Available</th>
+                <th>Quantity Rented</th>
+                <th>Condition</th>
+                <th>Actions</th>  <!-- This column will have buttons for adding/subtracting stock -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for equipment in equipment_list %}
+            <tr>
+                <td>{{ equipment.name }}</td>
+                <td>{{ equipment.quantity_available }}</td>
+                <td>{{ equipment.quantity_rented }}</td>
+                <td>{{ equipment.condition }}</td>
+                <td>
+                    <!-- Add and Subtract buttons -->
+                    <form method="POST" action="{% url 'update_inventory' equipment.id %}">
+                        {% csrf_token %}
+                        <div class="action-buttons">
+                            <button type="submit" name="action" value="add_stock" class="action-btn add-btn">Add Stock</button>
+                            <button type="submit" name="action" value="subtract_stock" class="action-btn subtract-btn">Subtract Stock</button>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No equipment available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
-  <style>
+<style>
     .inventory-container {
-      background-color: #fff;
-      padding: 20px;
-      flex-grow: 1;
-      margin-top: 20px;
+        background-color: #fff;
+        padding: 20px;
+        flex-grow: 1;
+        margin-top: 20px;
     }
 
     .inventory-header {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
     }
 
     .inventory-header h1 {
-      font-size: 28px;
-      font-weight: bold;
-      margin-top: 3%;
+        font-size: 28px;
+        font-weight: bold;
+        margin-top: 1%;
     }
 
     .filters {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 30px;
-      margin-top: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 30px;
+        margin-top: 20px;
     }
 
     .filter-item {
-      display: flex;
-      gap: 10px;
+        display: flex;
+        gap: 10px;
     }
 
     .stock-status, .status-btn {
-      font-weight: bold;
-      padding: 8px 16px;
-      background-color: #f2f2f2;
-      border-radius: 5px;
-      cursor: pointer;
-      text-align: center;
+        font-weight: bold;
+        padding: 8px 16px;
+        background-color: #f2f2f2;
+        border-radius: 5px;
+        cursor: pointer;
+        text-align: center;
     }
 
     .search-box {
-      display: flex;
-      align-items: center;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      overflow: hidden;
-      margin-left: -35vw;
+        display: flex;
+        align-items: center;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        overflow: hidden;
+        margin-left: -35vw;
     }
 
     .search-box input {
-      border: none;
-      padding: 8px 12px;
-      outline: none;
-      width: 250px;
+        border: none;
+        padding: 8px 12px;
+        outline: none;
+        width: 250px;
     }
 
     .search-box button {
-      background: none;
-      border: none;
-      padding: 8px 12px;
-      cursor: pointer;
+        background: none;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
     }
 
     .search-box button i {
-      font-size: 16px;
+        font-size: 16px;
     }
+
     .inventory-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      border: 1px solid #ddd;
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        border: 1px solid #ddd;
     }
 
     .inventory-table th,
     .inventory-table td {
-      border: 1px solid #ddd;
-      padding: 12px 10px;
-      text-align: left;
-      font-size: 14px;
+        border: 1px solid #ddd;
+        padding: 12px 10px;
+        text-align: left;
+        font-size: 14px;
     }
 
     .inventory-table th {
-      background-color: #f5f5f5;
-      font-weight: bold;
+        background-color: #f5f5f5;
+        font-weight: bold;
     }
 
     .inventory-table tr:hover {
-      background-color: #f9f9f9;
+        background-color: #f9f9f9;
+    }
+
+    /* Action Button Styling */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .action-btn {
+        padding: 8px 16px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        text-align: center;
+        transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .action-btn:hover {
+        transform: scale(1.05);
+    }
+
+    .add-btn {
+        background-color: #28a745;
+        color: #fff;
+    }
+
+    .add-btn:hover {
+        background-color: #218838;
+    }
+
+    .subtract-btn {
+        background-color: #dc3545;
+        color: #fff;
+    }
+
+    .subtract-btn:hover {
+        background-color: #c82333;
     }
 
     /* Responsive Design */
     @media (max-width: 768px) {
-      .inventory-container {
-        padding: 10px;
-      }
+        .inventory-container {
+            padding: 10px;
+        }
 
-      .inventory-header h1 {
-        font-size: 24px;
-      }
+        .inventory-header h1 {
+            font-size: 24px;
+        }
 
-      .filters {
-        flex-direction: column;
-      }
+        .filters {
+            flex-direction: column;
+        }
 
-      .search-box input {
-        width: 100%;
-      }
+        .search-box input {
+            width: 100%;
+        }
 
-      .status-btn {
-        width: 100%;
-        text-align: center;
-      }
+        .status-btn {
+            width: 100%;
+            text-align: center;
+        }
     }
-  </style>
+</style>
+
 {% endblock %}

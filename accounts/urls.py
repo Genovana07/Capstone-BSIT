@@ -2,7 +2,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
-from .views import request_admin_access_view, admin_requests_view
+from .views import request_admin_access_view, admin_requests_view, dashboard_redirect
 
 urlpatterns = [
     # Public pages (no login required)
@@ -45,6 +45,9 @@ urlpatterns = [
     path('request-admin/', views.request_admin_access_view, name='request_admin_access'),
     path('admin/requests/', views.admin_requests_view, name='admin_requests_view'),
     path('approve-admin/<int:user_id>/', views.approve_admin, name='approve_admin'),
+    path('dashboard/', dashboard_redirect, name='dashboard_redirect'),
+    path('inventory/', views.equipment, name='inventory_list'),  # For the inventory listing page
+    path('inventory/update/<int:equipment_id>/', views.update_inventory, name='update_inventory'),  # For updating the inventory
 ]
 
 

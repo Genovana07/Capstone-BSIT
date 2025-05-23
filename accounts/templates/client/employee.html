@@ -52,39 +52,56 @@
         border-bottom: 2px solid #000;
     }
   </style>
-</head>
-<body>
-    <div class="dashboard-header tracking">
-        <h1>Employees</h1>
-        <p>AudioMan Team</p>
-      </div>
 
-      <!-- Download button -->
-      <div class="download-wrapper">
-        <button class="download-btn">Download</button>
-      </div>
-
-      <!-- Table -->
-      <table>
-        <thead>
-          <tr>
-            <th>Employee Name</th>
-            <th>Role/Position</th>
-            <th>Contact Information</th>
-            <th>Work Schedule</th>
-            <th>Assigned Tasks</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td colspan="5">&nbsp;</td></tr>
-          <tr><td colspan="5">&nbsp;</td></tr>
-          <tr><td colspan="5">&nbsp;</td></tr>
-          <tr><td colspan="5">&nbsp;</td></tr>
-          <tr><td colspan="5">&nbsp;</td></tr>
-        </tbody>
-      </table>
-    </div>
+  <div class="dashboard-header tracking">
+    <h1>Employees</h1>
+    <p>AudioMan Team</p>
   </div>
-</body>
-</html>
+
+  <!-- Download button -->
+  <div class="download-wrapper">
+    <button class="download-btn">Download</button>
+  </div>
+
+  <!-- Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Address</th>
+        <th>Province</th>
+        <th>City</th>
+        <th>Profile Picture</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for profile in employees %}
+        <tr>
+          <td>{{ profile.user.username }}</td>
+          <td>{{ profile.user.first_name }}</td>
+          <td>{{ profile.user.last_name }}</td>
+          <td>{{ profile.user.email }}</td>
+          <td>{{ profile.contact_number }}</td>
+          <td>{{ profile.address }}</td>
+          <td>{{ profile.province }}</td>
+          <td>{{ profile.city }}</td>
+          <td>
+            {% if profile.profile_picture %}
+              <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" width="50" height="50" />
+            {% else %}
+              No Picture
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="9">No approved employees found.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% endblock %}

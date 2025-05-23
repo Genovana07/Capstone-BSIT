@@ -48,10 +48,10 @@
                         <i class="fa fa-eye"></i> View
                     </a>
                     {% if booking.status == 'Processing' %}
-                        <a href="{% url 'accept_booking' booking.id %}" class="accept">
+                        <a href="javascript:void(0);" class="accept" onclick="confirmAction('{% url 'accept_booking' booking.id %}')">
                             <i class="fa fa-check"></i> Accept
                         </a>
-                        <a href="{% url 'reject_booking' booking.id %}" class="reject">
+                        <a href="javascript:void(0);" class="reject" onclick="confirmAction('{% url 'reject_booking' booking.id %}')">
                             <i class="fa fa-times"></i> Reject
                         </a>
                     {% endif %}
@@ -60,9 +60,6 @@
                             <i class="fa fa-check"></i> Complete
                         </a>
                     {% endif %}
-                    <a href="{% url 'delete_booking' booking.id %}" class="delete" onclick="return confirm('Are you sure you want to delete this booking?');">
-                        <i class="fa fa-trash"></i> Delete
-                    </a>
                 </td>
             </tr>
 
@@ -101,6 +98,14 @@
     </tbody>
 </table>
 
+<!-- JavaScript for Confirmation -->
+<script type="text/javascript">
+    function confirmAction(url) {
+        if (confirm('Are you sure you want to proceed with this action?')) {
+            window.location.href = url;
+        }
+    }
+</script>
 <style>
     .header {
         display: flex;

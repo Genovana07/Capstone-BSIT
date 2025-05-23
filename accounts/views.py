@@ -17,6 +17,7 @@ from django.db.models import Avg
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_protect
 from datetime import datetime
+from django.core.exceptions import ValidationError
 
 def register_view(request):
     if request.method == "POST":
@@ -67,7 +68,6 @@ def register_view(request):
             return redirect("login")
 
     return render(request, "accounts/register.html")
-
 # Login View
 def login_view(request):
     if request.method == "POST":
@@ -116,7 +116,7 @@ def services_view(request):
         "4 Speakers (100-300 watts)",
         "2 Wireless Microphones",
         "Mixer Console (4 channels)",
-        "Subwoofer",
+        "2 Subwoofer",
         "Sound System Setup & Testing",
         "Cables & Connectors (2 sets)"
     ]},
@@ -409,8 +409,6 @@ def services_view(request):
         "Cables & Connectors (2 sets)"
     ]}
 ]
-
-    
     range_values = list(range(1, len(packages) + 1))
 
     return render(request, 'accounts/services.html', {
@@ -636,9 +634,10 @@ def booking_events_api(request):
         "form_logic": grouped
     }, safe=False)
 
-@login_required
 @admin_only
+@login_required
 def equipment(request):
+    # Get all equipment
     equipment_list = Equipment.objects.all()
     return render(request, 'client/equipment.html', {'equipment_list': equipment_list})
 
@@ -665,15 +664,50 @@ def reviews(request):
         'average_rating': round(average_rating, 1),
     })
 
+
 @login_required
 @admin_only
 def customer(request):
-    return render(request, 'client/customer.html')
+    # Retrieve all users and their associated profile data
+    users = User.objects.filter(is_staff=False)  # Exclude admin users (is_staff=False)
+    customer_data = []
+
+    for user in users:
+        try:
+            profile = Profile.objects.get(user=user)  # One-to-One relation with Profile
+            customer_data.append({
+                "username": user.username,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "phone": profile.contact_number,
+                "address": profile.address,
+                "province": profile.province,
+                "city": profile.city,
+                "profile_picture": profile.profile_picture.url if profile.profile_picture else None,  # Handle profile picture if exists
+            })
+        except Profile.DoesNotExist:
+            # If the profile is missing (for any reason), handle it gracefully
+            customer_data.append({
+                "username": user.username,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "phone": None,
+                "address": None,
+                "province": None,
+                "city": None,
+                "profile_picture": None,
+            })
+
+    return render(request, 'client/customer.html', {'customer_data': customer_data})
 
 @login_required
 @admin_only
 def employee(request):
-    return render(request, 'client/employee.html')
+    # Get only users who are current admins (is_staff=True)
+    employees = Profile.objects.filter(user__is_staff=True)  # Only current admins
+    return render(request, 'client/employee.html', {'employees': employees})
 
 @login_required
 def view_booking(request, booking_id):
@@ -854,3 +888,38 @@ def update_profile(request):
         return redirect('profile')  # Or wherever you want to redirect after update
 
     return render(request, 'accounts/profile.html')  # or your profile template
+
+
+@login_required
+def dashboard_redirect(request):
+    # Check if the logged-in user is an admin or regular user
+    profile = Profile.objects.get(user=request.user)
+    
+    if profile.requested_admin:  # If requested_admin is True
+        return redirect('employee')  # Redirect to the employee dashboard
+    else:
+        return redirect('customer')  # Redirect to the customer dashboard
+    
+@login_required
+def update_inventory(request, equipment_id):
+    if request.method == 'POST':
+        action = request.POST.get('action')  # action can be 'add_stock' or 'subtract_stock'
+        equipment = Equipment.objects.get(id=equipment_id)
+
+        if action == 'add_stock':
+            # Add 1 to the available stock
+            equipment.quantity_available += 1
+            equipment.save()
+        elif action == 'subtract_stock':
+            # Subtract 1 from the available stock, ensuring it's not below 0
+            if equipment.quantity_available > 0:
+                equipment.quantity_available -= 1
+                equipment.save()
+            else:
+                return HttpResponse("Insufficient stock to subtract.", status=400)
+
+        # Redirect to the 'inventory_list' view after the update
+        return redirect('equipment')  # Ensure 'inventory_list' matches the URL name in urls.py
+
+    return HttpResponse("Invalid request.", status=400)
+

@@ -226,39 +226,27 @@
   <!-- Sidebar -->
   <aside class="sidebar">
     <ul>
-      <li>
-        <img src="{% static 'images/profile-user.png' %}" alt="User Icon">
-        <span><a href="{% url 'profile' %}">Profile</a></span>
-      </li>
-      <li>
-        <img src="{% static 'images/open-book.png' %}" alt="Bookings Icon">
-        <span><a href="{% url 'mybookings' %}">My Bookings</a></span>
-      </li>
-      <li>
-        <img src="{% static 'images/history.png' %}" alt="History Icon">
-        <span><a href="{% url 'history' %}">History</a></span>
-      </li>
-      <li>
-        <img src="{% static 'images/logout.png' %}" alt="Logout Icon">
-        <span><a href="{% url 'logout' %}">Logout</a></span>
-      </li>
+      <li><img src="{% static 'images/profile-user.png' %}" alt="User Icon"><span><a href="{% url 'profile' %}">Profile</a></span></li>
+      <li><img src="{% static 'images/open-book.png' %}" alt="Bookings Icon"><span><a href="{% url 'mybookings' %}">My Bookings</a></span></li>
+      <li><img src="{% static 'images/history.png' %}" alt="History Icon"><span><a href="{% url 'history' %}">History</a></span></li>
+      <li><img src="{% static 'images/logout.png' %}" alt="Logout Icon"><span><a href="{% url 'logout' %}">Logout</a></span></li>
     </ul>
   </aside>
 
-  <!-- Success/Error Messages -->
+  <!-- Messages -->
   {% if messages %}
     <div class="messages" id="messageContainer">
-        {% for message in messages %}
-            <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
-                {{ message }}
-            </div>
-        {% endfor %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
     </div>
   {% endif %}
 
+  <!-- Main Content -->
   <main class="main-content">
     <h2><span class="icon">🕓</span> Booking History</h2>
-
     <div class="table-container">
       <table>
         <thead>
@@ -273,16 +261,29 @@
         </thead>
         <tbody>
           {% for booking in history_list %}
-          <tr>
-            <td>{{ booking.customer_name }}</td>
-            <td>{{ booking.date_booked }}</td>
-            <td>{{ booking.package }}</td>
-            <td>{{ booking.event_date }}</td>
-            <td>{{ booking.total }}</td>
-            <td><a href="javascript:void(0);" onclick="openModal('{{ booking.customer_name }}', '{{ booking.date_booked }}', '{{ booking.rating }}', '{{ booking.package }}', '{{ booking.event_date }}')">{{ booking.rating }}</a></td>
-          </tr>
+            <tr>
+              <td>{{ booking.customer_name }}</td>
+              <td>{{ booking.date_booked }}</td>
+              <td>{{ booking.package }}</td>
+              <td>{{ booking.event_date }}</td>
+              <td>{{ booking.total }}</td>
+              <td>
+                {% if booking.status == "Completed" %}
+                  <a href="javascript:void(0);" 
+                     onclick="openModal('{{ booking.customer_name }}', '{{ booking.date_booked }}', '{{ booking.rating }}', '{{ booking.package }}', '{{ booking.event_date }}', '{{ booking.id }}')">
+                    {% if booking.rating %}
+                      {{ booking.rating }} ⭐
+                    {% else %}
+                      ⭐ Rate
+                    {% endif %}
+                  </a>
+                {% else %}
+                  N/A
+                {% endif %}
+              </td>
+            </tr>
           {% empty %}
-          <tr><td colspan="6">No history found.</td></tr>
+            <tr><td colspan="6">No history found.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -290,76 +291,85 @@
   </main>
 </div>
 
-<!-- Modal for Rating -->
+<!-- Modal -->
 <div id="ratingModal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
-      <span>Rating Details</span>
+      <span>Rate Your Booking</span>
       <span class="close" onclick="closeModal()">×</span>
     </div>
     <form method="post" action="{% url 'submit_review' %}">
-    {% csrf_token %}
+      {% csrf_token %}
+      <input type="hidden" id="bookingId" name="bookingId">
 
-    <div class="form-group">
+      <div class="form-group">
         <label for="customerName">Name</label>
         <input type="text" id="customerName" name="customerName" readonly>
-    </div>
+      </div>
 
-    <div class="form-group">
+      <div class="form-group">
         <label for="bookingDate">Date of Booking</label>
-        <input type="text" id="bookingDate" name="bookingDate" value="{{ booking_date }}" readonly>
-    </div>
+        <input type="text" id="bookingDate" name="bookingDate" readonly>
+      </div>
 
-    <div class="form-group">
-        <label for="eventRating">Rating (Stars)</label>
-        <div class="rating">
-            <input type="radio" id="star5" name="rating" value="5"><label for="star5">★</label>
-            <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
-            <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
-            <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
-            <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
-        </div>
-    </div>
-
-    <div class="form-group">
+      <div class="form-group">
         <label for="eventType">Type of Event</label>
         <input type="text" id="eventType" name="eventType" readonly>
-    </div>
+      </div>
 
-    <div class="form-group">
+      <div class="form-group">
+        <label>Rating (Stars)</label>
+        <div class="rating">
+          <input type="radio" id="star5" name="rating" value="5"><label for="star5">★</label>
+          <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
+          <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
+          <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
+          <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
+        </div>
+      </div>
+
+      <div class="form-group">
         <label for="comment">Comment</label>
         <textarea id="comment" name="comment" placeholder="Leave a comment..."></textarea>
-    </div>
+      </div>
 
-    <button type="submit">Submit</button>
-</form>
+      <button type="submit">Submit</button>
+    </form>
   </div>
 </div>
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-        const messageContainer = document.querySelector('.messages');
-        if (messageContainer) {
-            messageContainer.style.display = 'block';  
-            setTimeout(function() {
-                messageContainer.style.display = 'none';
-            }, 2000); 
-        }
-    });
+    const messageContainer = document.getElementById('messageContainer');
+    if (messageContainer) {
+      messageContainer.style.display = 'block';
+      setTimeout(() => {
+        messageContainer.style.display = 'none';
+      }, 3000);
+    }
+  });
 
-  function openModal(name, bookingDate, rating, eventType, comment) {
+  function openModal(name, bookingDate, rating, eventType, eventDate, bookingId) {
     document.getElementById('ratingModal').style.display = 'flex';
+
     document.getElementById('customerName').value = name;
     document.getElementById('bookingDate').value = bookingDate;
     document.getElementById('eventType').value = eventType;
+    document.getElementById('bookingId').value = bookingId;
 
-    // Set the selected star rating
+    // Clear previous rating selection
     const stars = document.getElementsByName('rating');
-    for (let star of stars) {
-      if (star.value == rating) {
-        star.checked = true;
-      }
+    stars.forEach(star => star.checked = false);
+
+    // If rating exists, select the star
+    if (rating) {
+      stars.forEach(star => {
+        if (star.value == rating) star.checked = true;
+      });
     }
+
+    // Clear comment textarea when opening modal
+    document.getElementById('comment').value = '';
   }
 
   function closeModal() {

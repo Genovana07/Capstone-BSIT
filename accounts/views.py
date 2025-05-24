@@ -18,6 +18,8 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_protect
 from datetime import datetime
 from django.core.exceptions import ValidationError
+from django.db.models.functions import TruncMonth
+from django.utils.dateformat import DateFormat
 
 def register_view(request):
     if request.method == "POST":
@@ -493,8 +495,8 @@ def history(request):
             'package': booking.package.title,
             'event_date': booking.event_date.strftime('%B %d, %Y'),
             'total': booking.price,
-            'rating': '⭐ Rate' if booking.status == 'Completed' else 'N/A',  # Show 'N/A' for non-completed bookings
-            'status': booking.status,  # Include the status for later checking
+            'rating': booking.rating if hasattr(booking, 'rating') else '',  # Assume you have rating field or adjust accordingly
+            'status': booking.status,
         })
 
     return render(request, 'accounts/history.html', {'history_list': history_list})
@@ -564,7 +566,6 @@ def admin_only(view_func):
         return view_func(request, *args, **kwargs)
     return wrapper
 
-# Admin Dashboard
 @login_required
 @admin_only
 def dashboard(request):
@@ -581,11 +582,35 @@ def dashboard(request):
     revenue = sum(parse_price(b.price) for b in bookings)
     profit = revenue * 0.5  # or your actual formula
 
+    # 📊 Format monthly data as strings for Chart.js
+    raw_monthly = bookings.annotate(
+        month=TruncMonth('event_date')
+    ).values('month').annotate(count=Count('id')).order_by('month')
+
+    # Convert to format Chart.js can understand
+    bookings_per_month = [
+        {
+            "month": DateFormat(entry["month"]).format("Y-m"),  # e.g., "2025-01"
+            "count": entry["count"]
+        }
+        for entry in raw_monthly
+    ]
+
+    event_type_data = bookings.values('event_type').annotate(count=Count('id'))
+    package_popularity = bookings.values('package__title').annotate(count=Count('id')).order_by('-count')
+    status_data = bookings.values('status').annotate(count=Count('id'))
+
     return render(request, 'client/dashboard.html', {
         'booking_count': booking_count,
         'revenue': revenue,
         'profit': profit,
         'pending_count': pending_count,
+
+        # ✅ Pass cleaned data
+        'bookings_per_month': bookings_per_month,
+        'event_type_data': list(event_type_data),
+        'package_popularity': list(package_popularity),
+        'status_data': list(status_data),
     })
 
 
@@ -799,28 +824,29 @@ def complete_booking(request, id):
 @csrf_protect
 def submit_review(request):
     if request.method == 'POST':
-        # Collect data from the form
-        customer_name = request.POST.get('customerName')
-        booking_date = datetime.now().date()  
+        booking_id = request.POST.get('bookingId')
         rating = request.POST.get('rating')
-        event_type = request.POST.get('eventType')
         comment = request.POST.get('comment')
 
-        if not customer_name or not booking_date or not rating or not event_type or not comment:
-            return HttpResponse("All fields are required!", status=400)
+        if not booking_id or not rating or not comment:
+            messages.error(request, "All fields are required!")
+            return redirect('history')
 
-        review = Review.objects.create(
-            customer_name=customer_name,
-            booking_date=booking_date, 
-            rating=rating,
-            event_type=event_type,
-            comment=comment
-        )
+        booking = get_object_or_404(Booking, id=booking_id, user=request.user)
 
-       
-        return redirect('history')  
+        if booking.status != 'Completed':
+            messages.error(request, "You can only review completed bookings.")
+            return redirect('history')
 
-    return redirect('home')  
+        # Save rating and comment (make sure Booking model has these fields)
+        booking.rating = rating
+        booking.comment = comment
+        booking.save()
+
+        messages.success(request, "Thank you for your review!")
+        return redirect('history')
+
+    return redirect('home')
 
 @login_required
 @admin_only

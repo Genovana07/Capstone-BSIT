@@ -171,6 +171,6 @@ class Review(models.Model):
     comment = models.TextField(default='No comment.')
 
     def __str__(self):
-        return f"Review by {self.customer_name} on {self.booking_date}"
+        return f"Review by {self.customer_name} on {self.booking_date}" 
     
     

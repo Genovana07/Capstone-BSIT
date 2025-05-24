@@ -51,6 +51,7 @@
             <th>Event Type</th>
             <th>Full Address</th>
             <th>Status</th>
+            <th>Equipment</th> <!-- General Equipment column for all packages -->
             <th>Map</th>
           </tr>
         </thead>
@@ -63,44 +64,56 @@
               <td>{{ booking.fulladdress }}</td>
               <td>Approved</td>
               <td>
+                <!-- Display the equipment list dynamically for each package -->
+                {% if booking.package.equipment.all %}
+                  <ul>
+                    {% for package_equipment in booking.package.packageequipment_set.all %}
+                      <li>{{ package_equipment.equipment.name }} (Quantity: {{ package_equipment.quantity_required }})</li>
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  <p>No equipment assigned</p>
+                {% endif %}
+              </td>
+              <td>
                 <!-- Embed Leaflet Map based on the location entered in the booking -->
                 <div id="map-{{ booking.id }}" class="map-container"></div>
                 <script>
                   // Load the map after the Leaflet library has been loaded
-                                function initMap(location, bookingId) {
-                var geocoder = new XMLHttpRequest();
-                var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
-                geocoder.open('GET', url, true);
-                geocoder.onreadystatechange = function () {
-                  if (geocoder.readyState == 4 && geocoder.status == 200) {
-                    var data = JSON.parse(geocoder.responseText);
-                    
-                    // Check the data returned from the geocoding API
-                    console.log('Geocoding Response:', data);
-                    
-                    if (data.length > 0) {
-                      var lat = data[0].lat;
-                      var lon = data[0].lon;
+                  function initMap(location, bookingId) {
+                    var geocoder = new XMLHttpRequest();
+                    var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
+                    geocoder.open('GET', url, true);
+                    geocoder.onreadystatechange = function () {
+                      if (geocoder.readyState == 4 && geocoder.status == 200) {
+                        var data = JSON.parse(geocoder.responseText);
+                        
+                        // Check the data returned from the geocoding API
+                        console.log('Geocoding Response:', data);
+                        
+                        if (data.length > 0) {
+                          var lat = data[0].lat;
+                          var lon = data[0].lon;
 
-                      // Create a Leaflet map centered at the location
-                      var map = L.map('map-' + bookingId).setView([lat, lon], 15);
+                          // Create a Leaflet map centered at the location
+                          var map = L.map('map-' + bookingId).setView([lat, lon], 15);
 
-                      // Add OpenStreetMap tile layer
-                      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                      }).addTo(map);
+                          // Add OpenStreetMap tile layer
+                          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                          }).addTo(map);
 
-                      // Add a marker at the location
-                      L.marker([lat, lon]).addTo(map)
-                        .bindPopup('Location: ' + location)
-                        .openPopup();
-                    } else {
-                      console.error('Location not found!');
-                    }
+                          // Add a marker at the location
+                          L.marker([lat, lon]).addTo(map)
+                            .bindPopup('Location: ' + location)
+                            .openPopup();
+                        } else {
+                          console.error('Location not found!');
+                        }
+                      }
+                    };
+                    geocoder.send();
                   }
-                };
-                geocoder.send();
-              }
 
                   // Initialize map for each booking dynamically
                   initMap('{{ booking.location|escapejs }}', '{{ booking.id }}');

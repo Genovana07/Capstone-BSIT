@@ -125,22 +125,22 @@ def services_view(request):
         "3 Wireless Microphones",
         "Mixer Console with Effects (6 channels)",
         "2 Subwoofers",
-        "Stage Monitors",
+        "1 Stage Monitors",
         "Sound System Setup & Testing",
         "Cables & Connectors (3 sets)"
     ]},
     {"title": "Basic Wedding Sound System", "description": "For small weddings up to 100 guests.", "price": "₱7,000", "equipment": [
-        "4 Speakers (100-200 watts)",
+        "4 Speakers (100-300 watts)",
         "2 Wireless Microphones",
         "Mixer Console (4 channels)",
-        "Subwoofer",
+        "1 Subwoofer",
         "Sound System Setup & Testing",
         "Cables & Connectors (1 set)"
     ]},
     {"title": "Standard Wedding Sound System", "description": "For medium weddings up to 200 guests.", "price": "₱10,000", "equipment": [
         "6 Speakers (200-400 watts)",
         "3 Wireless Microphones",
-        "Mixer Console (6 channels)",
+        "Mixer Console with Effects (6 channels)",
         "2 Subwoofers",
         "Sound System Setup & Testing",
         "Cables & Connectors (2 sets)"
@@ -150,7 +150,7 @@ def services_view(request):
         "4 Wireless Microphones",
         "Mixer Console with Effects (8 channels)",
         "4 Subwoofers",
-        "Stage Monitors",
+        "1 Stage Monitors",
         "Sound System Setup & Testing",
         "Cables & Connectors (3 sets)"
     ]},
@@ -165,7 +165,7 @@ def services_view(request):
         "4 Speakers (100-300 watts)",
         "2 Wireless Microphones",
         "Mixer Console (4 channels)",
-        "Subwoofer",
+        "1 Subwoofer",
         "Sound System Setup & Testing",
         "Cables & Connectors (2 sets)"
     ]},
@@ -174,7 +174,7 @@ def services_view(request):
         "3 Wireless Microphones",
         "Mixer Console with Effects (6 channels)",
         "2 Subwoofers",
-        "Stage Monitors",
+        "1 Stage Monitors",
         "Sound System Setup & Testing",
         "Cables & Connectors (3 sets)"
     ]},
@@ -182,17 +182,17 @@ def services_view(request):
         "4 Speakers (200-400 watts)",
         "3 Wireless Microphones",
         "Mixer Console (4 channels)",
-        "Subwoofer",
-        "Stage Monitors",
+        "1 Subwoofer",
+        "1 Stage Monitors",
         "Sound System Setup & Testing",
         "Cables & Connectors (2 sets)"
     ]},
     {"title": "Standard Concert Sound System", "description": "For medium concerts up to 300 guests.", "price": "₱12,000", "equipment": [
-        "6 Speakers (300-600 watts)",
+        "6 Speakers (300-500 watts)",
         "4 Wireless Microphones",
         "Mixer Console with Effects (6 channels)",
         "2 Subwoofers",
-        "Stage Monitors",
+        "1 Stage Monitors",
         "Sound System Setup & Testing",
         "Cables & Connectors (3 sets)"
     ]},
@@ -201,7 +201,7 @@ def services_view(request):
         "6 Wireless Microphones",
         "Mixer Console with Effects (8 channels)",
         "4 Subwoofers",
-        "Stage Monitors",
+        "1 Stage Monitors",
         "Sound System Setup & Testing",
         "Cables & Connectors (4 sets)"
     ]},
@@ -216,7 +216,7 @@ def services_view(request):
         "4 Speakers (100-300 watts)",
         "2 Wireless Microphones",
         "Mixer Console (4 channels)",
-        "Subwoofer",
+        "1 Subwoofers",
         "Sound System Setup & Testing",
         "Cables & Connectors (2 sets)"
     ]},
@@ -225,7 +225,7 @@ def services_view(request):
         "3 Wireless Microphones",
         "Mixer Console with Effects (6 channels)",
         "2 Subwoofers",
-        "Stage Monitors",
+        "1 Stage Monitors",
         "Sound System Setup & Testing",
         "Cables & Connectors (3 sets)"
     ]},
@@ -240,7 +240,7 @@ def services_view(request):
         "4 Speakers (100-300 watts)",
         "2 Wireless Microphones",
         "Mixer Console (4 channels)",
-        "Subwoofer",
+        "1 Subwoofer",
         "Sound System Setup & Testing",
         "Cables & Connectors (2 sets)"
     ]},
@@ -249,7 +249,7 @@ def services_view(request):
         "3 Wireless Microphones",
         "Mixer Console with Effects (6 channels)",
         "2 Subwoofers",
-        "Stage Monitors",
+        "1 Stage Monitors",
         "Sound System Setup & Testing",
         "Cables & Connectors (3 sets)"
     ]},
@@ -257,14 +257,14 @@ def services_view(request):
         "4 Speakers (100-300 watts)",
         "2 Wireless Microphones",
         "Mixer Console (4 channels)",
-        "Subwoofer",
+        "1 Subwoofer",
         "Sound System Setup & Testing",
         "Cables & Connectors (2 sets)"
     ]},
     {"title": "Standard Graduation Sound System", "description": "For medium graduation events up to 200 guests.", "price": "₱9,000", "equipment": [
         "6 Speakers (200-400 watts)",
         "3 Wireless Microphones",
-        "Mixer Console (6 channels)",
+        "Mixer Console (4 channels)",
         "2 Subwoofers",
         "Sound System Setup & Testing",
         "Cables & Connectors (2 sets)"
@@ -274,7 +274,7 @@ def services_view(request):
         "4 Wireless Microphones",
         "Mixer Console with Effects (8 channels)",
         "4 Subwoofers",
-        "Stage Monitors",
+        "1 Stage Monitors",
         "Sound System Setup & Testing",
         "Cables & Connectors (3 sets)"
     ]},
@@ -289,7 +289,7 @@ def services_view(request):
         "4 Speakers (100-300 watts)",
         "2 Wireless Microphones",
         "Mixer Console (4 channels)",
-        "Subwoofer",
+        "1 Subwoofer",
         "Sound System Setup & Testing",
         "Cables & Connectors (2 sets)"
     ]},
@@ -298,12 +298,12 @@ def services_view(request):
         "3 Wireless Microphones",
         "Mixer Console with Effects (6 channels)",
         "2 Subwoofers",
-        "Stage Monitors",
+        "1 Stage Monitors",
         "Sound System Setup & Testing",
         "Cables & Connectors (3 sets)"
     ]},
     {"title": "Basic Fundraising Event Sound System", "description": "For small fundraising events up to 100 guests.", "price": "₱6,000", "equipment": [
-        "4 Speakers (100-200 watts)",
+        "4 Speakers (100-300 watts)",
         "2 Wireless Microphones",
         "Mixer Console (4 channels)",
         "Cables & Connectors (1 set)",
@@ -312,8 +312,8 @@ def services_view(request):
     {"title": "Standard Fundraising Event Sound System", "description": "For medium fundraising events up to 200 guests.", "price": "₱9,000", "equipment": [
         "6 Speakers (200-400 watts)",
         "3 Wireless Microphones",
-        "Mixer Console (6 channels)",
-        "Subwoofer",
+        "Mixer Console (4 channels)",
+        "2 Subwoofer",
         "Sound System Setup & Testing",
         "Cables & Connectors (2 sets)"
     ]},
@@ -322,24 +322,24 @@ def services_view(request):
         "4 Wireless Microphones",
         "Mixer Console with Effects (8 channels)",
         "2 Subwoofers",
-        "Stage Monitors",
+        "1 Stage Monitors",
         "Sound System Setup & Testing",
         "Cables & Connectors (3 sets)"
     ]},
     {"title": "Basic Fashion Show Sound System", "description": "For small fashion shows up to 100 guests.", "price": "₱5,000", "equipment": [
-        "4 Speakers (100-200 watts)",
+        "4 Speakers (100-300 watts)",
         "2 Wireless Microphones",
         "Mixer Console (4 channels)",
-        "Subwoofer",
+        "1 Subwoofer",
         "Sound System Setup & Testing",
         "Cables & Connectors (1 set)"
     ]},
     {"title": "Standard Fashion Show Sound System", "description": "For medium fashion shows up to 200 guests.", "price": "₱8,000", "equipment": [
         "6 Speakers (200-400 watts)",
         "3 Wireless Microphones",
-        "Mixer Console (6 channels)",
-        "Subwoofer",
-        "Stage Monitors",
+        "Mixer Console (4 channels)",
+        "2 Subwoofer",
+        "1 Stage Monitors",
         "Sound System Setup & Testing",
         "Cables & Connectors (2 sets)"
     ]},
@@ -348,12 +348,12 @@ def services_view(request):
         "4 Wireless Microphones",
         "Mixer Console with Effects (8 channels)",
         "2 Subwoofers",
-        "Stage Monitors",
+        "1 Stage Monitors",
         "Sound System Setup & Testing",
         "Cables & Connectors (3 sets)"
     ]},
     {"title": "Basic Church Service Sound System", "description": "For small church services up to 100 guests.", "price": "₱4,500", "equipment": [
-        "4 Speakers (100-200 watts)",
+        "4 Speakers (100-300 watts)",
         "2 Wireless Microphones",
         "Mixer Console (4 channels)",
         "Cables & Connectors (1 set)",
@@ -362,8 +362,8 @@ def services_view(request):
     {"title": "Standard Church Service Sound System", "description": "For medium church services up to 200 guests.", "price": "₱7,500", "equipment": [
         "6 Speakers (200-400 watts)",
         "3 Wireless Microphones",
-        "Mixer Console (6 channels)",
-        "Subwoofer",
+        "Mixer Console (4 channels)",
+        "1 Subwoofer",
         "Sound System Setup & Testing",
         "Cables & Connectors (2 sets)"
     ]},
@@ -372,12 +372,12 @@ def services_view(request):
         "4 Wireless Microphones",
         "Mixer Console with Effects (8 channels)",
         "2 Subwoofers",
-        "Stage Monitors",
+        "1 Stage Monitors",
         "Sound System Setup & Testing",
         "Cables & Connectors (3 sets)"
     ]},
     {"title": "Basic School Play Sound System", "description": "For small school plays up to 100 guests.", "price": "₱5,000", "equipment": [
-        "4 Speakers (100-200 watts)",
+        "4 Speakers (100-300 watts)",
         "2 Wireless Microphones",
         "Mixer Console (4 channels)",
         "Cables & Connectors (1 set)",
@@ -386,8 +386,8 @@ def services_view(request):
     {"title": "Standard School Play Sound System", "description": "For medium school plays up to 200 guests.", "price": "₱8,500", "equipment": [
         "6 Speakers (200-400 watts)",
         "3 Wireless Microphones",
-        "Mixer Console (6 channels)",
-        "Subwoofer",
+        "Mixer Console (4 channels)",
+        "1 Subwoofer",
         "Sound System Setup & Testing",
         "Cables & Connectors (2 sets)"
     ]},
@@ -396,17 +396,16 @@ def services_view(request):
         "4 Wireless Microphones",
         "Mixer Console with Effects (8 channels)",
         "2 Subwoofers",
-        "Stage Monitors",
+        "1 Stage Monitors",
         "Sound System Setup & Testing",
         "Cables & Connectors (3 sets)"
     ]},
     {"title": "Basic Charity Event Sound System", "description": "For small charity events up to 100 guests.", "price": "₱5,500", "equipment": [
-        "4 Speakers (100-200 watts)",
+        "4 Speakers (100-300 watts)",
         "2 Wireless Microphones",
         "Mixer Console (4 channels)",
         "Cables & Connectors (1 set)",
         "Sound System Setup & Testing",
-        "Cables & Connectors (2 sets)"
     ]}
 ]
     range_values = list(range(1, len(packages) + 1))
@@ -483,18 +482,19 @@ def view_mybooking(request, booking_id):
 
 @login_required
 def history(request):
-    bookings = Booking.objects.filter(user=request.user).exclude(status='Processing').order_by('-event_date')
+    bookings = Booking.objects.filter(user=request.user).exclude(status='Processing').order_by('-created_at')
 
     history_list = []
     for booking in bookings:
         history_list.append({
-            'id': booking.id,  # Make sure booking.id is included here
+            'id': booking.id,
             'customer_name': booking.full_name,
             'date_booked': booking.created_at.strftime('%B %d, %Y'),
             'package': booking.package.title,
             'event_date': booking.event_date.strftime('%B %d, %Y'),
             'total': booking.price,
-            'rating': '⭐ Rate' if booking.status == 'Completed' else 'N/A'  # Placeholder for rating system
+            'rating': '⭐ Rate' if booking.status == 'Completed' else 'N/A',  # Show 'N/A' for non-completed bookings
+            'status': booking.status,  # Include the status for later checking
         })
 
     return render(request, 'accounts/history.html', {'history_list': history_list})
@@ -588,11 +588,11 @@ def dashboard(request):
         'pending_count': pending_count,
     })
 
-# Admin Views
+
 @login_required
 @admin_only  # Restrict to admin users
 def booking(request):
-    bookings = Booking.objects.all()  # Fetch all bookings for admin
+    bookings = Booking.objects.all().order_by('-created_at')  # Sort by creation date in descending order
     return render(request, 'client/booking.html', {'bookings': bookings})
 
 @login_required

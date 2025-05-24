@@ -42,7 +42,7 @@
       font-size: 24px;
       font-weight: bold;
       margin-bottom: 30px;
-      color: #fff; /* Ensure logo text is white */
+      color: #fff;
     }
 
     .user {
@@ -116,10 +116,12 @@
       font-size: 20px;
       margin-right: 12px;
     }
+
     .user-info span {
-    font-size: 17px; /* Increase font size of the username */
-    font-weight: bold; /* Optional: makes the username bolder */
+      font-size: 17px;
+      font-weight: bold;
     }
+
     .user-info i:first-of-type {
       margin-right: 12px;
     }
@@ -149,27 +151,64 @@
     .user-info #topbarDropdown a:hover {
       background-color: #f5f5f5;
     }
+
     .logo {
-    display: flex;
-    align-items: center;
-    font-family: 'MavenPro', sans-serif;
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: #23194f;
-}
+      display: flex;
+      align-items: center;
+      font-family: 'MavenPro', sans-serif;
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #23194f;
+    }
 
-.logo .text-white {
-    color: white;
-}
+    .logo .text-white {
+      color: white;
+    }
 
-.logo .text-yellow {
-    background-color: #f1c40f;
-    color: #000000;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-left: 3px;
-    font-weight: bold;
-}
+    .logo .text-yellow {
+      background-color: #f1c40f;
+      color: #000000;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 3px;
+      font-weight: bold;
+    }
+
+    /* Styling for messages */
+    .messages {
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 30%;
+      padding: 8px 15px;
+      color: white;
+      font-size: 14px;
+      text-align: center;
+      border-radius: 6px;
+      z-index: 9999;
+    }
+
+    .alert-error {
+      background-color: #f44336 !important;
+      color: white !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    .alert-success {
+      background-color: #4CAF50 !important;
+      color: white !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    .alert {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 35px;
+    }
   </style>
 </head>
 <body>
@@ -178,7 +217,7 @@
     <aside class="sidebar">
       <div class="logo">
         <span class="text-white">AUDIO</span><span class="text-yellow">MAN</span>
-    </div>
+      </div>
       <div class="user">
         <div class="avatar">
           <img src="{% static 'images/profile-icon.png' %}" alt="Avatar Icon" class="white-icon" />
@@ -188,19 +227,19 @@
       </div>
 
       <nav class="nav">
-    <a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a>
-    <a href="{% url 'booking' %}"><i class="fas fa-calendar-alt"></i> Booking</a>
-    <a href="{% url 'event' %}"><i class="fas fa-calendar"></i> Event</a>
-    <a href="{% url 'equipment' %}"><i class="fas fa-box"></i> Equipment Inventory</a>
-    <a href="{% url 'tracking' %}"><i class="fas fa-eye"></i> Equipment Tracking</a>
-    <a href="{% url 'reviews' %}"><i class="fas fa-star"></i> Review</a>
-    <a href="{% url 'customer' %}"><i class="fas fa-users"></i> Customer</a>
-    <a href="{% url 'employee' %}"><i class="fas fa-user"></i> Employee</a>
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="{% url 'booking' %}"><i class="fas fa-calendar-alt"></i> Booking</a>
+        <a href="{% url 'event' %}"><i class="fas fa-calendar"></i> Event</a>
+        <a href="{% url 'equipment' %}"><i class="fas fa-box"></i> Equipment Inventory</a>
+        <a href="{% url 'tracking' %}"><i class="fas fa-eye"></i> Equipment Tracking</a>
+        <a href="{% url 'reviews' %}"><i class="fas fa-star"></i> Review</a>
+        <a href="{% url 'customer' %}"><i class="fas fa-users"></i> Customer</a>
+        <a href="{% url 'employee' %}"><i class="fas fa-user"></i> Employee</a>
 
-    {% if user.is_superuser %}
-        <a href="{% url 'admin_requests_view' %}"><i class="fas fa-user-shield"></i> Admin Requests</a>
-    {% endif %}
-</nav>
+        {% if user.is_superuser %}
+          <a href="{% url 'admin_requests_view' %}"><i class="fas fa-user-shield"></i> Admin Requests</a>
+        {% endif %}
+      </nav>
     </aside>
 
     <!-- Main Content -->
@@ -221,6 +260,17 @@
     </main>
   </div>
 
+  <!-- Display messages (success/error) -->
+  {% if messages %}
+    <div class="messages" id="messageContainer">
+      {% for message in messages %}
+        <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
   <script>
     const toggle = document.getElementById('topbarDropdownToggle');
     const dropdown = document.getElementById('topbarDropdown');
@@ -232,6 +282,16 @@
 
     document.addEventListener('click', function() {
       dropdown.style.display = 'none';
+    });
+
+    // Auto-hide the messages after 3 seconds
+    document.addEventListener('DOMContentLoaded', function () {
+      const messageContainer = document.getElementById('messageContainer');
+      if (messageContainer) {
+        setTimeout(function() {
+          messageContainer.style.display = 'none';
+        }, 3000); // 3 seconds delay to auto-hide
+      }
     });
   </script>
 </body>

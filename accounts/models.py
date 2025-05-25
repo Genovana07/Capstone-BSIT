@@ -94,7 +94,7 @@ class Booking(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    package = models.ForeignKey(ServicePackage, on_delete=models.CASCADE)
+    package = models.ForeignKey('ServicePackage', on_delete=models.CASCADE)
     full_name = models.CharField(max_length=100)
     email = models.EmailField()
     contact_number = models.CharField(max_length=20)
@@ -164,13 +164,13 @@ class InventoryLog(models.Model):
 
 
 class Review(models.Model):
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, null=True, blank=True)
     customer_name = models.CharField(max_length=255, default='Anonymous')
-    booking_date = models.DateField(default=datetime.date.today)
+    booking_date = models.DateField()
     event_type = models.CharField(max_length=255, default='Unknown')
     rating = models.IntegerField(default=5)
     comment = models.TextField(default='No comment.')
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Review by {self.customer_name} on {self.booking_date}" 
-    
-    
+        return f"Review by {self.customer_name} on {self.booking_date}"

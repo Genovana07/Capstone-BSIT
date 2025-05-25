@@ -1,13 +1,14 @@
 {% extends 'client-base.html' %}
 {% load custom_filters %}
+{% load static %}
 
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-{% load static %}
 
 <style>
-/* Review Summary */
+/* Review Summary styles (same as your styles) */
+
 .review-summary {
     display: flex;
     justify-content: space-between;
@@ -65,7 +66,7 @@
     color: #333;
 }
 
-/* Review List */
+/* Reviews list with scroll */
 .reviews-list {
     background: #fff;
     padding: 20px;
@@ -74,6 +75,26 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+
+    max-height: 700px;       
+    overflow-y: auto;       
+    scrollbar-width: thin;  
+    scrollbar-color: #888 #f1f1f1;
+}
+
+.reviews-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.reviews-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 12px;
+}
+
+.reviews-list::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 12px;
+    border: 2px solid #f1f1f1;
 }
 
 .review-card {
@@ -133,7 +154,7 @@
     text-decoration: none;
     display: inline-block;
     margin-top: 10px;
-    align-self: flex-end; /* Align the button to the right */
+    align-self: flex-end;
     transition: background-color 0.3s ease;
 }
 
@@ -147,8 +168,8 @@
 
 .delete-button-container {
     display: flex;
-    justify-content: flex-end; /* Align the button to the right */
-    margin-top: 10px; /* Add space between the date and delete button */
+    justify-content: flex-end;
+    margin-top: 10px;
 }
 </style>
 
@@ -156,7 +177,7 @@
 <div class="review-summary">
     <div class="review-count">
         <h2>Reviews</h2>
-        <p class="review-number">{{ reviews.count }} <span class="growth">📈 +2%</span></p>
+        <p class="review-number">{{ reviews.count }} <span class="growth"></span></p>
         <p class="review-label">Growth in Review this month</p>
     </div>
     <div class="divider"></div>
@@ -164,7 +185,7 @@
     <div class="average-rating">
         <h2>Average Rating</h2>
         <div class="rating-number">
-            {{ average_rating }} <span class="stars">★★★★★</span>
+            {{ average_rating }} <span class="stars"></span>
         </div>
         <p>Average Rating This Month</p>
     </div>
@@ -180,18 +201,18 @@
     <div class="review-card">
         <img src="{% static 'images/profile-icon.png' %}" alt="Reviewer" class="reviewer-avatar">
         <div class="review-details">
-            <div class="review-header">
-                <strong>{{ review.customer_name }}</strong>
-                <span>{{ review.event_type }}</span>
-                <span class="stars">
-                    {% for i in review.rating|rangefilter %}
-                        ★
-                    {% endfor %}
-                </span>
-                <span class="date">{{ review.booking_date }}</span>
-            </div>
+                <div class="review-header">
+            <strong>{{ review.booking.full_name }}</strong>
+            <span>{{ review.booking.package.title }}</span>  {# Corrected: Show booked package title #}
+            <span class="stars">
+                {% for i in review.rating|rangefilter %}
+                    ★
+                {% endfor %}
+            </span>
+            <span class="date">Booked on {{ review.booking.created_at|date:"M d, Y" }}</span>
+        </div>
             <p>{{ review.comment }}</p>
-            <!-- Delete button aligned to the right -->
+
             <div class="delete-button-container">
                 <a href="{% url 'delete_review' review.id %}" class="delete-button">Delete</a>
             </div>

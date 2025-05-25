@@ -432,23 +432,24 @@ def contactus(request):
 
 @login_required
 def profile(request):
+    user = request.user
+
+    # Try to get or create Profile for this user, avoid RelatedObjectDoesNotExist
+    profile, created = Profile.objects.get_or_create(user=user)
+
     if request.method == "POST":
-        user = request.user
-        
-        # Update basic user info
-        user.first_name = request.POST.get('first_name')
-        user.last_name = request.POST.get('last_name')
-        user.email = request.POST.get('email')
+        # update user and profile as usual, for example:
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+        user.email = request.POST.get('email', user.email)
         user.save()
 
-        # Update profile picture if one is uploaded
-        profile = user.profile
-        profile.contact_number = request.POST.get('phone')
-        profile.province = request.POST.get('province')
-        profile.city = request.POST.get('city')
-        profile.address = request.POST.get('address')
+        profile.contact_number = request.POST.get('phone', profile.contact_number)
+        profile.province = request.POST.get('province', profile.province)
+        profile.city = request.POST.get('city', profile.city)
+        profile.address = request.POST.get('address', profile.address)
 
-        if 'profile_picture' in request.FILES:  # Check if the profile picture is part of the request
+        if request.FILES.get('profile_picture'):
             profile.profile_picture = request.FILES['profile_picture']
 
         profile.save()
@@ -456,7 +457,10 @@ def profile(request):
         messages.success(request, "Profile updated successfully.")
         return redirect('profile')
 
-    return render(request, 'accounts/profile.html')
+    context = {
+        'user': user,
+    }
+    return render(request, 'accounts/profile.html', context)
 
 @login_required
 def mybookings(request):
@@ -500,6 +504,7 @@ def history(request):
         })
 
     return render(request, 'accounts/history.html', {'history_list': history_list})
+
 @login_required
 def create_booking(request):
     if request.method == "POST":
@@ -509,6 +514,7 @@ def create_booking(request):
         contact_number = request.POST.get("contact_number")
         event_date = request.POST.get("event_date")
         event_time = request.POST.get("event_time")
+        end_time = request.POST.get("end_time")  # ✅ now we take it from the form
         event_type = request.POST.get("event_type")
         location = request.POST.get("location")
         fulladdress = request.POST.get("fulladdress")
@@ -520,19 +526,18 @@ def create_booking(request):
             messages.error(request, f"The selected package '{selected_package}' does not exist.")
             return redirect('services')
 
-        # Check bookings count only for ACCEPTED bookings
         accepted_bookings_count = Booking.objects.filter(
             event_date=event_date,
-            status='Accepted'  # Only count accepted bookings
+            status='Accepted'
         ).count()
 
         if accepted_bookings_count >= 2:
             messages.error(request, "This date already has two accepted bookings. Please select another date.")
             return redirect('services')
 
-        event_time_obj = datetime.strptime(event_time, "%H:%M")
-        end_time_obj = event_time_obj + timedelta(hours=4)
-        end_time = end_time_obj.time()
+        # Parse event_time and end_time as time objects
+        event_time_obj = datetime.strptime(event_time, "%H:%M").time()
+        end_time_obj = datetime.strptime(end_time, "%H:%M").time()
 
         Booking.objects.create(
             user=request.user,
@@ -541,14 +546,14 @@ def create_booking(request):
             email=email,
             contact_number=contact_number,
             event_date=event_date,
-            event_time=event_time,
-            end_time=end_time,
+            event_time=event_time_obj,
+            end_time=end_time_obj,
             event_type=event_type,
             location=location,
             fulladdress=fulladdress,
             audience_size=audience_size,
             price=package.price,
-            status='Processing'  # Default status, not accepted yet
+            status='Processing'
         )
 
         messages.success(request, f"Your booking for {selected_package} has been successfully created!")
@@ -674,21 +679,31 @@ def tracking(request):
 
     return render(request, 'client/tracking.html', {'bookings': bookings})
 
+def reviews(request):
+    # Get all reviews ordered by booking_date descending (latest first)
+    reviews = Review.objects.all().order_by('-booking_date')
+
+    # Calculate average rating (handle no reviews gracefully)
+    average_rating = reviews.aggregate(avg_rating=Avg('rating'))['avg_rating'] or 0
+
+    context = {
+        'reviews': reviews,
+        'average_rating': round(average_rating, 1),
+    }
+    return render(request, 'client/reviews.html', context)
+
 @login_required
 @admin_only
 def reviews(request):
-    # Fetch all reviews from the database
-    reviews = Review.objects.all()
+    reviews = Review.objects.select_related('booking__package').order_by('-created_at')
 
-    # Calculate the average rating of all reviews
     average_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
 
-    # Pass the reviews and average rating to the template
-    return render(request, 'client/reviews.html', {
+    context = {
         'reviews': reviews,
         'average_rating': round(average_rating, 1),
-    })
-
+    }
+    return render(request, 'client/reviews.html', context)
 
 @login_required
 @admin_only
@@ -826,7 +841,7 @@ def submit_review(request):
     if request.method == 'POST':
         booking_id = request.POST.get('bookingId')
         rating = request.POST.get('rating')
-        comment = request.POST.get('comment')
+        comment = request.POST.get('comment', '').strip()
 
         if not booking_id or not rating or not comment:
             messages.error(request, "All fields are required!")
@@ -838,16 +853,34 @@ def submit_review(request):
             messages.error(request, "You can only review completed bookings.")
             return redirect('history')
 
-        # Save rating and comment (make sure Booking model has these fields)
-        booking.rating = rating
-        booking.comment = comment
-        booking.save()
+        try:
+            rating = int(rating)
+            if rating < 1 or rating > 5:
+                raise ValueError
+        except ValueError:
+            messages.error(request, "Rating must be a number between 1 and 5.")
+            return redirect('history')
+
+        # Check if a review already exists for this booking
+        existing_review = Review.objects.filter(booking=booking).first()
+        if existing_review:
+            messages.error(request, "You have already submitted a review for this booking.")
+            return redirect('history')
+
+        # Create review since none exists yet
+        Review.objects.create(
+            booking=booking,
+            customer_name=booking.full_name,
+            booking_date=booking.event_date,  # adjust as needed
+            event_type=booking.event_type,
+            rating=rating,
+            comment=comment
+        )
 
         messages.success(request, "Thank you for your review!")
         return redirect('history')
 
     return redirect('home')
-
 @login_required
 @admin_only
 def delete_review(request, review_id):

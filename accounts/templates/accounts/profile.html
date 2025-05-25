@@ -197,22 +197,10 @@
 <div class="container">
     <aside class="sidebar">
         <ul>
-            <li>
-                <img src="{% static 'images/profile-user.png' %}" alt="Profile Icon">
-                <span><a href="{% url 'profile' %}">Profile</a></span>
-            </li>
-            <li>
-                <img src="{% static 'images/open-book.png' %}" alt="Bookings Icon">
-                <span><a href="{% url 'mybookings' %}">My Bookings</a></span>
-            </li>
-            <li>
-                <img src="{% static 'images/history.png' %}" alt="History Icon">
-                <span><a href="{% url 'history' %}">History</a></span>
-            </li>
-            <li>
-                <img src="{% static 'images/logout.png' %}" alt="Logout Icon">
-                <span><a href="{% url 'logout' %}">Logout</a></span>
-            </li>
+            <li><img src="{% static 'images/profile-user.png' %}" alt="Profile Icon"><span><a href="{% url 'profile' %}">Profile</a></span></li>
+            <li><img src="{% static 'images/open-book.png' %}" alt="Bookings Icon"><span><a href="{% url 'mybookings' %}">My Bookings</a></span></li>
+            <li><img src="{% static 'images/history.png' %}" alt="History Icon"><span><a href="{% url 'history' %}">History</a></span></li>
+            <li><img src="{% static 'images/logout.png' %}" alt="Logout Icon"><span><a href="{% url 'logout' %}">Logout</a></span></li>
         </ul>
     </aside>
 
@@ -229,10 +217,7 @@
             </div>
         </div>
 
-        <!-- Removed the messages block from the profile page to prevent it from showing the login success message -->
-        
-        <!-- Update Profile Form -->
-        <form method="POST" enctype="multipart/form-data" class="form-grid" action="{% url 'update_profile' %}">
+        <form method="POST" enctype="multipart/form-data" class="form-grid" action="{% url 'profile' %}">
             {% csrf_token %}
 
             <div class="form-group">
@@ -260,22 +245,16 @@
                 <input type="email" id="email" name="email" value="{{ user.email }}">
             </div>
 
+            <!-- Manual input for Province -->
             <div class="form-group">
                 <label for="province">Province</label>
-                <select id="province" name="province" onchange="updateCities()" disabled>
-                    <option value="Batangas" {% if user.profile.province == "Batangas" %}selected{% endif %}>Batangas</option>
-                    <option value="Cavite" {% if user.profile.province == "Cavite" %}selected{% endif %}>Cavite</option>
-                    <option value="Laguna" {% if user.profile.province == "Laguna" %}selected{% endif %}>Laguna</option>
-                    <option value="Quezon" {% if user.profile.province == "Quezon" %}selected{% endif %}>Quezon</option>
-                    <option value="Rizal" {% if user.profile.province == "Rizal" %}selected{% endif %}>Rizal</option>
-                </select>
+                <input type="text" id="province" name="province" value="{{ user.profile.province }}">
             </div>
 
+            <!-- Manual input for City -->
             <div class="form-group">
                 <label for="city">City</label>
-                <select id="city" name="city" disabled>
-                    <option value="">Select a City</option>
-                </select>
+                <input type="text" id="city" name="city" value="{{ user.profile.city }}">
             </div>
 
             <div class="form-group full-width">
@@ -283,110 +262,67 @@
                 <input type="text" id="address" name="address" value="{{ user.profile.address }}">
             </div>
 
-            <div class="form-group full-width" style="display: none;">
+            <div class="form-group full-width" style="display:none;">
                 <label for="id_profile_picture">Upload Profile Picture</label>
                 <input type="file" id="id_profile_picture" name="profile_picture" accept="image/*">
             </div>
 
             <div class="form-group full-width">
-                <button type="submit" class="update-btn">Edit Profile</button>
+                <button type="submit" class="update-btn">Update Profile</button>
             </div>
         </form>
 
-                <!-- Request Admin Access Form (Separate Form) -->
-            {% if not user.is_staff and not user.profile.requested_admin %}
-                <form method="POST" action="{% url 'request_admin_access' %}">
-                    {% csrf_token %}
-                    <div class="form-group full-width">
-                        <button type="submit" class="request-admin-btn">
-                            Request Admin Access
-                        </button>
-                    </div>
-                </form>
-            {% elif user.profile.requested_admin %}
-                <p class="text-blue-600 mt-2 italic">Admin access request pending approval.</p>
-            {% endif %}
+        {% if not user.is_staff and not user.profile.requested_admin %}
+            <form method="POST" action="{% url 'request_admin_access' %}">
+                {% csrf_token %}
+                <div class="form-group full-width">
+                    <button type="submit" class="request-admin-btn">Request Admin Access</button>
+                </div>
+            </form>
+        {% elif user.profile.requested_admin %}
+            <p class="text-blue-600 mt-2 italic">Admin access request pending approval.</p>
+        {% endif %}
     </main>
 </div>
 
 <script>
-     function updateCities() {
-        const province = document.getElementById('province').value;
-        const citySelect = document.getElementById('city');
-        let cities = [];
-
-        const provinceCities = {
-            "Batangas": ["Balayan", "Batangas City", "Bauan", "Calaca", "Calatagan", "Cuenca", "Ibaan", "Lemery", "Lipa", "Lobo", "Mabini", "Malvar", "Mataasnakahoy", "Nasugbu", "Padre Garcia", "Rosario", "San Jose", "San Juan", "San Luis", "San Nicolas", "San Pascual", "Santa Teresita", "Santo Tomas", "Taal", "Talisay", "Tanauan", "Taysan", "Tingloy", "Tuy"],
-            "Cavite": ["Alfonso", "Amadeo", "Bacoor", "Carmona", "Cavite City", "Dasmariñas", "General Emilio Aguinaldo", "General Mariano Alvarez", "General Trias", "Imus", "Indang", "Kawit", "Magallanes", "Maragondon", "Mendez", "Naic", "Noveleta", "Rosario", "Silang", "Tagaytay", "Tanza", "Ternate", "Trece Martires"],
-            "Laguna": ["Alaminos", "Bay", "Biñan", "Cabuyao", "Calamba", "Calauan", "Cavinti", "Famy", "Kalayaan", "Liliw", "Los Baños", "Luisiana", "Lumban", "Mabitac", "Magdalena", "Majayjay", "Nagcarlan", "Paete", "Pagsanjan", "Pakil", "Pangil", "Pila", "Rizal", "San Pablo", "San Pedro", "Santa Cruz", "Santa Maria", "Santa Rosa", "Siniloan", "Victoria"],
-            "Quezon": ["Agdangan", "Alabat", "Atimonan", "Buenavista", "Burdeos", "Calauag", "Candelaria", "Catanauan", "Dolores", "General Luna", "General Nakar", "Guinayangan", "Gumaca", "Infanta", "Jomalig", "Lopez", "Lucban", "Lucena", "Macalelon", "Mauban", "Mulanay", "Padre Burgos", "Pagbilao", "Panukulan", "Patnanungan", "Perez", "Pitogo", "Plaridel", "Polillo", "Quezon", "Real", "Sampaloc", "San Andres", "San Antonio", "San Francisco", "San Narciso", "Sariaya", "Tagkawayan", "Tayabas", "Tiaong", "Unisan"],
-            "Rizal": ["Angono", "Antipolo", "Baras", "Binangonan", "Cainta", "Cardona", "Jalajala", "Morong", "Pililla", "Rodriguez", "San Mateo", "Tanay", "Taytay", "Teresa"]
-        };
-
-        // If a province is selected, update cities
-        if (provinceCities[province]) {
-            cities = provinceCities[province];
-        }
-
-        // Clear the current city options
-        citySelect.innerHTML = ''; 
-        let defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = 'Select a City';
-        citySelect.appendChild(defaultOption);
-
-        // Populate the city options based on the selected province
-        cities.forEach(city => {
-            let option = document.createElement('option');
-            option.value = city;
-            option.textContent = city;
-            if (city === '{{ user.profile.city }}') {
-                option.selected = true; // Pre-select the user's current city
-            }
-            citySelect.appendChild(option);
-        });
-    }
     document.addEventListener('DOMContentLoaded', function () {
-        updateCities();
-
         const updateBtn = document.querySelector('.update-btn');
         const form = document.querySelector('.form-grid');
-
-        const fields = form.querySelectorAll('input:not(#username), select');
+        const fields = form.querySelectorAll('input:not(#username)');
         const hiddenFileInput = document.getElementById('id_profile_picture');
+        const profilePicPreview = document.getElementById('current-profile-pic');
 
-        // Disable all fields on load
+        // Disable all form fields initially except username (readonly)
         fields.forEach(field => field.disabled = true);
 
         let isEditing = false;
 
         updateBtn.addEventListener('click', function (e) {
             if (!isEditing) {
-                // Enable editing
-                e.preventDefault();
-                fields.forEach(field => field.disabled = false);
-                updateBtn.textContent = 'Update Profile';
-                updateBtn.type = 'submit';
+                e.preventDefault(); // Prevent submission first click
+                fields.forEach(field => field.disabled = false); // Enable inputs
+                updateBtn.textContent = 'Save Changes';
                 isEditing = true;
             } else {
-                // Submit form on update
                 updateBtn.textContent = 'Edit Profile';
                 isEditing = false;
-                // You can keep the submit type or submit manually
-                // form.submit(); // optional if you use updateBtn.type = 'submit'
+                form.submit();
             }
         });
 
-        // Preview image on file select
-        hiddenFileInput.addEventListener('change', function (e) {
-            const file = e.target.files[0];
+        // Profile picture preview
+        hiddenFileInput.addEventListener('change', function () {
+            const file = this.files[0];
             if (file) {
-                const preview = document.getElementById('current-profile-pic');
-                preview.src = URL.createObjectURL(file);
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    profilePicPreview.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
             }
         });
 
-        // Open file input when "Edit Profile Picture" is clicked
         document.querySelector('.edit-picture-btn').addEventListener('click', function () {
             hiddenFileInput.click();
         });

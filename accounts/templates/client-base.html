@@ -50,20 +50,17 @@
       margin-bottom: 30px;
     }
 
-    .avatar img {
+    .avatar img.avatar-img {
       width: 60px;
       height: 60px;
       border-radius: 50%;
       object-fit: cover;
       display: block;
       margin: 0 auto;
+      filter: none; /* remove invert filter */
     }
 
-    .white-icon {
-      width: 60px;
-      height: 60px;
-      filter: brightness(0) invert(1);
-    }
+    /* Removed .white-icon style since no longer used */
 
     .nav {
       margin-top: 30px;
@@ -220,7 +217,11 @@
       </div>
       <div class="user">
         <div class="avatar">
-          <img src="{% static 'images/profile-icon.png' %}" alt="Avatar Icon" class="white-icon" />
+          <img
+            src="{% if request.user.profile.profile_picture %}{{ request.user.profile.profile_picture.url }}{% else %}{% static 'images/profile-icon.png' %}{% endif %}"
+            alt="Avatar Icon"
+            class="avatar-img"
+          />
         </div>
         <h3>{{ request.user.first_name }} {{ request.user.last_name }}</h3>
         <p>Owner</p>
@@ -244,17 +245,21 @@
 
     <!-- Main Content -->
     <main class="main">
-      <div class="topbar">
-        <button class="menu-btn"><i class="fas fa-bars"></i></button>
-        <input type="text" placeholder="Search Projects" class="search-bar" />
-        <div class="user-info" id="topbarDropdownToggle">
-          <span>{{ request.user.first_name }}</span>
-          <i class="fas fa-user-circle"></i>
-          <div id="topbarDropdown">
-            <a href="{% url 'home' %}">View as User</a>
-          </div>
-        </div>
-      </div>
+    <div class="topbar">
+  <button class="menu-btn"><i class="fas fa-bars"></i></button>
+  <input type="text" placeholder="Search Projects" class="search-bar" />
+  <div class="user-info" id="topbarDropdownToggle">
+    <span>{{ request.user.first_name }}</span>
+    <img
+      src="{% if request.user.profile.profile_picture %}{{ request.user.profile.profile_picture.url }}{% else %}{% static 'images/profile-icon.png' %}{% endif %}"
+      alt="User Avatar"
+      style="width:32px; height:32px; border-radius:50%; object-fit:cover;"
+    />
+    <div id="topbarDropdown">
+      <a href="{% url 'home' %}">View as User</a>
+    </div>
+  </div>
+</div>
 
       {% block content %}{% endblock %}
     </main>

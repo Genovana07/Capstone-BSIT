@@ -146,7 +146,9 @@
     </ul>
   </aside>
 
-  <main class="main-content">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<main class="main-content">
     <h2><span class="icon">🕓</span> My Bookings</h2>
     <div class="table-container">
       <table>
@@ -175,7 +177,7 @@
             <td>
               <a href="{% url 'view_mybooking' booking.id %}">View</a>
               {% if booking.status == 'Processing' %}
-              | <a href="{% url 'cancel_booking' booking.id %}" onclick="return confirm('Are you sure you want to cancel this booking?');">Cancel</a>
+              | <a href="#" class="cancel-booking" data-url="{% url 'cancel_booking' booking.id %}">Cancel</a>
               {% endif %}
             </td>
           </tr>
@@ -185,6 +187,32 @@
         </tbody>
       </table>
     </div>
-  </main>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.cancel-booking').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const cancelUrl = this.getAttribute('data-url');
+
+            Swal.fire({
+                title: 'Cancel Booking?',
+                text: "Are you sure you want to cancel this booking? This action cannot be undone.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, cancel it',
+                cancelButtonText: 'No, keep it'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = cancelUrl;
+                }
+            });
+        });
+    });
+});
+</script>
 </div>
 {% endblock %}

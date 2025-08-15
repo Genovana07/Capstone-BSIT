@@ -284,48 +284,71 @@
         {% endif %}
     </main>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const updateBtn = document.querySelector('.update-btn');
-        const form = document.querySelector('.form-grid');
-        const fields = form.querySelectorAll('input:not(#username)');
-        const hiddenFileInput = document.getElementById('id_profile_picture');
-        const profilePicPreview = document.getElementById('current-profile-pic');
+document.addEventListener('DOMContentLoaded', function () {
+    const updateBtn = document.querySelector('.update-btn');
+    const form = document.querySelector('.form-grid');
+    const fields = form.querySelectorAll('input:not(#username)');
+    const hiddenFileInput = document.getElementById('id_profile_picture');
+    const profilePicPreview = document.getElementById('current-profile-pic');
 
-        // Disable all form fields initially except username (readonly)
-        fields.forEach(field => field.disabled = true);
+    fields.forEach(field => field.disabled = true);
 
-        let isEditing = false;
+    let isEditing = false;
 
-        updateBtn.addEventListener('click', function (e) {
-            if (!isEditing) {
-                e.preventDefault(); // Prevent submission first click
-                fields.forEach(field => field.disabled = false); // Enable inputs
-                updateBtn.textContent = 'Save Changes';
-                isEditing = true;
-            } else {
-                updateBtn.textContent = 'Edit Profile';
-                isEditing = false;
-                form.submit();
-            }
-        });
+    updateBtn.addEventListener('click', function (e) {
+        e.preventDefault();
 
-        // Profile picture preview
-        hiddenFileInput.addEventListener('change', function () {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    profilePicPreview.src = e.target.result;
+        if (!isEditing) {
+            Swal.fire({
+                title: 'Edit Profile?',
+                text: "Do you want to enable editing for your profile?",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, edit it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fields.forEach(field => field.disabled = false);
+                    updateBtn.textContent = 'Save Changes';
+                    updateBtn.style.backgroundColor = '#28a745'; // green kapag save mode
+                    isEditing = true;
                 }
-                reader.readAsDataURL(file);
-            }
-        });
-
-        document.querySelector('.edit-picture-btn').addEventListener('click', function () {
-            hiddenFileInput.click();
-        });
+            });
+        } else {
+            Swal.fire({
+                title: 'Save Changes?',
+                text: "Are you sure you want to update your profile?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, save it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
     });
+
+    hiddenFileInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                profilePicPreview.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.querySelector('.edit-picture-btn')?.addEventListener('click', function () {
+        hiddenFileInput.click();
+    });
+});
 </script>
 {% endblock %}

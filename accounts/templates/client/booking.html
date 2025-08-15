@@ -48,18 +48,22 @@
                         <i class="fa fa-eye"></i> View
                     </a>
                     {% if booking.status == 'Processing' %}
-                        <a href="javascript:void(0);" class="accept" onclick="confirmAction('{% url 'accept_booking' booking.id %}')">
+                        <a href="javascript:void(0);" class="accept" 
+                        onclick="confirmAction('{% url 'accept_booking' booking.id %}', 'accept')">
                             <i class="fa fa-check"></i> Accept
                         </a>
-                        <a href="javascript:void(0);" class="reject" onclick="confirmAction('{% url 'reject_booking' booking.id %}')">
+                        <a href="javascript:void(0);" class="reject" 
+                        onclick="confirmAction('{% url 'reject_booking' booking.id %}', 'reject')">
                             <i class="fa fa-times"></i> Reject
                         </a>
                     {% endif %}
+
                     {% if booking.status == 'Accepted' %}
-                        <a href="{% url 'complete_booking' booking.id %}" class="complete">
-                            <i class="fa fa-check"></i> Complete
-                        </a>
-                    {% endif %}
+                    <a href="javascript:void(0);" class="complete" 
+                     onclick="confirmAction('{% url 'complete_booking' booking.id %}', 'complete')">
+                <i class="fa fa-check-circle"></i> Complete
+                    </a>
+                {% endif %}
                 </td>
             </tr>
 
@@ -98,13 +102,42 @@
     </tbody>
 </table>
 
-<!-- JavaScript for Confirmation -->
-<script type="text/javascript">
-    function confirmAction(url) {
-        if (confirm('Are you sure you want to proceed with this action?')) {
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+function confirmAction(url, actionType) {
+    let actionText = "";
+    let actionColor = "";
+
+    if (actionType === "accept") {
+        actionText = "ACCEPT";
+        actionColor = "#28a745"; // green
+    } else if (actionType === "reject") {
+        actionText = "REJECT";
+        actionColor = "#dc3545"; // red
+    } else if (actionType === "cancel") {
+        actionText = "CANCEL";
+        actionColor = "#ffc107"; // yellow
+    } else if (actionType === "complete") {
+        actionText = "COMPLETE";
+        actionColor = "#007bff"; // blue
+    }
+
+    Swal.fire({
+        title: `Are you sure you want to ${actionText} this booking?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: actionColor,
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: `Yes, ${actionText} it!`
+    }).then((result) => {
+        if (result.isConfirmed) {
             window.location.href = url;
         }
-    }
+    });
+}
 </script>
 <style>
     .header {

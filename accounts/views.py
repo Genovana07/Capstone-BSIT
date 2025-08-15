@@ -412,11 +412,20 @@ def services_view(request):
 ]
     range_values = list(range(1, len(packages) + 1))
 
+    # Kunin user profile para ma-auto populate
+    profile = None
+    if request.user.is_authenticated:
+        from .models import Profile
+        try:
+            profile = Profile.objects.get(user=request.user)
+        except Profile.DoesNotExist:
+            profile = None
+
     return render(request, 'accounts/services.html', {
         'packages': packages,
-        'range_values': range_values
+        'range_values': range_values,
+        'profile': profile
     })
-
 # About Us Page
 def aboutus(request):
     team_members = [

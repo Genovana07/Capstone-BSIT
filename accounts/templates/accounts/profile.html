@@ -200,7 +200,7 @@
             <li><img src="{% static 'images/profile-user.png' %}" alt="Profile Icon"><span><a href="{% url 'profile' %}">Profile</a></span></li>
             <li><img src="{% static 'images/open-book.png' %}" alt="Bookings Icon"><span><a href="{% url 'mybookings' %}">My Bookings</a></span></li>
             <li><img src="{% static 'images/history.png' %}" alt="History Icon"><span><a href="{% url 'history' %}">History</a></span></li>
-            <li><img src="{% static 'images/logout.png' %}" alt="Logout Icon"><span><a href="{% url 'logout' %}">Logout</a></span></li>
+            <li><img src="{% static 'images/logout.png' %}" alt="Logout Icon"><span><a href="javascript:void(0);" onclick="confirmLogout()">Logout</a></span></li>
         </ul>
     </aside>
 
@@ -271,17 +271,10 @@
                 <button type="submit" class="update-btn">Update Profile</button>
             </div>
         </form>
+{% if user.is_staff %}
+    <p class="text-green-600 mt-2 italic">You are an admin.</p>
+{% endif %}
 
-        {% if not user.is_staff and not user.profile.requested_admin %}
-            <form method="POST" action="{% url 'request_admin_access' %}">
-                {% csrf_token %}
-                <div class="form-group full-width">
-                    <button type="submit" class="request-admin-btn">Request Admin Access</button>
-                </div>
-            </form>
-        {% elif user.profile.requested_admin %}
-            <p class="text-blue-600 mt-2 italic">Admin access request pending approval.</p>
-        {% endif %}
     </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -350,5 +343,20 @@ document.addEventListener('DOMContentLoaded', function () {
         hiddenFileInput.click();
     });
 });
+function confirmLogout() {
+    Swal.fire({
+        title: "Are you sure you want to logout?",
+        text: "You will need to login again to access your account.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#dc3545",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Yes, Logout"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "{% url 'logout' %}";
+        }
+    });
+}
 </script>
 {% endblock %}

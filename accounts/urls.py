@@ -2,7 +2,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
-from .views import request_admin_access_view, admin_requests_view, dashboard_redirect
+from .views import admin_requests_view, dashboard_redirect  # ✅ tinanggal ko yung request_admin_access_view
 
 urlpatterns = [
     # Public pages (no login required)
@@ -32,7 +32,6 @@ urlpatterns = [
     path('submit-review/', views.submit_review, name='submit_review'),
     path('reviews/delete/<int:review_id>/', views.delete_review, name='delete_review'),
 
-
     path('event/', views.event, name='event'),
     path('equipment/', views.equipment, name='equipment'),
     path('tracking/', views.tracking, name='tracking'),
@@ -40,14 +39,23 @@ urlpatterns = [
     path('customer/', views.customer, name='customer'),
     path('employee/', views.employee, name='employee'),
 
+    # APIs
     path('api/bookings/', views.booking_events_api, name='booking_events_api'),
     path('delete_booking/<int:id>/', views.delete_booking, name='delete_booking'),
-    path('request-admin/', views.request_admin_access_view, name='request_admin_access'),
-    path('admin/requests/', views.admin_requests_view, name='admin_requests_view'),
+    path("chatbot-api/", views.chatbot_api, name="chatbot_api"),
+
+    # Inventory
+    path('inventory/', views.equipment, name='inventory_list'),
+    path('inventory/update/<int:equipment_id>/', views.update_inventory, name='update_inventory'),
+
+    # Admin requests (superuser only)
+    path('admin-requests/', views.admin_requests_view, name='admin_requests_view'),
     path('approve-admin/<int:user_id>/', views.approve_admin, name='approve_admin'),
-    path('dashboard/', dashboard_redirect, name='dashboard_redirect'),
-    path('inventory/', views.equipment, name='inventory_list'),  # For the inventory listing page
-    path('inventory/update/<int:equipment_id>/', views.update_inventory, name='update_inventory'),  # For updating the inventory
+
+    # Dashboard redirect
+    path('dashboard-redirect/', dashboard_redirect, name='dashboard_redirect'),
 ]
 
-
+# ✅ Serve media files (if in DEBUG mode)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

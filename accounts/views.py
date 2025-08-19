@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -20,6 +20,14 @@ from datetime import datetime
 from django.core.exceptions import ValidationError
 from django.db.models.functions import TruncMonth
 from django.utils.dateformat import DateFormat
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+import json
+import re
+from accounts.models import Profile
+from django.db.models import Q
 
 def register_view(request):
     if request.method == "POST":
@@ -673,6 +681,39 @@ def booking_events_api(request):
         "form_logic": grouped
     }, safe=False)
 
+@csrf_exempt
+def chatbot_api(request):
+    if request.method == "GET":
+        message = request.GET.get("message", "").lower()
+
+        # Regex para mahanap ang date (YYYY-MM-DD)
+        date_match = re.search(r"\d{4}-\d{2}-\d{2}", message)
+
+        if date_match:
+            try:
+                # Kunin yung date mula sa message
+                event_date = datetime.strptime(date_match.group(), "%Y-%m-%d").date()
+
+                # Bilangin ilan na yung accepted bookings sa araw na yun
+                bookings_count = Booking.objects.filter(
+                    event_date=event_date, 
+                    status="Accepted"
+                ).count()
+
+                if bookings_count >= 2:
+                    response = f"Pasensya na, puno na ang {event_date} para sa booking."
+                else:
+                    response = f"Oo, available pa ang {event_date} para sa booking."
+
+            except ValueError:
+                response = "Pakispecify ng tamang date (format: YYYY-MM-DD)."
+        else:
+            response = "Pakiulit, anong date po ang gusto ninyong i-check? (format: YYYY-MM-DD)"
+
+        return JsonResponse({"response": response})
+
+    return JsonResponse({"response": "Only GET method is allowed"})
+
 @admin_only
 @login_required
 def equipment(request):
@@ -807,8 +848,10 @@ def accept_booking(request, booking_id):
 @login_required
 def reject_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
-
+    reason = request.POST.get("reason") or request.GET.get("reason")
+    
     booking.status = 'Rejected'
+    booking.reject_reason = reason
     booking.save()
 
     messages.success(request, f"Booking {booking.id} has been rejected.")
@@ -904,58 +947,69 @@ def delete_booking(request, id):
     booking.delete()
     return redirect('booking')
 
-from django.contrib.auth.decorators import user_passes_test
-
-
-@login_required
-def request_admin_access_view(request):
-    if request.method == 'POST':
-        profile = request.user.profile
-        profile.requested_admin = True
-        profile.save()
-        messages.success(request, "Your admin access request has been submitted.")
-    return redirect('profile')
-
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def admin_requests_view(request):
-    requested_profiles = Profile.objects.filter(requested_admin=True, user__is_staff=False)
-    return render(request, 'client/admin_request.html', {'requested_profiles': requested_profiles})
+    # Lahat ng users na may "staff" sa username pero hindi pa admin
+    requested_profiles = Profile.objects.filter(
+        user__username__icontains="staff",
+        user__is_staff=False
+    )
+
+    return render(request, 'client/admin_request.html', {
+        'requested_profiles': requested_profiles
+    })
+
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def approve_admin(request, user_id):
     user = get_object_or_404(User, id=user_id)
-    user.is_staff = True
-    user.save()
-    profile = user.profile
-    profile.requested_admin = False
-    profile.save()
-    messages.success(request, f"{user.username} has been promoted to admin.")
-    return redirect('admin_requests_view')
 
+    if request.method == "POST":
+        # Gawing admin/staff
+        user.is_staff = True
+        user.save()
+
+        # Optional: linisin yung requested_admin flag kung meron
+        if hasattr(user, "profile"):
+            user.profile.requested_admin = False
+            user.profile.save()
+
+        messages.success(request, f"✅ {user.username} has been approved as an admin.")
+
+    return redirect('admin_requests_view')
 @login_required
 def update_profile(request):
+    user = request.user
+    profile = user.profile  # may OneToOne relation ka kaya safe ito
+
     if request.method == 'POST':
-        user = request.user
-        profile = user.profile
-        
+        # Update user fields
         user.first_name = request.POST.get('first_name', user.first_name)
         user.last_name = request.POST.get('last_name', user.last_name)
         user.email = request.POST.get('email', user.email)
+
+        # Update profile fields
         profile.contact_number = request.POST.get('phone', profile.contact_number)
         profile.address = request.POST.get('address', profile.address)
-        # For file upload (profile picture)
+
+        # Upload new profile picture (kung meron)
         if 'profile_picture' in request.FILES:
             profile.profile_picture = request.FILES['profile_picture']
-        
+
+        # Save both
         user.save()
         profile.save()
-        
-        messages.success(request, "Profile updated successfully!")
-        return redirect('profile')  # Or wherever you want to redirect after update
 
-    return render(request, 'accounts/profile.html')  # or your profile template
+        messages.success(request, "✅ Profile updated successfully!")
+        return redirect('profile')  # redirect to profile page
+
+    # render profile update page
+    return render(request, 'accounts/profile.html', {
+        'user': user,
+        'profile': profile
+    })
 
 
 @login_required
@@ -991,3 +1045,17 @@ def update_inventory(request, equipment_id):
 
     return HttpResponse("Invalid request.", status=400)
 
+from django.views.decorators.http import require_POST
+from django.shortcuts import redirect, get_object_or_404
+
+@require_POST
+def cancel_booking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+    reason = request.POST.get("reason", "").strip()
+    booking.status = "Cancelled"
+    booking.cancel_reason = reason
+    booking.save()
+
+    # Add Django success message
+    messages.success(request, f"Booking #{booking.id} has been cancelled successfully.")
+    return redirect("mybookings")

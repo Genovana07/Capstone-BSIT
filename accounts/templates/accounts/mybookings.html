@@ -108,22 +108,11 @@
     text-transform: capitalize;
   }
 
-  .status.accepted {
-    background-color: #28a745;
-  }
-
-  .status.rejected {
-    background-color: #dc3545;
-  }
-
-  .status.processing {
-    background-color: #007bff;
-  }
-
+  .status.accepted { background-color: #28a745; }
+  .status.rejected { background-color: #dc3545; }
+  .status.processing { background-color: #007bff; }
   .status.cancelled,
-  .status.default {
-    background-color: #6c757d;
-  }
+  .status.default { background-color: #6c757d; }
 
   a {
     color: #7a3cff;
@@ -136,19 +125,21 @@
   }
 </style>
 
+<form style="display:none;">
+    {% csrf_token %}
+</form>
+
 <div class="container">
   <aside class="sidebar">
     <ul>
       <li><img src="{% static 'images/profile-user.png' %}" alt="User Icon"> <span><a href="{% url 'profile' %}">Profile</a></span></li>
       <li><img src="{% static 'images/open-book.png' %}" alt="Bookings Icon"> <span><a href="{% url 'mybookings' %}">My Bookings</a></span></li>
       <li><img src="{% static 'images/history.png' %}" alt="History Icon"> <span><a href="{% url 'history' %}">History</a></span></li>
-      <li><img src="{% static 'images/logout.png' %}" alt="Logout Icon"> <span><a href="{% url 'logout' %}">Logout</a></span></li>
+      <li><img src="{% static 'images/logout.png' %}" alt="Logout Icon"><span><a href="javascript:void(0);" onclick="confirmLogout()">Logout</a></span></li>
     </ul>
   </aside>
 
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<main class="main-content">
+  <main class="main-content">
     <h2><span class="icon">🕓</span> My Bookings</h2>
     <div class="table-container">
       <table>
@@ -187,10 +178,13 @@
         </tbody>
       </table>
     </div>
-</main>
+  </main>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Cancel booking flow
     document.querySelectorAll('.cancel-booking').forEach(btn => {
         btn.addEventListener('click', function (e) {
             e.preventDefault();
@@ -207,12 +201,87 @@ document.addEventListener('DOMContentLoaded', function () {
                 cancelButtonText: 'No, keep it'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = cancelUrl;
+                    Swal.fire({
+                        title: 'Reason for Cancellation',
+                        input: 'textarea',
+                        inputLabel: 'Please provide a reason',
+                        inputPlaceholder: 'Type your reason here...',
+                        inputAttributes: { 'aria-label': 'Reason' },
+                        showCancelButton: true,
+                        confirmButtonText: 'Submit',
+                        cancelButtonText: 'Back'
+                    }).then((reasonResult) => {
+                        if (reasonResult.isConfirmed && reasonResult.value) {
+                            Swal.fire({
+                                title: 'Confirm Cancellation',
+                                text: "Do you really want to cancel this booking?",
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonColor: '#d33',
+                                cancelButtonColor: '#6c757d',
+                                confirmButtonText: 'Yes, confirm',
+                                cancelButtonText: 'No'
+                            }).then((finalConfirm) => {
+                                if (finalConfirm.isConfirmed) {
+                                    const form = document.createElement('form');
+                                    form.method = 'POST';
+                                    form.action = cancelUrl;
+
+                                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                                    const csrfInput = document.createElement('input');
+                                    csrfInput.type = 'hidden';
+                                    csrfInput.name = 'csrfmiddlewaretoken';
+                                    csrfInput.value = csrfToken;
+                                    form.appendChild(csrfInput);
+
+                                    const reasonInput = document.createElement('input');
+                                    reasonInput.type = 'hidden';
+                                    reasonInput.name = 'reason';
+                                    reasonInput.value = reasonResult.value;
+                                    form.appendChild(reasonInput);
+
+                                    document.body.appendChild(form);
+                                    form.submit();
+                                }
+                            });
+                        }
+                    });
                 }
             });
         });
     });
+
+    // Success message after cancellation or other actions
+    {% if messages %}
+        {% for message in messages %}
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: '{{ message|escapejs }}',
+                showConfirmButton: false,
+                timer: 2000
+            });
+        {% endfor %}
+    {% endif %}
 });
+
+// Logout confirmation
+function confirmLogout() {
+    Swal.fire({
+        title: "Are you sure you want to logout?",
+        text: "You will need to login again to access your account.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#dc3545",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Yes, Logout"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "{% url 'logout' %}";
+        }
+    });
+}
 </script>
-</div>
+
 {% endblock %}

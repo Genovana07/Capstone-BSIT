@@ -52,9 +52,9 @@
                         onclick="confirmAction('{% url 'accept_booking' booking.id %}', 'accept')">
                             <i class="fa fa-check"></i> Accept
                         </a>
-                        <a href="javascript:void(0);" class="reject" 
-                        onclick="confirmAction('{% url 'reject_booking' booking.id %}', 'reject')">
-                            <i class="fa fa-times"></i> Reject
+                        <a href="javascript:void(0);" class="reject"
+                        onclick="rejectBooking('{% url 'reject_booking' booking.id %}')">
+                        <i class="fa fa-times"></i> Reject
                         </a>
                     {% endif %}
 
@@ -87,6 +87,7 @@
                             <p><strong>Full Address:</strong> {{ booking.fulladdress}}</p>
                             <p><strong>Audience Size:</strong> {{ booking.audience_size }}</p>
                             <p><strong>Status:</strong> {{ booking.status }}</p>
+                            <p><strong>Reason for Cancellation:</strong> {{ booking.cancel_reason }}</p>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary close-btn" onclick="closeModal({{ booking.id }})">Close</button>
@@ -135,6 +136,45 @@ function confirmAction(url, actionType) {
     }).then((result) => {
         if (result.isConfirmed) {
             window.location.href = url;
+        }
+    });
+}
+function rejectBooking(url) {
+    Swal.fire({
+        title: 'Reject Booking',
+        input: 'textarea',
+        inputLabel: 'Reason for rejection',
+        inputPlaceholder: 'Enter the reason...',
+        inputAttributes: {
+            'aria-label': 'Reason for rejection'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Reject',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#d33',
+        preConfirm: (reason) => {
+            if (!reason) {
+                Swal.showValidationMessage('Reason is required!')
+            }
+            return reason;
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Send rejection reason to backend
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({ 'reason': result.value })
+            })
+            .then(response => {
+                if (response.ok) {
+                    Swal.fire('Rejected!', 'Booking has been rejected and customer notified.', 'success')
+                        .then(() => location.reload());
+                }
+            })
         }
     });
 }

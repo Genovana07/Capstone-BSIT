@@ -98,7 +98,43 @@
     <img id="lightbox-img">
     <span onclick="closeLightbox()" style="position:absolute;top:20px;right:30px;font-size:2rem;color:white;cursor:pointer;">&times;</span>
 </div>
+<!-- Toggle Button -->
+<div id="chat-toggle" 
+     style="position: fixed; bottom: 20px; right: 20px; 
+            background: #0078d7; color: white; padding: 12px 16px; 
+            border-radius: 50%; cursor: pointer; z-index:10000;">
+    💬
+</div>
+<div class="chatbot-container">
+    <!-- Header -->
+    <div class="chatbot-header">
+        <h2>Booking Chatbot 🤖</h2>
+        <p>Ask about available booking dates easily</p>
+    </div>
 
+    <!-- Chat Messages -->
+    <div id="chat-box" class="chatbot-messages">
+        <div class="chat-placeholder">Start asking a question...</div>
+    </div>
+
+    <!-- Input -->
+    <div class="chatbot-input">
+        <input id="chat-input" 
+               type="text" 
+               placeholder="Type your question here... (e.g., Available ba ang 2025-08-20?)">
+        <button id="send-btn">Send</button>
+    </div>
+
+    <!-- Guide -->
+    <div class="chatbot-guide">
+        <h3>📌 Guide: How to Ask</h3>
+        <ul>
+            <li>Para mag-check ng date: <b>Available ba ang YYYY-MM-DD?</b></li>
+            <li>Halimbawa: <i>"Available ba ang 2025-08-20?"</i></li>
+            <li>Kung mali ang format ng date → gagabayan ka ng bot.</li>
+        </ul>
+    </div>
+</div>
 <footer class="footer">
     <div class="logo">
         <span style="color: white; font-weight: bold; font-size: 1.5rem;">AUDIO</span><span style="background-color: #f1c40f; color: black; font-weight: bold; padding: 2px 6px; margin-left: 4px; border-radius: 3px; font-size: 1.5rem;">MAN</span><br>
@@ -125,6 +161,89 @@
 </footer>
 
 <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const chatbot = document.querySelector(".chatbot-container");
+    const toggle = document.getElementById("chat-toggle");
+
+    // default: hidden
+    chatbot.style.display = "none";
+
+    toggle.addEventListener("click", function () {
+        chatbot.style.display = (chatbot.style.display === "none") ? "flex" : "none";
+    });
+});
+
+function appendMessage(sender, message) {
+    const log = document.getElementById("chat-log");
+    const div = document.createElement("div");
+    div.textContent = sender + ": " + message;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+}
+
+document.getElementById("send-btn").addEventListener("click", sendMessage);
+document.getElementById("chat-input").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") sendMessage();
+});
+
+function sendMessage() {
+    let input = document.getElementById("chat-input");
+    let message = input.value.trim();
+    if (message === "") return;
+
+    // Add user message to chatbox
+    let chatBox = document.getElementById("chat-box");
+    let userMsg = document.createElement("div");
+    userMsg.className = "text-right";
+    userMsg.innerHTML = `<span class="inline-block bg-blue-500 text-white px-3 py-2 rounded-lg mb-2">${message}</span>`;
+    chatBox.appendChild(userMsg);
+
+    // Scroll down
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // Clear input
+    input.value = "";
+
+    // Send to API
+    fetch(`/accounts/chatbot-api/?message=${encodeURIComponent(message)}`)
+        .then(res => res.json())
+        .then(data => {
+            let botMsg = document.createElement("div");
+            botMsg.className = "text-left";
+            botMsg.innerHTML = `<span class="inline-block bg-gray-200 text-gray-800 px-3 py-2 rounded-lg mb-2">${data.response}</span>`;
+            chatBox.appendChild(botMsg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+}
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+// CSRF token helper
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.substring(0, name.length + 1) === (name + "=")) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
     function scrollToContainer1() {
         var container = document.getElementById("container1");
         container.style.display = "block";

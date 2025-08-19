@@ -32,7 +32,7 @@
                 <button class="book-now" data-package="Package {{ forloop.counter }}" 
                         onclick="confirmOpenBookingForm('{{ package.title }}')">Book Now</button>
             {% else %}
-                <button class="login-first" onclick="window.location.href='{% url 'login' %}'">Login First</button>
+                <button class="login-first" onclick="window.location.href='{% url 'login' %}'">Book Now</button>
             {% endif %}
         </div>
         {% endfor %}
@@ -81,7 +81,15 @@
         <option value="Birthday">Birthday</option>
         <option value="Corporate">Corporate</option>
         <option value="Concert">Concert</option>
-        <option value="Other">Other</option>
+        <option value="Other">Seminar</option>
+        <option value="Other">Graduation</option>
+        <option value="Other">Awarding Ceremony</option>
+        <option value="Other">Func raising</option>
+        <option value="Other">Fashion Show</option>
+        <option value="Other">Church</option>
+        <option value="Other">Church</option>
+        <option value="Other">School Event</option>
+        <option value="Other">Charity Event</option>
     </select>
 
     <label for="location">Event Location City</label>
@@ -104,12 +112,20 @@
 <!-- JavaScript to handle location input -->
 <script>
     // List of cities in Quezon Province
-    const quezonCities = [
-        "Agdangan", "Alabat", "Atimonan", "Bagumbayan", "Candelaria", "Catanauan", 
-        "Dolores", "General Luna", "General Nakar", "Gumaca", "Infanta", "Jomalig", 
-        "Laguna", "Lucban", "Lucena", "Macalelon", "Mauban", "Mulanay", "Pagbilao", 
-        "Pitogo", "Quezon", "Real", "Sampaloc", "Tiaong", "Unisan"
-    ];
+const quezonCities = [
+  // District 1
+  "Burdeos", "General Nakar", "Infanta", "Jomalig", "Lucban", "Mauban", "Pagbilao", "Panukulan", "Patnanungan", "Polillo", "Real", "Sampaloc", "Tayabas City",
+
+  // District 2
+  "Candelaria", "Dolores", "Lucena City", "San Antonio", "Sariaya", "Tiaong",
+
+  // District 3
+  "Agdangan", "Buenavista", "Catanauan", "General Luna", "Macalelon", "Mulanay", "Padre Burgos", "Pitogo", "San Andres", "San Francisco", "San Narciso", "Unisan",
+
+  // District 4
+  "Alabat", "Atimonan", "Calauag", "Guinayangan", "Gumaca", "Lopez", "Perez", "Plaridel", "Quezon", "Tagkawayan"
+];
+
 
     // Populate the suggestions in the datalist
     const citySuggestions = document.getElementById('city-suggestions');
@@ -154,6 +170,10 @@
 // Handle submit with SweetAlert2
 document.getElementById("bookingForm").addEventListener("submit", function(e) {
     e.preventDefault(); // Stop default submit first
+    
+    // Isarado muna yung booking modal
+    closeBookingForm();
+
     Swal.fire({
         title: "Submit Booking?",
         text: "Please confirm your booking request before sending.",
@@ -164,7 +184,7 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
         confirmButtonText: "Yes, submit",
     }).then((result) => {
         if (result.isConfirmed) {
-            e.target.submit(); // Now submit
+            e.target.submit(); // Now submit form
         }
     });
 });

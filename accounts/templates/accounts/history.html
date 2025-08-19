@@ -229,7 +229,7 @@
       <li><img src="{% static 'images/profile-user.png' %}" alt="User Icon"><span><a href="{% url 'profile' %}">Profile</a></span></li>
       <li><img src="{% static 'images/open-book.png' %}" alt="Bookings Icon"><span><a href="{% url 'mybookings' %}">My Bookings</a></span></li>
       <li><img src="{% static 'images/history.png' %}" alt="History Icon"><span><a href="{% url 'history' %}">History</a></span></li>
-      <li><img src="{% static 'images/logout.png' %}" alt="Logout Icon"><span><a href="{% url 'logout' %}">Logout</a></span></li>
+      <li><img src="{% static 'images/logout.png' %}" alt="Logout Icon"><span><a href="javascript:void(0);" onclick="confirmLogout()">Logout</a></span></li>
     </ul>
   </aside>
 
@@ -340,7 +340,7 @@
     </form>
   </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const messageContainer = document.getElementById('messageContainer');
@@ -378,6 +378,21 @@
   function closeModal() {
     document.getElementById('ratingModal').style.display = 'none';
   }
+  function confirmLogout() {
+    Swal.fire({
+        title: "Are you sure you want to logout?",
+        text: "You will need to login again to access your account.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#dc3545",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Yes, Logout"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "{% url 'logout' %}";
+        }
+    });
+}
 </script>
 
 {% endblock %}

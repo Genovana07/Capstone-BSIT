@@ -10,7 +10,7 @@
     <div class="services-grid">
         {% for package in packages %}
         <div class="service-item">
-            <img src="{% static 'images/speaker1.jpg' %}" alt="Service Image">
+            <img src="{% static 'images/package' %}{{ forloop.counter }}.png" alt="Service Image">
             <h3>Package {{ forloop.counter }}: {{ package.title }}</h3>
             <p>{{ package.description }}</p>
             <p><strong>Price: </strong>{{ package.price }}</p>

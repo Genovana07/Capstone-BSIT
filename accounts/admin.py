@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Booking, ServicePackage, Equipment, PackageEquipment
+from .models import Booking, ServicePackage, Equipment, PackageEquipment, Review
 
 # Register the Booking model with the admin interface
 @admin.register(Booking)
@@ -39,3 +39,5 @@ class EquipmentAdmin(admin.ModelAdmin):
 class PackageEquipmentAdmin(admin.ModelAdmin):
     list_display = ('package', 'equipment', 'quantity_required')
     search_fields = ('package__title', 'equipment__name')
+
+admin.site.register(Review)

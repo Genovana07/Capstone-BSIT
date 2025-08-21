@@ -170,7 +170,16 @@ class Review(models.Model):
     customer_name = models.CharField(max_length=255, default='Anonymous')
     booking_date = models.DateField()
     event_type = models.CharField(max_length=255, default='Unknown')
+
+    # Overall rating
     rating = models.IntegerField(default=5)
+
+    # Metrics ratings (1–5 scale)
+    quality = models.IntegerField(default=0)
+    timeliness = models.IntegerField(default=0)
+    professionalism = models.IntegerField(default=0)
+    value_for_money = models.IntegerField(default=0)
+
     comment = models.TextField(default='No comment.')
     created_at = models.DateTimeField(auto_now_add=True)
 

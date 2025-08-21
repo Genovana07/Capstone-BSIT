@@ -7,12 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   {% load static %}
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Arial', sans-serif;
       background: #fff;
@@ -20,12 +15,10 @@
       display: flex;
       height: 100vh;
       overflow: hidden;
+      transition: background 0.3s, color 0.3s;
     }
 
-    .container {
-      display: flex;
-      width: 100%;
-    }
+    .container { display: flex; width: 100%; }
 
     .sidebar {
       background: #000000;
@@ -36,6 +29,7 @@
       flex-direction: column;
       height: 100vh;
       position: fixed;
+      transition: background 0.3s;
     }
 
     .logo {
@@ -43,29 +37,33 @@
       font-weight: bold;
       margin-bottom: 30px;
       color: #fff;
+      display: flex;
+      align-items: center;
+      font-family: 'MavenPro', sans-serif;
+      font-size: 1.8rem;
+    }
+    .logo .text-white { color: white; }
+    .logo .text-yellow {
+      background-color: #f1c40f;
+      color: #000000;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 3px;
+      font-weight: bold;
     }
 
-    .user {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
+    .user { text-align: center; margin-bottom: 30px; }
     .avatar img.avatar-img {
       width: 60px;
       height: 60px;
       border-radius: 50%;
       object-fit: cover;
-      display: block;
       margin: 0 auto;
-      filter: none; /* remove invert filter */
+      border: 2px solid #fff;
+      background-color: #f9f9f9;
     }
 
-    /* Removed .white-icon style since no longer used */
-
-    .nav {
-      margin-top: 30px;
-    }
-
+    .nav { margin-top: 30px; }
     .nav a {
       display: flex;
       align-items: center;
@@ -74,8 +72,8 @@
       color: #ccc;
       text-decoration: none;
       border-radius: 8px;
+      transition: background 0.3s, color 0.3s;
     }
-
     .nav a.active,
     .nav a:hover {
       background: #444;
@@ -87,21 +85,13 @@
       padding: 20px;
       margin-left: 250px;
       overflow-y: auto;
+      transition: background 0.3s, color 0.3s;
     }
 
     .topbar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-    }
-
-    .search-bar {
-      width: 450px;
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-left: 20px;
-      margin-right: auto;
+      justify-content: flex-end;
     }
 
     .user-info {
@@ -113,17 +103,20 @@
       font-size: 20px;
       margin-right: 12px;
     }
-
     .user-info span {
       font-size: 17px;
       font-weight: bold;
     }
-
-    .user-info i:first-of-type {
-      margin-right: 12px;
+    .user-info img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #fff;
+      background-color: #f9f9f9;
     }
 
-    .user-info #topbarDropdown {
+    #topbarDropdown {
       display: none;
       position: absolute;
       top: 120%;
@@ -136,42 +129,57 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       z-index: 100;
     }
-
-    .user-info #topbarDropdown a {
+    #topbarDropdown a {
       display: block;
       padding: 10px 15px;
       text-decoration: none;
       color: #000;
       font-size: 14px;
     }
+    #topbarDropdown a:hover { background-color: #f5f5f5; }
 
-    .user-info #topbarDropdown a:hover {
-      background-color: #f5f5f5;
+    /* Notification bell */
+    .notification {
+      position: relative;
+      margin-right: 20px;
+      font-size: 22px;
+      cursor: pointer;
     }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      font-family: 'MavenPro', sans-serif;
-      font-size: 1.8rem;
-      font-weight: bold;
-      color: #23194f;
-    }
-
-    .logo .text-white {
+    .notification .badge {
+      position: absolute;
+      top: -4px;
+      right: -6px;
+      background-color: red;
       color: white;
-    }
-
-    .logo .text-yellow {
-      background-color: #f1c40f;
-      color: #000000;
       padding: 2px 6px;
-      border-radius: 4px;
-      margin-left: 3px;
-      font-weight: bold;
+      border-radius: 50%;
+      font-size: 12px;
+    }
+    .notif-dropdown {
+      display: none;
+      position: absolute;
+      top: 120%;
+      right: 0;
+      background: white;
+      color: black;
+      width: 250px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      z-index: 99;
+      font-size: 14px;
+    }
+    .notif-dropdown ul { list-style: none; padding: 10px; margin: 0; }
+    .notif-dropdown ul li {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .notif-dropdown ul li:last-child { border-bottom: none; }
+    .notif-dropdown ul li a {
+      text-decoration: none;
+      color: #333;
     }
 
-    /* Styling for messages */
+    /* Alert messages */
     .messages {
       position: fixed;
       top: 60px;
@@ -185,26 +193,40 @@
       border-radius: 6px;
       z-index: 9999;
     }
-
-    .alert-error {
-      background-color: #f44336 !important;
-      color: white !important;
-      border: none !important;
-      box-shadow: none !important;
-    }
-
-    .alert-success {
-      background-color: #4CAF50 !important;
-      color: white !important;
-      border: none !important;
-      box-shadow: none !important;
-    }
-
+    .alert-error { background-color: #f44336 !important; }
+    .alert-success { background-color: #4CAF50 !important; }
     .alert {
       display: flex;
       align-items: center;
       justify-content: center;
       height: 35px;
+    }
+
+    /* Dark Mode Styles */
+    body.dark-mode {
+      background: #1e1e1e;
+      color: #f1f1f1;
+    }
+    body.dark-mode .sidebar { background: #111; }
+    body.dark-mode .nav a { color: #aaa; }
+    body.dark-mode .nav a.active,
+    body.dark-mode .nav a:hover {
+      background: #333;
+      color: #fff;
+    }
+    body.dark-mode #topbarDropdown {
+      background: #222;
+      color: #fff;
+      border: 1px solid #444;
+    }
+    body.dark-mode #topbarDropdown a { color: #fff; }
+    body.dark-mode #topbarDropdown a:hover { background: #333; }
+
+    /* Dark mode toggle button */
+    .dark-toggle {
+      font-size: 20px;
+      cursor: pointer;
+      margin-right: 20px;
     }
   </style>
 </head>
@@ -236,7 +258,6 @@
         <a href="{% url 'reviews' %}"><i class="fas fa-star"></i> Review</a>
         <a href="{% url 'customer' %}"><i class="fas fa-users"></i> Customer</a>
         <a href="{% url 'employee' %}"><i class="fas fa-user"></i> Employee</a>
-
         {% if user.is_superuser %}
           <a href="{% url 'admin_requests_view' %}"><i class="fas fa-user-shield"></i> Admin Requests</a>
         {% endif %}
@@ -245,57 +266,110 @@
 
     <!-- Main Content -->
     <main class="main">
-    <div class="topbar">
-  <button class="menu-btn"><i class="fas fa-bars"></i></button>
-  <input type="text" placeholder="Search Projects" class="search-bar" />
-  <div class="user-info" id="topbarDropdownToggle">
-    <span>{{ request.user.first_name }}</span>
-    <img
-      src="{% if request.user.profile.profile_picture %}{{ request.user.profile.profile_picture.url }}{% else %}{% static 'images/profile-icon.png' %}{% endif %}"
-      alt="User Avatar"
-      style="width:32px; height:32px; border-radius:50%; object-fit:cover;"
-    />
-    <div id="topbarDropdown">
-      <a href="{% url 'home' %}">View as User</a>
-    </div>
-  </div>
-</div>
+      <div class="topbar">
+        <!-- 🌙☀️ Dark Mode Toggle -->
+        <div class="dark-toggle" id="darkToggle">
+          <i class="fas fa-moon"></i>
+        </div>
+
+        <!-- Notification Bell -->
+        <div class="notification" id="notifToggle">
+          <i class="fas fa-bell"></i>
+          {% if notifications %}
+            <span class="badge">{{ notifications|length }}</span>
+          {% endif %}
+          <div class="notif-dropdown" id="notifDropdown">
+            <ul>
+              {% if notifications %}
+                {% for notif in notifications %}
+                  <li><a href="{% url 'booking' %}">{{ notif }}</a></li>
+                {% endfor %}
+              {% else %}
+                <li>No new notifications</li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+
+        <!-- User Info -->
+        <div class="user-info" id="topbarDropdownToggle">
+          <span>{{ request.user.first_name }}</span>
+          <img
+            src="{% if request.user.profile.profile_picture %}{{ request.user.profile.profile_picture.url }}{% else %}{% static 'images/profile-icon.png' %}{% endif %}"
+            alt="User Avatar"
+          />
+          <div id="topbarDropdown">
+            <a href="{% url 'home' %}">View as User</a>
+          </div>
+        </div>
+      </div>
 
       {% block content %}{% endblock %}
     </main>
   </div>
 
-  <!-- Display messages (success/error) -->
+  <!-- Display messages -->
   {% if messages %}
     <div class="messages" id="messageContainer">
       {% for message in messages %}
-        <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
-          {{ message }}
-        </div>
+        <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">{{ message }}</div>
       {% endfor %}
     </div>
   {% endif %}
 
   <script>
-    const toggle = document.getElementById('topbarDropdownToggle');
-    const dropdown = document.getElementById('topbarDropdown');
+    // Dropdown toggles
+    const topbarToggle = document.getElementById('topbarDropdownToggle');
+    const topbarDropdown = document.getElementById('topbarDropdown');
+    const notifToggle = document.getElementById('notifToggle');
+    const notifDropdown = document.getElementById('notifDropdown');
 
-    toggle.addEventListener('click', function(event) {
-      dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
+    topbarToggle.addEventListener('click', function(event) {
+      topbarDropdown.style.display = topbarDropdown.style.display === 'block' ? 'none' : 'block';
+      notifDropdown.style.display = 'none';
       event.stopPropagation();
     });
 
-    document.addEventListener('click', function() {
-      dropdown.style.display = 'none';
+    notifToggle.addEventListener('click', function(event) {
+      notifDropdown.style.display = notifDropdown.style.display === 'block' ? 'none' : 'block';
+      topbarDropdown.style.display = 'none';
+      event.stopPropagation();
     });
 
-    // Auto-hide the messages after 3 seconds
+    document.addEventListener('click', function () {
+      topbarDropdown.style.display = 'none';
+      notifDropdown.style.display = 'none';
+    });
+
+    // Auto-hide messages
     document.addEventListener('DOMContentLoaded', function () {
       const messageContainer = document.getElementById('messageContainer');
       if (messageContainer) {
-        setTimeout(function() {
+        setTimeout(function () {
           messageContainer.style.display = 'none';
-        }, 3000); // 3 seconds delay to auto-hide
+        }, 3000);
+      }
+    });
+
+    // 🌙☀️ Dark mode toggle
+    const darkToggle = document.getElementById('darkToggle');
+    darkToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      const icon = darkToggle.querySelector('i');
+      if (document.body.classList.contains('dark-mode')) {
+        icon.classList.replace('fa-moon', 'fa-sun');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        icon.classList.replace('fa-sun', 'fa-moon');
+        localStorage.setItem('theme', 'light');
+      }
+    });
+
+    // Load saved theme
+    window.addEventListener('DOMContentLoaded', () => {
+      if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+        darkToggle.querySelector('i').classList.replace('fa-moon', 'fa-sun');
       }
     });
   </script>

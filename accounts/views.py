@@ -28,6 +28,9 @@ import json
 import re
 from accounts.models import Profile
 from django.db.models import Q
+from django.db.models import Avg
+from django.db.models.functions import Coalesce
+from django.core.paginator import Paginator
 
 def register_view(request):
     if request.method == "POST":
@@ -602,20 +605,26 @@ def dashboard(request):
             return 0.0
 
     revenue = sum(parse_price(b.price) for b in bookings)
-    profit = revenue * 0.5  # or your actual formula
+    profit = revenue * 0.5  # Adjust this formula if needed
 
-    # 📊 Format monthly data as strings for Chart.js
+    # Chart.js monthly data
     raw_monthly = bookings.annotate(
         month=TruncMonth('event_date')
     ).values('month').annotate(count=Count('id')).order_by('month')
 
-    # Convert to format Chart.js can understand
     bookings_per_month = [
         {
-            "month": DateFormat(entry["month"]).format("Y-m"),  # e.g., "2025-01"
+            "month": DateFormat(entry["month"]).format("Y-m"),
             "count": entry["count"]
         }
         for entry in raw_monthly
+    ]
+
+    # Notifications (show up to 5 newest "Processing" bookings)
+    notifications_qs = bookings.filter(status="Processing").order_by('-created_at')[:5]
+    notifications = [
+        f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
+        for b in notifications_qs
     ]
 
     event_type_data = bookings.values('event_type').annotate(count=Count('id'))
@@ -628,24 +637,98 @@ def dashboard(request):
         'profit': profit,
         'pending_count': pending_count,
 
-        # ✅ Pass cleaned data
         'bookings_per_month': bookings_per_month,
         'event_type_data': list(event_type_data),
         'package_popularity': list(package_popularity),
         'status_data': list(status_data),
+
+        # 🔔 Notifications passed to client-base.html
+        'notifications': notifications,
     })
 
-
 @login_required
-@admin_only  # Restrict to admin users
+@admin_only
 def booking(request):
-    bookings = Booking.objects.all().order_by('-created_at')  # Sort by creation date in descending order
-    return render(request, 'client/booking.html', {'bookings': bookings})
+    current_year = datetime.now().year
+
+    # Dropdown options
+    months = [
+        ("1", "January"), ("2", "February"), ("3", "March"), ("4", "April"),
+        ("5", "May"), ("6", "June"), ("7", "July"), ("8", "August"),
+        ("9", "September"), ("10", "October"), ("11", "November"), ("12", "December"),
+    ]
+    years = list(range(2000, current_year + 1))
+    days = list(range(1, 32))  # 1 to 31
+
+    # Get filters
+    filter_day = request.GET.get('filter_day')
+    filter_month = request.GET.get('filter_month')
+    filter_year = request.GET.get('filter_year')
+
+    filter_conditions = Q()
+
+    # If filter is "today"
+    if filter_day == "today":
+        filter_conditions &= Q(event_date=datetime.now().date())
+    else:
+        # Try converting day to int if it's numeric
+        day_number = int(filter_day) if filter_day and filter_day.isdigit() else None
+        month_number = int(filter_month) if filter_month and filter_month.isdigit() else None
+        year_number = int(filter_year) if filter_year and filter_year.isdigit() else None
+
+        # If full date (day + month + year) is selected
+        if day_number and month_number and year_number:
+            filter_conditions &= Q(
+                event_date__day=day_number,
+                event_date__month=month_number,
+                event_date__year=year_number
+            )
+        elif month_number and year_number:
+            filter_conditions &= Q(
+                event_date__month=month_number,
+                event_date__year=year_number
+            )
+        elif month_number:
+            filter_conditions &= Q(event_date__month=month_number)
+        elif year_number:
+            filter_conditions &= Q(event_date__year=year_number)
+
+    bookings = Booking.objects.filter(filter_conditions).order_by('-created_at')
+
+    # Notifications (show up to 5 newest "Processing" bookings)
+    notifications_qs = bookings.filter(status="Processing").order_by('-created_at')[:5]
+    notifications = [
+        f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
+        for b in notifications_qs
+    ]
+
+    context = {
+        'bookings': bookings,
+        'months': months,
+        'years': years,
+        'days': days,
+        'current_year': current_year,
+        'notifications': notifications,  # Pass notifications to the template
+    }
+
+    return render(request, 'client/booking.html', context)
 
 @login_required
 @admin_only
 def event(request):
-    return render(request, 'client/event.html')
+    # Get all bookings with "Processing" status
+    bookings = Booking.objects.all()
+
+    # Notifications (show up to 5 newest "Processing" bookings)
+    notifications_qs = bookings.filter(status="Processing").order_by('-created_at')[:5]
+    notifications = [
+        f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
+        for b in notifications_qs
+    ]
+
+    return render(request, 'client/event.html', {
+        'notifications': notifications,  # Pass notifications to the template
+    })
 
 @login_required
 def booking_events_api(request):
@@ -714,47 +797,118 @@ def chatbot_api(request):
 
     return JsonResponse({"response": "Only GET method is allowed"})
 
-@admin_only
 @login_required
+@admin_only
 def equipment(request):
     # Get all equipment
     equipment_list = Equipment.objects.all()
-    return render(request, 'client/equipment.html', {'equipment_list': equipment_list})
+
+    # Notifications (show up to 5 newest "Processing" bookings)
+    bookings = Booking.objects.all()
+    notifications_qs = bookings.filter(status="Processing").order_by('-created_at')[:5]
+    notifications = [
+        f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
+        for b in notifications_qs
+    ]
+
+    return render(request, 'client/equipment.html', {
+        'equipment_list': equipment_list,
+        'notifications': notifications,  # Pass notifications to the template
+    })
 
 @login_required
 @admin_only
 def tracking(request):
     # Filter bookings with 'Approved' status, exclude 'Completed'
-    bookings = Booking.objects.filter(status='Accepted')  # Only show approved bookings
+    bookings = Booking.objects.filter(status='Accepted')
 
-    return render(request, 'client/tracking.html', {'bookings': bookings})
+    # Notifications (show up to 5 newest "Processing" bookings)
+    notifications_qs = bookings.filter(status="Processing").order_by('-created_at')[:5]
+    notifications = [
+        f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
+        for b in notifications_qs
+    ]
 
-def reviews(request):
-    # Get all reviews ordered by booking_date descending (latest first)
-    reviews = Review.objects.all().order_by('-booking_date')
-
-    # Calculate average rating (handle no reviews gracefully)
-    average_rating = reviews.aggregate(avg_rating=Avg('rating'))['avg_rating'] or 0
-
-    context = {
-        'reviews': reviews,
-        'average_rating': round(average_rating, 1),
-    }
-    return render(request, 'client/reviews.html', context)
+    return render(request, 'client/tracking.html', {
+        'bookings': bookings,
+        'notifications': notifications,  # Pass notifications to the template
+    })
 
 @login_required
 @admin_only
 def reviews(request):
-    reviews = Review.objects.select_related('booking__package').order_by('-created_at')
+    current_year = datetime.now().year  # Get the current year
 
-    average_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+    # List of days (1-31), months (1-12), and years (2000-current year)
+    days = list(range(1, 32))
+    months = [
+        ("1", "January"), ("2", "February"), ("3", "March"), ("4", "April"),
+        ("5", "May"), ("6", "June"), ("7", "July"), ("8", "August"),
+        ("9", "September"), ("10", "October"), ("11", "November"), ("12", "December"),
+    ]
+    years = list(range(2000, current_year + 1))
+
+    # Get the filter values from the GET request
+    filter_day = request.GET.get('filter_day')
+    filter_month = request.GET.get('filter_month')
+    filter_year = request.GET.get('filter_year')
+
+    filter_conditions = Q()
+
+    # Apply filters based on selected day, month, and year
+    if filter_day and filter_month and filter_year:
+        filter_date = datetime.strptime(f'{filter_year}-{filter_month}-{filter_day}', '%Y-%m-%d')
+        filter_conditions &= Q(booking_date=filter_date.date())
+
+    elif filter_month and not filter_day:
+        filter_conditions &= Q(booking_date__month=int(filter_month))
+
+    elif filter_year and not filter_month:
+        filter_conditions &= Q(booking_date__year=int(filter_year))
+
+    reviews = Review.objects.filter(filter_conditions).order_by('-created_at')
+
+    # Calculate average ratings for reviews
+    averages = reviews.aggregate(
+        average_rating=Avg('rating'),
+        avg_quality=Avg(Coalesce('quality', 0)),
+        avg_timeliness=Avg(Coalesce('timeliness', 0)),
+        avg_professionalism=Avg(Coalesce('professionalism', 0)),
+        avg_value_for_money=Avg(Coalesce('value_for_money', 0))
+    )
+
+    # Notifications (show up to 5 newest "Processing" bookings)
+    bookings = Booking.objects.all()
+    notifications_qs = bookings.filter(status="Processing").order_by('-created_at')[:5]
+    notifications = [
+        f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
+        for b in notifications_qs
+    ]
+
+    # Rating distribution
+    rating_distribution = {
+        'quality': {i: reviews.filter(quality=i).count() for i in range(1, 6)},
+        'timeliness': {i: reviews.filter(timeliness=i).count() for i in range(1, 6)},
+        'professionalism': {i: reviews.filter(professionalism=i).count() for i in range(1, 6)},
+        'value_for_money': {i: reviews.filter(value_for_money=i).count() for i in range(1, 6)}
+    }
 
     context = {
         'reviews': reviews,
-        'average_rating': round(average_rating, 1),
+        'average_rating': round(averages['average_rating'] if averages['average_rating'] is not None else 0, 1),
+        'avg_quality': round(averages['avg_quality'] if averages['avg_quality'] is not None else 0, 1),
+        'avg_timeliness': round(averages['avg_timeliness'] if averages['avg_timeliness'] is not None else 0, 1),
+        'avg_professionalism': round(averages['avg_professionalism'] if averages['avg_professionalism'] is not None else 0, 1),
+        'avg_value_for_money': round(averages['avg_value_for_money'] if averages['avg_value_for_money'] is not None else 0, 1),
+        'rating_distribution': rating_distribution,
+        'current_year': current_year,
+        'days': days,
+        'months': months,
+        'years': years,
+        'notifications': notifications,  # Pass notifications to the template
     }
-    return render(request, 'client/reviews.html', context)
 
+    return render(request, 'client/reviews.html', context)
 @login_required
 @admin_only
 def customer(request):
@@ -790,14 +944,37 @@ def customer(request):
                 "profile_picture": None,
             })
 
-    return render(request, 'client/customer.html', {'customer_data': customer_data})
+    # Notifications (show up to 5 newest "Processing" bookings)
+    bookings = Booking.objects.all()
+    notifications_qs = bookings.filter(status="Processing").order_by('-created_at')[:5]
+    notifications = [
+        f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
+        for b in notifications_qs
+    ]
+
+    return render(request, 'client/customer.html', {
+        'customer_data': customer_data,
+        'notifications': notifications,  # Pass notifications to the template
+    })
 
 @login_required
 @admin_only
 def employee(request):
     # Get only users who are current admins (is_staff=True)
     employees = Profile.objects.filter(user__is_staff=True)  # Only current admins
-    return render(request, 'client/employee.html', {'employees': employees})
+
+    # Notifications (show up to 5 newest "Processing" bookings)
+    bookings = Booking.objects.all()
+    notifications_qs = bookings.filter(status="Processing").order_by('-created_at')[:5]
+    notifications = [
+        f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
+        for b in notifications_qs
+    ]
+
+    return render(request, 'client/employee.html', {
+        'employees': employees,
+        'notifications': notifications,  # Pass notifications to the template
+    })
 
 @login_required
 def view_booking(request, booking_id):
@@ -893,43 +1070,60 @@ def submit_review(request):
     if request.method == 'POST':
         booking_id = request.POST.get('bookingId')
         rating = request.POST.get('rating')
+        quality = request.POST.get('quality')
+        timeliness = request.POST.get('timeliness')
+        professionalism = request.POST.get('professionalism')
+        value_for_money = request.POST.get('value_for_money')
         comment = request.POST.get('comment', '').strip()
 
-        if not booking_id or not rating or not comment:
+        # ✅ Check required fields
+        if not booking_id or not rating or not quality or not timeliness or not professionalism or not value_for_money or not comment:
             messages.error(request, "All fields are required!")
             return redirect('history')
 
+        # ✅ Get booking, must belong to current user
         booking = get_object_or_404(Booking, id=booking_id, user=request.user)
 
+        # ✅ Only completed bookings can be reviewed
         if booking.status != 'Completed':
             messages.error(request, "You can only review completed bookings.")
             return redirect('history')
 
+        # ✅ Validate numeric inputs (1–5)
         try:
             rating = int(rating)
-            if rating < 1 or rating > 5:
-                raise ValueError
+            quality = int(quality)
+            timeliness = int(timeliness)
+            professionalism = int(professionalism)
+            value_for_money = int(value_for_money)
+
+            for score in [rating, quality, timeliness, professionalism, value_for_money]:
+                if score < 1 or score > 5:
+                    raise ValueError
         except ValueError:
-            messages.error(request, "Rating must be a number between 1 and 5.")
+            messages.error(request, "All ratings must be numbers between 1 and 5.")
             return redirect('history')
 
-        # Check if a review already exists for this booking
-        existing_review = Review.objects.filter(booking=booking).first()
-        if existing_review:
+        # ✅ Prevent duplicate review
+        if Review.objects.filter(booking=booking).exists():
             messages.error(request, "You have already submitted a review for this booking.")
             return redirect('history')
 
-        # Create review since none exists yet
+        # ✅ Create review
         Review.objects.create(
             booking=booking,
-            customer_name=booking.full_name,
-            booking_date=booking.event_date,  # adjust as needed
+            customer_name=booking.full_name if hasattr(booking, "full_name") else request.user.username,
+            booking_date=booking.event_date,   # adjust kung ibang field
             event_type=booking.event_type,
             rating=rating,
+            quality=quality,
+            timeliness=timeliness,
+            professionalism=professionalism,
+            value_for_money=value_for_money,
             comment=comment
         )
 
-        messages.success(request, "Thank you for your review!")
+        messages.success(request, "Thank you for your detailed review!")
         return redirect('history')
 
     return redirect('home')

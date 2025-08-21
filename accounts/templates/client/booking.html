@@ -6,11 +6,37 @@
 <header class="header">
     <h1>Booking Details</h1>
     <div class="filters">
-        <select><option>Today</option></select>
-        <select><option>2024</option></select>
+        <form method="get">
+            <label for="filter_day">Day:</label>
+            <select id="filter_day" name="filter_day">
+                <option value="">All</option>
+                <option value="today" {% if request.GET.filter_day == "today" %}selected{% endif %}>Today</option>
+                {% for day in days %}
+                    <option value="{{ day }}" {% if day|stringformat:"s" == request.GET.filter_day %}selected{% endif %}>{{ day }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="filter_month">Month:</label>
+            <select id="filter_month" name="filter_month">
+                <option value="">All</option>
+                {% for value, month in months %}
+                    <option value="{{ value }}" {% if value == request.GET.filter_month %}selected{% endif %}>{{ month }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="filter_year">Year:</label>
+            <select id="filter_year" name="filter_year">
+                <option value="">All</option>
+                {% for year in years %}
+                    <option value="{{ year }}" {% if year == request.GET.filter_year %}selected{% endif %}>{{ year }}</option>
+                {% endfor %}
+            </select>
+                <button type="submit">Filter</button>
+        </form>
     </div>
 </header>
 
+<!-- Booking Table -->
 <table class="booking-table">
     <thead>
         <tr>
@@ -105,8 +131,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
 function confirmAction(url, actionType) {
     let actionText = "";
@@ -160,7 +184,6 @@ function rejectBooking(url) {
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            // Send rejection reason to backend
             fetch(url, {
                 method: 'POST',
                 headers: {
@@ -179,12 +202,13 @@ function rejectBooking(url) {
     });
 }
 </script>
+
 <style>
     .header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: 3%;
+        margin-top: 1%;
     }
 
     .filters select {
@@ -215,25 +239,11 @@ function rejectBooking(url) {
         color: white;
     }
 
-    .cancelled {
-        background-color: #6c757d;
-    }
-
-    .processing {
-        background-color: #28a745;
-    }
-
-    .accepted {
-        background-color: #17a2b8;
-    }
-
-    .rejected {
-        background-color: #dc3545;
-    }
-
-    .not-processed {
-        background-color: #6c757d;
-    }
+    .cancelled { background-color: #6c757d; }
+    .processing { background-color: #28a745; }
+    .accepted { background-color: #17a2b8; }
+    .rejected { background-color: #dc3545; }
+    .not-processed { background-color: #6c757d; }
 
     .actions {
         display: flex;
@@ -253,34 +263,17 @@ function rejectBooking(url) {
         gap: 8px;
     }
 
-    .actions .view {
-        background-color: #333;
-    }
-
-    .actions .accept {
-        background-color: #28a745;
-    }
-
-    .actions .reject {
-        background-color: #dc3545;
-    }
-
-    /* New Styling for "Complete" Button */
+    .actions .view { background-color: #333; }
+    .actions .accept { background-color: #28a745; }
+    .actions .reject { background-color: #dc3545; }
     .actions .complete {
-        background-color: #4CAF50;  /* Lively green for Complete */
+        background-color: #4CAF50;
         transition: all 0.3s ease;
     }
+    .actions .complete:hover { background-color: #45a049; }
 
-    .actions .complete:hover {
-        background-color: #45a049;  /* Darker green on hover */
-    }
+    .actions i { font-size: 1.2em; }
 
-    /* Font Awesome Icon Styling */
-    .actions i {
-        font-size: 1.2em;
-    }
-
-    /* Modal Styling */
     .modal {
         display: none;
         position: fixed;
@@ -333,10 +326,8 @@ function rejectBooking(url) {
         cursor: pointer;
         transition: all 0.3s ease;
     }
+    .close-btn:hover { background-color: #5a6268; }
 
-    .close-btn:hover {
-        background-color: #5a6268;
-    }
     .delete {
         background-color: #dc3545;
         padding: 8px 16px;
@@ -349,38 +340,56 @@ function rejectBooking(url) {
         align-items: center;
         gap: 8px;
     }
+    .delete:hover { background-color: #c82333; }
 
-    .delete:hover {
-        background-color: #c82333;
-    }
+    .delete i { font-size: 1.2em; }
 
-    .delete i {
-        font-size: 1.2em;
-    }
     @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-        to {
-            opacity: 1;
-        }
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
+
+    /* 🌙 DARK MODE SUPPORT */
+    body.dark-mode {
+        background-color: #121212;
+        color: #e0e0e0;
+    }
+
+    body.dark-mode .booking-table {
+        background-color: #1e1e1e;
+        color: #f1f1f1;
+    }
+
+    body.dark-mode .booking-table th,
+    body.dark-mode .booking-table td {
+        border-bottom: 1px solid #333;
+    }
+
+    body.dark-mode .modal-dialog {
+        background-color: #2a2a2a;
+        color: #fff;
+    }
+
+    body.dark-mode .actions .view { background-color: #555; }
+    body.dark-mode .actions .accept { background-color: #2ecc71; }
+    body.dark-mode .actions .reject { background-color: #e74c3c; }
+    body.dark-mode .actions .complete { background-color: #27ae60; }
+    body.dark-mode .close-btn { background-color: #444; }
+    body.dark-mode .close-btn:hover { background-color: #666; }
+
 </style>
 
 <script>
-    // Open Modal
     function openModal(id) {
         var modal = document.getElementById('viewModal' + id);
         modal.style.display = 'flex';
     }
 
-    // Close Modal
     function closeModal(id) {
         var modal = document.getElementById('viewModal' + id);
         modal.style.display = 'none';
     }
 
-    // Close Modal when clicking outside of the modal content
     window.onclick = function(event) {
         var modals = document.querySelectorAll('.modal');
         modals.forEach(function(modal) {

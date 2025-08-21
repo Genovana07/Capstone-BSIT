@@ -63,159 +63,233 @@
 </div>
 
 <style>
-    .inventory-container {
-        background-color: #fff;
-        padding: 20px;
-        flex-grow: 1;
-        margin-top: 20px;
-    }
+* 🌞 LIGHT MODE */
+.inventory-container {
+    background-color: #fff;
+    padding: 20px;
+    flex-grow: 1;
+    margin-top: -20px;
+}
 
-    .inventory-header {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
+.inventory-header {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.inventory-header h1 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-top: 1%;
+}
+
+.filters {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.filter-item {
+    display: flex;
+    gap: 10px;
+}
+
+.stock-status, .status-btn {
+    font-weight: bold;
+    padding: 8px 16px;
+    background-color: #f2f2f2;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-left: -35vw;
+}
+
+.search-box input {
+    border: none;
+    padding: 8px 12px;
+    outline: none;
+    width: 250px;
+}
+
+.search-box button {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.search-box button i {
+    font-size: 16px;
+}
+
+.inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    border: 1px solid #ddd;
+}
+
+.inventory-table th,
+.inventory-table td {
+    border: 1px solid #ddd;
+    padding: 12px 10px;
+    text-align: left;
+    font-size: 14px;
+}
+
+.inventory-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+.inventory-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Action Button Styling */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.action-btn:hover {
+    transform: scale(1.05);
+}
+
+.add-btn {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.add-btn:hover {
+    background-color: #218838;
+}
+
+.subtract-btn {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.subtract-btn:hover {
+    background-color: #c82333;
+}
+
+/* 🌙 DARK MODE (True Black Background) */
+body.dark-mode .inventory-container {
+    background-color: #000000; /* Black background for inventory container */
+    color: #e0e0e0; /* Light text for better contrast */
+}
+
+body.dark-mode .inventory-header h1 {
+    color: #e0e0e0; /* Light color for header */
+}
+
+body.dark-mode .filters {
+    color: #e0e0e0; /* Light text color for filter section */
+}
+
+body.dark-mode .stock-status,
+body.dark-mode .status-btn {
+    background-color: #444444; /* Dark background for filter buttons */
+    color: #ffffff; /* White text */
+}
+
+body.dark-mode .search-box {
+    border: 1px solid #666; /* Darker border for search box */
+}
+
+body.dark-mode .search-box input {
+    background-color: #333; /* Dark input background */
+    color: #e0e0e0; /* Light text for input */
+}
+
+body.dark-mode .search-box button {
+    background-color: #444444; /* Dark background for search button */
+    color: #e0e0e0; /* Light icon color */
+}
+
+body.dark-mode .inventory-table {
+    background-color: #111111; /* Dark table background */
+    color: #e0e0e0; /* Light text */
+}
+
+body.dark-mode .inventory-table th {
+    background-color: #333333; /* Dark header background */
+    color: #e0e0e0; /* Light header text */
+}
+
+body.dark-mode .inventory-table tr:hover {
+    background-color: #222222; /* Darker row hover effect */
+}
+
+/* Action Button Dark Mode */
+body.dark-mode .add-btn {
+    background-color: #28a745; /* Keep green color for Add button */
+    color: #fff;
+}
+
+body.dark-mode .add-btn:hover {
+    background-color: #218838;
+}
+
+body.dark-mode .subtract-btn {
+    background-color: #dc3545; /* Keep red color for Subtract button */
+    color: #fff;
+}
+
+body.dark-mode .subtract-btn:hover {
+    background-color: #c82333;
+}
+
+body.dark-mode .action-btn {
+    background-color: #444444; /* Dark background for action buttons */
+    color: #e0e0e0; /* Light text */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .inventory-container {
+        padding: 10px;
     }
 
     .inventory-header h1 {
-        font-size: 28px;
-        font-weight: bold;
-        margin-top: 1%;
+        font-size: 24px;
     }
 
     .filters {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 30px;
-        margin-top: 20px;
-    }
-
-    .filter-item {
-        display: flex;
-        gap: 10px;
-    }
-
-    .stock-status, .status-btn {
-        font-weight: bold;
-        padding: 8px 16px;
-        background-color: #f2f2f2;
-        border-radius: 5px;
-        cursor: pointer;
-        text-align: center;
-    }
-
-    .search-box {
-        display: flex;
-        align-items: center;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        overflow: hidden;
-        margin-left: -35vw;
+        flex-direction: column;
     }
 
     .search-box input {
-        border: none;
-        padding: 8px 12px;
-        outline: none;
-        width: 250px;
-    }
-
-    .search-box button {
-        background: none;
-        border: none;
-        padding: 8px 12px;
-        cursor: pointer;
-    }
-
-    .search-box button i {
-        font-size: 16px;
-    }
-
-    .inventory-table {
         width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        border: 1px solid #ddd;
     }
 
-    .inventory-table th,
-    .inventory-table td {
-        border: 1px solid #ddd;
-        padding: 12px 10px;
-        text-align: left;
-        font-size: 14px;
-    }
-
-    .inventory-table th {
-        background-color: #f5f5f5;
-        font-weight: bold;
-    }
-
-    .inventory-table tr:hover {
-        background-color: #f9f9f9;
-    }
-
-    /* Action Button Styling */
-    .action-buttons {
-        display: flex;
-        gap: 10px;
-    }
-
-    .action-btn {
-        padding: 8px 16px;
-        border-radius: 5px;
-        border: none;
-        cursor: pointer;
-        font-weight: bold;
+    .status-btn {
+        width: 100%;
         text-align: center;
-        transition: background-color 0.3s, transform 0.3s;
     }
-
-    .action-btn:hover {
-        transform: scale(1.05);
-    }
-
-    .add-btn {
-        background-color: #28a745;
-        color: #fff;
-    }
-
-    .add-btn:hover {
-        background-color: #218838;
-    }
-
-    .subtract-btn {
-        background-color: #dc3545;
-        color: #fff;
-    }
-
-    .subtract-btn:hover {
-        background-color: #c82333;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .inventory-container {
-            padding: 10px;
-        }
-
-        .inventory-header h1 {
-            font-size: 24px;
-        }
-
-        .filters {
-            flex-direction: column;
-        }
-
-        .search-box input {
-            width: 100%;
-        }
-
-        .status-btn {
-            width: 100%;
-            text-align: center;
-        }
-    }
+}
+    
 </style>
 
 {% endblock %}

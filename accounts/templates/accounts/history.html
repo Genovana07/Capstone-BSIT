@@ -17,26 +17,9 @@
     padding: 40px 20px;
     border-right: 1px solid #e0e0e0;
   }
-
-  .sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .sidebar li {
-    display: flex;
-    align-items: center;
-    margin-bottom: 25px;
-    font-size: 18px;
-  }
-
-  .sidebar li img {
-    width: 24px;
-    height: 24px;
-    margin-right: 12px;
-  }
-
+  .sidebar ul { list-style: none; padding: 0; margin: 0; }
+  .sidebar li { display: flex; align-items: center; margin-bottom: 25px; font-size: 18px; }
+  .sidebar li img { width: 24px; height: 24px; margin-right: 12px; }
   .sidebar li span a {
     color: #23194f;
     font-weight: 500;
@@ -44,10 +27,7 @@
     text-decoration: none;
     transition: color 0.3s ease;
   }
-
-  .sidebar li span a:hover {
-    color: #7a3cff;
-  }
+  .sidebar li span a:hover { color: #7a3cff; }
 
   /* Main Content */
   .main-content {
@@ -55,7 +35,6 @@
     padding: 60px;
     background-color: #fcfcff;
   }
-
   .main-content h2 {
     font-size: 26px;
     font-weight: 700;
@@ -66,160 +45,78 @@
     margin-bottom: 40px;
   }
 
+  /* Table */
   .table-container {
     background-color: #ffffff;
     padding: 32px;
     border-radius: 16px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
     overflow-x: auto;
   }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { text-align: left; padding: 16px 14px; border-bottom: 1px solid #f0f0f0; }
+  th { background-color: #f4ecff; color: #23194f; font-weight: 600; text-transform: uppercase; font-size: 13px; }
+  tr:hover { background-color: #faf8ff; }
+  a { color: #7a3cff; text-decoration: none; font-weight: 600; }
+  a:hover { text-decoration: underline; }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 15px;
-    background-color: white;
-  }
-
-  th, td {
-    text-align: left;
-    padding: 16px 14px;
-    border-bottom: 1px solid #f0f0f0;
-  }
-
-  th {
-    background-color: #f4ecff;
-    color: #23194f;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 13px;
-  }
-
-  tr:hover {
-    background-color: #faf8ff;
-  }
-
-  a {
-    color: #7a3cff;
-    text-decoration: none;
-    font-weight: 600;
-  }
-
-  a:hover {
-    text-decoration: underline;
-  }
-
-  /* Modal Styles */
+  /* Modal */
   .modal {
     display: none;
     position: fixed;
     z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    left:0; top:0; width:100%; height:100%;
+    background-color: rgba(0,0,0,0.5);
     justify-content: center;
     align-items: center;
   }
-
   .modal-content {
-    background-color: white;
-    padding: 30px;
-    border-radius: 8px;
-    width: 400px;
-    max-width: 80%;
+    background-color:white;
+    padding:30px;
+    border-radius:8px;
+    width:400px;
+    max-width:80%;
   }
-
   .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 20px;
-    font-weight: 600;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:20px;
+    font-weight:600;
   }
+  .close { font-size:24px; cursor:pointer; color:#7a3cff; }
 
-  .close {
-    font-size: 24px;
-    cursor: pointer;
-    color: #7a3cff;
+  .form-group { margin-bottom:15px; }
+  .form-group label { font-weight:600; margin-bottom:5px; display:block; }
+  .form-group input, .form-group textarea, .form-group select {
+    width:100%; padding:10px; border-radius:6px; border:1px solid #ddd;
   }
-
-  .form-group {
-    margin-bottom: 15px;
-  }
-
-  .form-group label {
-    font-weight: 600;
-    margin-bottom: 5px;
-  }
-
-  .form-group input, .form-group textarea {
-    width: 100%;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ddd;
-  }
-
-  .form-group textarea {
-    height: 100px;
-  }
-
-  .form-group .rating {
-    display: flex;
-    gap: 5px;
-    cursor: pointer;
-  }
-
-  .form-group .rating input {
-    display: none;
-  }
-
-  .form-group .rating label {
-    font-size: 30px;
-    color: #ccc;
-  }
-
-  .form-group .rating input:checked ~ label {
-    color: #ffcc00;
-  }
-
+  .form-group textarea { height:100px; }
+  .form-group .rating { display:flex; gap:5px; cursor:pointer; }
+  .form-group .rating input { display:none; }
+  .form-group .rating label { font-size:30px; color:#ccc; }
+  .form-group .rating input:checked ~ label { color:#ffcc00; }
   .form-group .rating input:checked ~ label:hover,
-  .form-group .rating input:checked ~ label:hover ~ label {
-    color: #ffcc00;
-  }
+  .form-group .rating input:checked ~ label:hover ~ label { color:#ffcc00; }
 
+  /* Messages */
   .messages {
-    display: none; /* Ensure it's hidden by default */
-    position: fixed;
-    top: 20px; /* Adjust the position to be right below the navbar */
-    left: 50%;
+    display:none;
+    position:fixed;
+    top:20px; left:50%;
     transform: translateX(-50%);
-    width: 30%;  /* Adjust the width for compact display */
-    padding: 8px 15px;  /* Adjust the padding */
-    background-color: #4CAF50;  /* Default to success color */
-    color: white;
-    font-size: 14px;
-    text-align: center;
-    border-radius: 6px;
-    z-index: 9999;
-    box-shadow: none; /* No shadow */
+    width:30%;
+    padding:8px 15px;
+    background-color:#4CAF50;
+    color:white;
+    font-size:14px;
+    text-align:center;
+    border-radius:6px;
+    z-index:9999;
 }
-
-.alert-success {
-    background-color: #4CAF50;  /* Green background for success */
-}
-
-.alert-error {
-    background-color: #f44336;  /* Red background for error */
-}
-
-.alert {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 35px;  /* Height to match the compact design */
-}
+.alert-success { background-color:#4CAF50; }
+.alert-error { background-color:#f44336; }
+.alert { display:flex; align-items:center; justify-content:center; height:35px; }
 </style>
 
 <div class="container">
@@ -268,22 +165,22 @@
               <td>{{ booking.event_date }}</td>
               <td>{{ booking.total }}</td>
               <td>
-  {% if booking.status == "Completed" %}
-    {% if booking.rating %}
-      <span style="color: gray; cursor: default; pointer-events: none;">
-        {{ booking.rating }} ⭐
-      </span>
-    {% else %}
-      <a href="javascript:void(0);" 
-         onclick="openModal('{{ booking.customer_name }}', '{{ booking.date_booked }}', '{{ booking.rating }}', '{{ booking.package }}', '{{ booking.event_date }}', '{{ booking.id }}')"
-         style="color: #7a3cff; cursor: pointer;">
-         ⭐ Rate
-      </a>
-    {% endif %}
-  {% else %}
-    N/A
-  {% endif %}
-</td>
+                {% if booking.status == "Completed" %}
+                  {% if booking.review_exists %}
+                    <span style="color: gray; cursor: default; pointer-events: none;">
+                      {{ booking.rating }} ⭐
+                    </span>
+                  {% else %}
+                    <a href="javascript:void(0);" 
+                       onclick="openModal('{{ booking.id }}', '{{ booking.customer_name }}', '{{ booking.date_booked }}', '{{ booking.package }}', '{{ booking.event_date }}', '{{ booking.rating|default:"" }}')"
+                       style="color: #7a3cff; cursor: pointer;">
+                       ⭐ Rate
+                    </a>
+                  {% endif %}
+                {% else %}
+                  N/A
+                {% endif %}
+              </td>
             </tr>
           {% empty %}
             <tr><td colspan="6">No history found.</td></tr>
@@ -307,23 +204,24 @@
 
       <div class="form-group">
         <label for="customerName">Name</label>
-        <input type="text" id="customerName" name="customerName" readonly>
+        <input type="text" id="customerName" readonly>
       </div>
 
       <div class="form-group">
         <label for="bookingDate">Date of Booking</label>
-        <input type="text" id="bookingDate" name="bookingDate" readonly>
+        <input type="text" id="bookingDate" readonly>
       </div>
 
       <div class="form-group">
         <label for="eventType">Type of Event</label>
-        <input type="text" id="eventType" name="eventType" readonly>
+        <input type="text" id="eventType" readonly>
       </div>
 
+      <!-- Overall rating -->
       <div class="form-group">
-        <label>Rating (Stars)</label>
+        <label>Overall Rating (Stars)</label>
         <div class="rating">
-          <input type="radio" id="star5" name="rating" value="5"><label for="star5">★</label>
+          <input type="radio" id="star5" name="rating" value="5" required><label for="star5">★</label>
           <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
           <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
           <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
@@ -331,68 +229,129 @@
         </div>
       </div>
 
+      <!-- Metrics -->
+      <div class="form-group">
+        <label>Quality</label>
+        <select name="quality" required>
+          <option value="">Select</option>
+          {% for i in "54321" %}<option value="{{ i }}">{{ i }} ★</option>{% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Timeliness</label>
+        <select name="timeliness" required>
+          <option value="">Select</option>
+          {% for i in "54321" %}<option value="{{ i }}">{{ i }} ★</option>{% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Professionalism</label>
+        <select name="professionalism" required>
+          <option value="">Select</option>
+          {% for i in "54321" %}<option value="{{ i }}">{{ i }} ★</option>{% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Value for Money</label>
+        <select name="value_for_money" required>
+          <option value="">Select</option>
+          {% for i in "54321" %}<option value="{{ i }}">{{ i }} ★</option>{% endfor %}
+        </select>
+      </div>
+
       <div class="form-group">
         <label for="comment">Comment</label>
-        <textarea id="comment" name="comment" placeholder="Leave a comment..."></textarea>
+        <textarea id="comment" name="comment" placeholder="Leave a comment..." required></textarea>
       </div>
 
       <button type="submit">Submit</button>
     </form>
   </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const messageContainer = document.getElementById('messageContainer');
-    if (messageContainer) {
-      messageContainer.style.display = 'block';
-      setTimeout(() => {
-        messageContainer.style.display = 'none';
-      }, 3000);
-    }
+  document.addEventListener('DOMContentLoaded', function(){
+      const msg = document.getElementById('messageContainer');
+      if(msg){ msg.style.display = 'block'; setTimeout(()=>{msg.style.display='none'},3000);}
   });
 
-  function openModal(name, bookingDate, rating, eventType, eventDate, bookingId) {
-    document.getElementById('ratingModal').style.display = 'flex';
+  function openModal(bookingId, name, bookingDate, eventType, eventDate, rating){
+      document.getElementById('ratingModal').style.display='flex';
+      document.getElementById('bookingId').value = bookingId;
+      document.getElementById('customerName').value = name;
+      document.getElementById('bookingDate').value = bookingDate;
+      document.getElementById('eventType').value = eventType;
 
-    document.getElementById('customerName').value = name;
-    document.getElementById('bookingDate').value = bookingDate;
-    document.getElementById('eventType').value = eventType;
-    document.getElementById('bookingId').value = bookingId;
+      const stars = document.getElementsByName('rating');
+      stars.forEach(star=>star.checked=false);
+      if(rating){ stars.forEach(star=>{if(star.value==rating) star.checked=true}); }
+      document.getElementById('comment').value='';
+  }
 
-    // Clear previous rating selection
-    const stars = document.getElementsByName('rating');
-    stars.forEach(star => star.checked = false);
+  function closeModal(){ document.getElementById('ratingModal').style.display='none'; }
 
-    // If rating exists, select the star
-    if (rating) {
-      stars.forEach(star => {
-        if (star.value == rating) star.checked = true;
-      });
-    }
+  function confirmLogout(){
+    Swal.fire({
+      title:"Are you sure you want to logout?",
+      text:"You will need to login again to access your account.",
+      icon:"warning",
+      showCancelButton:true,
+      confirmButtonColor:"#dc3545",
+      cancelButtonColor:"#6c757d",
+      confirmButtonText:"Yes, Logout"
+    }).then((result)=>{if(result.isConfirmed){window.location.href="{% url 'logout' %}"}})
+  }
+    document.addEventListener('DOMContentLoaded', function(){
+      const msg = document.getElementById('messageContainer');
+      if(msg){ msg.style.display = 'block'; setTimeout(()=>{msg.style.display='none'},3000);}
+  });
 
-    // Clear comment textarea when opening modal
-    document.getElementById('comment').value = '';
+  function openModal(bookingId, name, bookingDate, eventType, eventDate, rating){
+      document.getElementById('ratingModal').style.display='flex';
+      document.getElementById('bookingId').value = bookingId;
+      document.getElementById('customerName').value = name;
+      document.getElementById('bookingDate').value = bookingDate;
+      document.getElementById('eventType').value = eventType;
+
+      const stars = document.getElementsByName('rating');
+      stars.forEach(star => star.checked = false);
+      if (rating) { 
+        stars.forEach(star => { 
+          if (star.value == rating) star.checked = true; 
+        }); 
+      }
+      document.getElementById('comment').value = '';
   }
 
   function closeModal() {
     document.getElementById('ratingModal').style.display = 'none';
   }
-  function confirmLogout() {
-    Swal.fire({
-        title: "Are you sure you want to logout?",
-        text: "You will need to login again to access your account.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#dc3545",
-        cancelButtonColor: "#6c757d",
-        confirmButtonText: "Yes, Logout"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = "{% url 'logout' %}";
-        }
-    });
-}
-</script>
 
+  // Function to trigger the confirmation alert before submitting the form
+  function confirmReviewSubmit(event) {
+    event.preventDefault(); // Prevent form submission
+
+    Swal.fire({
+      title: 'Are you sure you want to submit this review?',
+      text: 'Once submitted, you will not be able to change your review.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, submit review!',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // If confirmed, submit the form
+        document.querySelector('form').submit();
+      }
+    });
+  }
+
+  // Attach the confirmReviewSubmit function to the form submit event
+  document.querySelector('form').addEventListener('submit', confirmReviewSubmit);
+</script>
 {% endblock %}

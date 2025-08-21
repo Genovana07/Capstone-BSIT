@@ -2,60 +2,110 @@
 {% block title %}Admin Access Requests{% endblock %}
 {% block content %}
 <style>
-    h2{
-        margin-top: 40px;
-    }
-    ul {
-        list-style-type: none;
-        padding: 0;
-    }
-    li {
-        background-color: white;
-        border-radius: 10px;
-        padding: 1.25rem; 
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        border-left-width: 4px;
-        border-left-color: #60a5fa;
-    }
-    li:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    }
-    .approve-btn {
-        background-color: #10b981;
-        color: white;
-        padding: 10px 15px;
-        font-size: 14px;
-        font-weight: bold;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.3s ease;
-    }
+    /* 🌞 LIGHT MODE */
+h2 {
+    margin-top: 20px;
+}
 
-    .approve-btn:hover {
-        background-color: #059669;
-        transform: translateY(-2px);
-    }
+ul {
+    list-style-type: none;
+    padding: 0;
+}
 
-    .approve-btn:active {
-        background-color: #047857;
-        transform: translateY(0);
-    }
-    h2 {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 1.5rem;
-    }
-    p {
-        color: #4b5563;
-    }
-    p.text-gray-500 {
-        font-size: 1.125rem;
-        color: #6b7280;
-    }
+li {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1.25rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-left-width: 4px;
+    border-left-color: #60a5fa;
+}
+
+li:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.approve-btn {
+    background-color: #10b981;
+    color: white;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.approve-btn:hover {
+    background-color: #059669;
+    transform: translateY(-2px);
+}
+
+.approve-btn:active {
+    background-color: #047857;
+    transform: translateY(0);
+}
+
+h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+}
+
+p {
+    color: #4b5563;
+}
+
+p.text-gray-500 {
+    font-size: 1.125rem;
+    color: #6b7280;
+}
+
+/* 🌙 DARK MODE */
+body.dark-mode h2 {
+    color: #e0e0e0; /* Light heading color */
+}
+
+body.dark-mode ul {
+    color: #e0e0e0; /* Light text for list items */
+}
+
+body.dark-mode li {
+    background-color: #2c2f38; /* Dark background for list items */
+    color: #e0e0e0; /* Light text */
+    box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1); /* Lighter shadow for dark mode */
+    border-left-color: #3b82f6; /* Adjust border color for dark mode */
+}
+
+body.dark-mode li:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.15); /* Lighter shadow on hover */
+}
+
+body.dark-mode .approve-btn {
+    background-color: #34d399; /* Green button for approve in dark mode */
+    color: white;
+}
+
+body.dark-mode .approve-btn:hover {
+    background-color: #10b981; /* Darker green on hover */
+}
+
+body.dark-mode .approve-btn:active {
+    background-color: #059669; /* Even darker green on active */
+}
+
+body.dark-mode p {
+    color: #e0e0e0; /* Light text for paragraphs in dark mode */
+}
+
+body.dark-mode p.text-gray-500 {
+    color: #a1a1aa; /* Lighter gray text for the specific class */
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

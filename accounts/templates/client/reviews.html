@@ -7,8 +7,7 @@
 {% block content %}
 
 <style>
-/* Review Summary styles (same as your styles) */
-
+/* ---------- Light Mode (Default) ---------- */
 .review-summary {
     display: flex;
     justify-content: space-between;
@@ -17,6 +16,9 @@
     padding: 20px 30px;
     border-bottom: 3px solid black;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 10px;
 }
 
 .divider {
@@ -27,14 +29,16 @@
 }
 
 .review-count,
-.average-rating {
+.average-rating,
+.metrics-summary {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
 }
 
 .review-count h2,
-.average-rating h2 {
+.average-rating h2,
+.metrics-summary h2 {
     font-size: 18px;
     font-weight: 700;
 }
@@ -45,25 +49,16 @@
     font-weight: bold;
 }
 
-.growth {
-    font-size: 14px;
-    color: green;
-    margin-left: 8px;
+.metrics-summary ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-.stars {
-    color: gold;
-    margin-left: 10px;
-    font-size: 20px;
-}
-
-.filter-box {
-    background-color: #f2f2f2;
-    padding: 8px 14px;
-    border-radius: 6px;
+.metrics-summary li {
     font-size: 14px;
-    font-weight: 500;
-    color: #333;
+    display: flex;
+    justify-content: space-between;
 }
 
 /* Reviews list with scroll */
@@ -71,14 +66,13 @@
     background: #fff;
     padding: 20px;
     border-radius: 12px;
-    margin-top: 2%;
+    margin-top: -1%;
     display: flex;
     flex-direction: column;
     gap: 20px;
-
-    max-height: 700px;       
-    overflow-y: auto;       
-    scrollbar-width: thin;  
+    max-height: 700px;
+    overflow-y: auto;
+    scrollbar-width: thin;
     scrollbar-color: #888 #f1f1f1;
 }
 
@@ -101,8 +95,8 @@
     display: flex;
     padding: 20px;
     border-bottom: 1px solid #ddd;
-    align-items: center;
-    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
 }
 
 .review-card:last-child {
@@ -113,7 +107,6 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    margin-right: 20px;
     object-fit: cover;
 }
 
@@ -126,6 +119,7 @@
     align-items: center;
     gap: 10px;
     margin-bottom: 10px;
+    flex-wrap: wrap;
 }
 
 .review-header strong {
@@ -140,8 +134,20 @@
 
 .stars {
     display: flex;
-    gap: 5px;
-    font-size: 18px;
+    gap: 3px;
+    font-size: 16px;
+    color: gold;
+}
+
+/* Metrics inside review card */
+.metrics {
+    margin: 10px 0;
+}
+
+.metrics li {
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
 }
 
 /* Delete Button Styling */
@@ -162,36 +168,184 @@
     background-color: darkred;
 }
 
-.delete-button:active {
-    background-color: crimson;
+/* ---------- Date Filter Positioning - Upper Right ---------- */
+.date-filter {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: -10px;
+    margin-top: 20px;
+    position: fixed;  /* Keeps the filter fixed in place */
+    top: 60px;        /* Keeps the filter 60px from the top of the screen */
+    right: 30px;      /* Keeps the filter 30px from the right edge of the screen */
+    z-index: 9999;    /* Ensures the filter stays above other elements */
 }
 
-.delete-button-container {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 10px;
+/* Adjustments for smaller dropdown and button */
+.date-filter select {
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: transparent; /* Remove background color */
+    color: #333;
+    width: 130px;
+}
+
+.date-filter label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.date-filter button {
+    padding: 6px 12px;
+    font-size: 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.date-filter button:hover {
+    background-color: #45a049;
+}
+
+/* ---------- Dark Mode ---------- */
+body.dark-mode .review-summary {
+    background: #333; /* Dark background for summary */
+    color: #e0e0e0; /* Light text for readability */
+    border-bottom: 3px solid #444;
+}
+
+body.dark-mode .divider {
+    background-color: #444; /* Darker divider */
+}
+
+body.dark-mode .review-count h2,
+body.dark-mode .average-rating h2,
+body.dark-mode .metrics-summary h2 {
+    color: #e0e0e0; /* Light headings in dark mode */
+}
+
+body.dark-mode .review-number,
+body.dark-mode .rating-number {
+    color: #e0e0e0; /* Light color for review numbers */
+}
+
+body.dark-mode .metrics-summary li {
+    color: #e0e0e0; /* Light text for metrics */
+}
+
+body.dark-mode .reviews-list {
+    background: #2c2f38; /* Dark background for reviews list */
+    color: #e0e0e0; /* Light text */
+    scrollbar-color: #888 #444; /* Adjust scrollbar for dark mode */
+}
+
+body.dark-mode .reviews-list::-webkit-scrollbar-track {
+    background: #444; /* Dark track for scrollbar */
+}
+
+body.dark-mode .reviews-list::-webkit-scrollbar-thumb {
+    background-color: #888; /* Light thumb for scrollbar */
+}
+
+body.dark-mode .review-card {
+    background: #444; /* Dark card background */
+    border-bottom: 1px solid #555; /* Darker border */
+}
+
+body.dark-mode .review-header strong,
+body.dark-mode .review-header .date {
+    color: #e0e0e0; /* Light color for header and date */
+}
+
+body.dark-mode .stars {
+    color: gold; /* Keep gold color for stars */
+}
+
+body.dark-mode .delete-button {
+    background-color: red;
+    color: white;
+}
+
+body.dark-mode .delete-button:hover {
+    background-color: darkred;
+}
+
+body.dark-mode .date-filter select {
+    background-color: #444; /* Dark background for select */
+    color: #e0e0e0; /* Light text in select */
+    border: 1px solid #666; /* Darker border */
+}
+
+body.dark-mode .date-filter button {
+    background-color: #4CAF50; /* Green button stays green in dark mode */
+    color: white;
+}
+
+body.dark-mode .date-filter button:hover {
+    background-color: #45a049;
 }
 </style>
+ <h1>FeedBack</h1>
+<div class="date-filter">
+    <form method="get">
+        <label for="filter_day">Day:</label>
+        <select id="filter_day" name="filter_day">
+            <option value="">All</option> <!-- Option for "All" -->
+            {% for day in days %}
+                <option value="{{ day }}" {% if day == request.GET.filter_day %}selected{% endif %}>{{ day }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="filter_month">Month:</label>
+        <select id="filter_month" name="filter_month">
+            <option value="">All</option> <!-- Option for "All" -->
+            {% for value, month in months %}
+                <option value="{{ value }}" {% if value == request.GET.filter_month %}selected{% endif %}>{{ month }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="filter_year">Year:</label>
+        <select id="filter_year" name="filter_year">
+            <option value="">All</option> <!-- Option for "All" -->
+            {% for year in years %}
+                <option value="{{ year }}" {% if year == request.GET.filter_year %}selected{% endif %}>{{ year }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Filter</button>
+    </form>
+</div>
 
 <!-- Review Summary -->
 <div class="review-summary">
     <div class="review-count">
         <h2>Reviews</h2>
-        <p class="review-number">{{ reviews.count }} <span class="growth"></span></p>
-        <p class="review-label">Growth in Review this month</p>
+        <p class="review-number">{{ reviews.count }}</p>
+        <p class="review-label">Total Reviews</p>
     </div>
     <div class="divider"></div>
 
     <div class="average-rating">
         <h2>Average Rating</h2>
         <div class="rating-number">
-            {{ average_rating }} <span class="stars"></span>
+            {{ average_rating|default:"0" }} ★
         </div>
-        <p>Average Rating This Month</p>
+        <p>Overall Satisfaction</p>
     </div>
 
-    <div class="filter-box">
-        March 2024 - March 2025
+    <div class="metrics-summary">
+        <h2>Average Metrics</h2>
+        <ul>
+            <li>Quality: <span>{{ avg_quality|default:"0" }} ★</span></li>
+            <li>Timeliness: <span>{{ avg_timeliness|default:"0" }} ★</span></li>
+            <li>Professionalism: <span>{{ avg_professionalism|default:"0" }} ★</span></li>
+            <li>Value for Money: <span>{{ avg_value_for_money|default:"0" }} ★</span></li>
+        </ul>
     </div>
 </div>
 
@@ -199,23 +353,28 @@
 <div class="reviews-list">
     {% for review in reviews %}
     <div class="review-card">
-        <img src="{% static 'images/profile-icon.png' %}" alt="Reviewer" class="reviewer-avatar">
+        <img src="{% if review.booking.customer.profile_picture %}{{ review.booking.customer.profile_picture.url }}{% else %}{% static 'images/profile-icon.png' %}{% endif %}" 
+             alt="Reviewer" class="reviewer-avatar">
         <div class="review-details">
-                <div class="review-header">
-            <strong>{{ review.booking.full_name }}</strong>
-            <span>{{ review.booking.package.title }}</span>  {# Corrected: Show booked package title #}
-            <span class="stars">
-                {% for i in review.rating|rangefilter %}
-                    ★
-                {% endfor %}
-            </span>
-            <span class="date">Booked on {{ review.booking.created_at|date:"M d, Y" }}</span>
-        </div>
+            <div class="review-header">
+                <strong>{{ review.customer_name }}</strong>
+                <span>{{ review.event_type }}</span>
+                <span class="stars">
+                    {% for i in review.rating|rangefilter %}★{% endfor %}
+                </span>
+                <span class="date">Booked on {{ review.booking_date|date:"M d, Y" }}</span>
+            </div>
+
+            <ul class="metrics">
+                <li>Quality: <span>{{ review.quality }} ★</span></li>
+                <li>Timeliness: <span>{{ review.timeliness }} ★</span></li>
+                <li>Professionalism: <span>{{ review.professionalism }} ★</span></li>
+                <li>Value for Money: <span>{{ review.value_for_money }} ★</span></li>
+            </ul>
+
             <p>{{ review.comment }}</p>
 
-            <div class="delete-button-container">
-                <a href="{% url 'delete_review' review.id %}" class="delete-button">Delete</a>
-            </div>
+            <!-- Removed the delete button section -->
         </div>
     </div>
     {% empty %}

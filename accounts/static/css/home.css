@@ -176,7 +176,7 @@ body {
     box-shadow: 0 0 30px rgba(255,255,255,0.3);
 }
 .container {
-    background: var(--highlight-bg);
+    background: rgb(248, 245, 245);
     padding: 40px;
     border-radius: 12px;
     width: 95%;
@@ -185,7 +185,7 @@ body {
 }
 
 .container1 {
-    background: var(--highlight-bg);
+    background: rgb(248, 245, 245);
     padding: 40px;
     border-radius: 12px;
     width: 95%;
@@ -250,7 +250,7 @@ body {
     width: 100%;
     height: auto;
     border-radius: 6px;
-    object-fit: cover; /* crop para laging sakto */
+    object-fit: cover; 
     aspect-ratio: 3/4;
 }
 
@@ -306,80 +306,134 @@ body {
     margin: 10px auto 0;
 }
 
+/* testimonials */
 .testimonials-container {
-    background-color: var(--secondary-color);
-    border-radius: 12px;
-    padding: 80px 30px;
-    margin: 70px auto;
-    max-width: 1200px;
-    text-align: center;
-    overflow: hidden;
-  }
+  background: transparent; 
+  padding: 80px 30px;
+  margin: 70px auto;
+  max-width: 1200px;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: none; 
+  position: relative;
+}
 
-  .carousel {
-    display: flex;
-    align-items: center;
-    width: 100%;
-  }
+.testimonials-container .title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 40px;
+  position: relative;
+  display: inline-block;
+}
 
-  .cards {
-    display: flex;
-    gap: 20px;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    padding: 30px 0;
-    width: 100%;
-  }
+.testimonials-container .title .line {
+  display: block;
+  width: 60px;
+  height: 4px;
+  background: var(--primary-color);
+  margin: 12px auto 0;
+  border-radius: 2px;
+}
 
-  .card {
-    background: white;
-    padding: 32px;
-    border-radius: 12px;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-    min-width: 300px;
-    flex: 0 0 auto;
-    transition: transform 0.3s ease;
-  }
+.carousel {
+  width: 100%;
+  overflow: hidden; 
+  position: relative;
+}
 
-  .card:hover {
-    transform: translateY(-5px);
-  }
+.cards {
+  display: flex;
+  gap: 0; 
+  transition: transform 0.5s ease-in-out;
+  
+}
 
-  .customer-info {
-    display: flex;
-    align-items: center;
-    margin-top: 20px;
-    gap: 10px;
-  }
+.card-group {
+  display: flex;
+  gap: 20px; 
+  background: rgb(248, 245, 245); /* box background */
+  padding: 40px 20px; 
+  border-radius: 20px;
+  box-shadow: 2 8px 20px rgba(9, 9, 9, 0.12);
+  flex: 0 0 100%; 
+  box-sizing: border-box;
+}
 
-  .customer-info img {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-  }
+.card {
+  background: white;
+  padding: 32px 28px;
+  border-radius: 16px;
+  flex: 1; 
+  min-height: 200px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-align: left;
+  border: 2px solid rgba(0,0,0,0.2); 
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1); 
+}
 
-  .rating {
-    margin-left: auto;
-    color: gold;
-    font-size: 1.1rem;
-  }
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}
 
-  .dots {
-    margin-top: 20px;
-  }
+.card p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #444;
+  margin-bottom: 24px;
+}
 
-  .dot {
-    height: 12px;
-    width: 12px;
-    margin: 0 4px;
-    background-color: #bbb;
-    border-radius: 50%;
-    display: inline-block;
-  }
+.customer-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 0; 
+}
 
-  .dot.active {
-    background-color: var(--primary-color);
-  }
+.customer-info img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary-color);
+}
+
+.customer-info span {
+  font-weight: 500;
+  font-size: 0.88rem;
+}
+
+.rating {
+  margin-left: auto;
+  color: gold;
+  font-size: 1rem;
+}
+
+.dots {
+  margin-top: 24px;
+}
+
+.dot {
+  height: 12px;
+  width: 12px;
+  margin: 0 6px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
+}
+
+.dot:hover {
+  transform: scale(1.2);
+}
+
+.dot.active {
+  background-color: var(--primary-color);
+}
+
+
+/* === FAQ === */
 
 .faq-container {
     display: flex;

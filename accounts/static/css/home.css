@@ -647,4 +647,51 @@ body {
     max-width: 75%;
     font-size: 14px;
     word-wrap: break-word;
+    
+}
+/* === Responsive Updates ONLY (keep design intact) === */
+
+@media screen and (max-width: 1200px) {
+    .main-section {
+        padding: 80px 20px;
+    }
+    .main-heading { font-size: 4.5rem; }
+    .tagline { font-size: 2.2rem; }
+    .description { font-size: 1.05rem; max-width: 500px; }
+    .gallery, .gallery1 { gap: 20px; }
+    .item, .item1 { width: 240px; }
+    .video-section video { max-width: 80%; }
+}
+
+@media screen and (max-width: 992px) {
+    .main-section { padding: 70px 15px; }
+    .main-heading { font-size: 3.8rem; }
+    .tagline { font-size: 2rem; }
+    .description { max-width: 450px; }
+    .container, .container1 { padding: 30px; }
+    .item, .item1 { width: 220px; }
+}
+
+@media screen and (max-width: 768px) {
+    .main-section { padding: 60px 15px; }
+    .main-heading { font-size: 2.8rem; }
+    .tagline { font-size: 1.8rem; }
+    .description { max-width: 400px; font-size: 1rem; }
+    .gallery, .gallery1 { justify-content: center; gap: 15px; }
+    .item, .item1 { width: 180px; }
+    .video-section video { max-width: 100%; }
+    .faq-container { flex-direction: column; gap: 25px; }
+    .chatbot-container { width: 300px; }
+}
+
+@media screen and (max-width: 480px) {
+    .main-section { padding: 50px 10px; }
+    .main-heading { font-size: 2rem; }
+    .tagline { font-size: 1.4rem; }
+    .description { font-size: 0.95rem; max-width: 90%; }
+    .book-now { font-size: 0.9rem; padding: 8px 18px; }
+    .gallery, .gallery1 { gap: 10px; }
+    .item, .item1 { width: 100%; max-width: 160px; }
+    .video-section { margin-top: 20px; margin-bottom: 0; }
+    .chatbot-container { width: 260px; right: 10px; bottom: 10px; }
 }

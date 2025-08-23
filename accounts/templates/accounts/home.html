@@ -224,20 +224,46 @@
 <div class="faq-container">
   <div class="faq-content">
     <h2 class="title">FAQs <span class="line"></span></h2>
-    <p>Got questions? We've got answers.</p>
+    <h3 class = "question">Got questions? We've got answers.</h3>
     <div class="faq-list">
-      {% for _ in "123" %}
       <details>
         <summary>What services do you offer?</summary>
         <p>We provide premium sound and lighting equipment rental, setup, and event production services.</p>
       </details>
-      {% endfor %}
+
+      <details>
+        <summary>How can I book equipment?</summary>
+        <p>You can book directly through our online platform or contact our team via email/phone.</p>
+      </details>
+
+      <details>
+        <summary>Do you provide setup assistance?</summary>
+        <p>Yes! Our professional team handles setup and ensures everything runs smoothly for your event.</p>
+      </details>
+
+      <details>
+        <summary>Can I cancel or reschedule my booking?</summary>
+        <p>Yes, bookings can be modified or canceled with prior notice according to our policy.</p>
+      </details>
+
+      <details>
+        <summary>Do you provide delivery and pickup?</summary>
+        <p>Absolutely! We handle delivery and pickup for all rental equipment within the service area.</p>
+      </details>
+
+      <details>
+        <summary>Are your equipment and services insured?</summary>
+        <p>Yes, all our equipment is insured and our team follows safety protocols for every event.</p>
+      </details>
     </div>
   </div>
+
   <div class="faq-image">
-    <img src="{% static 'images/speaker1.jpg' %}" alt="FAQ Illustration" onclick="openLightbox(this.src)" style="cursor: zoom-in;">
+    <img src="{% static 'images/faq.png' %}" alt="FAQ Illustration" onclick="openLightbox(this.src)" style="cursor: zoom-in;">
   </div>
 </div>
+
+<!-- CHATBOT -->
 
 <!-- Lightbox Modal -->
 <div id="lightbox-modal" onclick="closeLightbox()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); justify-content:center; align-items:center; z-index:9999;">
@@ -246,11 +272,13 @@
 </div>
 <!-- Toggle Button -->
 <div id="chat-toggle" 
-     style="position: fixed; bottom: 20px; right: 20px; 
+     style="position: fixed; bottom: 50px; right: 30px; 
             background: #0078d7; color: white; padding: 12px 16px; 
             border-radius: 50%; cursor: pointer; z-index:10000;">
     💬
 </div>
+
+
 <div class="chatbot-container">
     <!-- Header -->
     <div class="chatbot-header">
@@ -305,6 +333,8 @@
         <p>+63 912 345 6789</p>
     </div>
 </footer>
+
+<!-- SCRIPT -->
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {

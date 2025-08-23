@@ -20,15 +20,37 @@
     </div>
 
     <div class="gallery">
-        {% for i in "1234" %}
         <div class="item">
-            <img src="{% static 'images/highlight'|add:i|add:'.jpg' %}" 
-                 alt="Highlight {{ i }}" 
+            <img src="{% static 'images/highlight1.jpg' %}" 
+                 alt="Highlight 1" 
                  onclick="openLightbox(this.src)" 
                  style="cursor: zoom-in;">
-            <p>Highlight {{ i }}</p>
+            <p>Grand Opening Night</p>
         </div>
-        {% endfor %}
+
+        <div class="item">
+            <img src="{% static 'images/highlight2.jpg' %}" 
+                 alt="Highlight 2" 
+                 onclick="openLightbox(this.src)" 
+                 style="cursor: zoom-in;">
+            <p>Stage Performance</p>
+        </div>
+
+        <div class="item">
+            <img src="{% static 'images/highlight3.jpg' %}" 
+                 alt="Highlight 3" 
+                 onclick="openLightbox(this.src)" 
+                 style="cursor: zoom-in;">
+            <p>Audience Engagement</p>
+        </div>
+
+        <div class="item">
+            <img src="{% static 'images/highlight4.jpg' %}" 
+                 alt="Highlight 4" 
+                 onclick="openLightbox(this.src)" 
+                 style="cursor: zoom-in;">
+            <p>Special Guests</p>
+        </div>
     </div>
 
     <button onclick="scrollToContainer1()" class="see-more-btn">
@@ -36,23 +58,69 @@
     </button>
 </div>
 
+
 <!-- Hidden Additional Gallery -->
- <div id="container1" class="container1" style="display: none;">
+<div id="container1" class="container1" style="display: none;">
     <div class="title-container">
-        <h2 class="title">Event Highlights</h2>
+        <h2 class="title">More Event Highlights</h2>
     </div>
     <div class="video-section">
-        <video src="{% static 'videos/bg video.mp4' %}" controls autoplay muted></video>
+        <video src="{% static 'video/video1.mp4' %}" controls autoplay muted></video>
     </div>
     <div class="gallery1">
-        {% for _ in "1234567890" %}
         <div class="item1">
-            <img src="{% static 'images/speaker1.jpg' %}" alt="Speaker" onclick="openLightbox(this.src)" style="cursor: zoom-in;">
-            <p>Alto Speaker</p>
+            <img src="{% static 'images/highlight5.jpg' %}" alt="Highlight 5"
+                 onclick="openLightbox(this.src)" style="cursor: zoom-in;">
+            <p>Wedding Ceremony</p>
         </div>
-        {% endfor %}
+        <div class="item1">
+            <img src="{% static 'images/highlight6.jpg' %}" alt="Highlight 6"
+                 onclick="openLightbox(this.src)" style="cursor: zoom-in;">
+            <p>Birthday Celebration</p>
+        </div>
+        <div class="item1">
+            <img src="{% static 'images/highlight7.jpg' %}" alt="Highlight 7"
+                 onclick="openLightbox(this.src)" style="cursor: zoom-in;">
+            <p>Corporate Event</p>
+        </div>
+        <div class="item1">
+            <img src="{% static 'images/highlight8.jpg' %}" alt="Highlight 8"
+                 onclick="openLightbox(this.src)" style="cursor: zoom-in;">
+            <p>Music Festival</p>
+        </div>
+        <div class="item1">
+            <img src="{% static 'images/highlight9.jpg' %}" alt="Highlight 9"
+                 onclick="openLightbox(this.src)" style="cursor: zoom-in;">
+            <p>Charity Gala</p>
+        </div>
+        <div class="item1">
+            <img src="{% static 'images/highlight10.jpg' %}" alt="Highlight 10"
+                 onclick="openLightbox(this.src)" style="cursor: zoom-in;">
+            <p>Graduation Party</p>
+        </div>
+        <div class="item1">
+            <img src="{% static 'images/highlight11.jpg' %}" alt="Highlight 11"
+                 onclick="openLightbox(this.src)" style="cursor: zoom-in;">
+            <p>Engagement Night</p>
+        </div>
+        <div class="item1">
+            <img src="{% static 'images/highlight12.jpg' %}" alt="Highlight 12"
+                 onclick="openLightbox(this.src)" style="cursor: zoom-in;">
+            <p>Anniversary Dinner</p>
+        </div>
+        <div class="item1">
+            <img src="{% static 'images/highlight13.jpg' %}" alt="Highlight 13"
+                 onclick="openLightbox(this.src)" style="cursor: zoom-in;">
+            <p>Team Building</p>
+        </div>
+        <div class="item1">
+            <img src="{% static 'images/highlight14.jpg' %}" alt="Highlight 14"
+                 onclick="openLightbox(this.src)" style="cursor: zoom-in;">
+            <p>Holiday Celebration</p>
+        </div>
     </div>
 </div>
+
 
 <div class="testimonials-container">
   <h2 class="title">Testimonials <span class="line"></span></h2>

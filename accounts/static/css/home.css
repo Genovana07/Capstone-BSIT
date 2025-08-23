@@ -250,7 +250,7 @@ body {
     width: 100%;
     height: auto;
     border-radius: 6px;
-    object-fit: contain;
+    object-fit: cover; /* crop para laging sakto */
     aspect-ratio: 3/4;
 }
 

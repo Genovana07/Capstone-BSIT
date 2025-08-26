@@ -5,35 +5,34 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-
 <style>
+/* ---------- Global Styling ---------- */
+h1 {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: #333;
+}
 /* ---------- Light Mode (Default) ---------- */
 .review-summary {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
-    background: #fff;
-    padding: 20px 30px;
-    border-bottom: 3px solid black;
-    margin-bottom: 20px;
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    margin: 30px 0;
     flex-wrap: wrap;
-    gap: 20px;
-    margin-top: 10px;
+    gap: 25px;
+    text-align: center;
 }
 
 .divider {
-    width: 1px;
+    width: 2px;
     height: 60px;
-    background-color: black;
-    margin: 0 30px;
-}
-
-.review-count,
-.average-rating,
-.metrics-summary {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    background-color: #e0e0e0;
+    margin: 0 25px;
 }
 
 .review-count h2,
@@ -41,12 +40,15 @@
 .metrics-summary h2 {
     font-size: 18px;
     font-weight: 700;
+    margin-bottom: 10px;
+    color: #444;
 }
 
 .review-number,
 .rating-number {
-    font-size: 24px;
-    font-weight: bold;
+    font-size: 32px;
+    font-weight: 900;
+    color: #222;
 }
 
 .metrics-summary ul {
@@ -59,48 +61,56 @@
     font-size: 14px;
     display: flex;
     justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dashed #ddd;
+    color: #666;
+}
+
+.metrics-summary li:last-child {
+    border-bottom: none;
 }
 
 /* Reviews list with scroll */
 .reviews-list {
     background: #fff;
-    padding: 20px;
+    padding: 25px;
     border-radius: 12px;
-    margin-top: -1%;
+    margin-top: 20px;
     display: flex;
     flex-direction: column;
     gap: 20px;
     max-height: 700px;
     overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: #888 #f1f1f1;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
 }
 
 .reviews-list::-webkit-scrollbar {
     width: 8px;
 }
-
 .reviews-list::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 12px;
 }
-
 .reviews-list::-webkit-scrollbar-thumb {
-    background-color: #888;
+    background-color: #bbb;
     border-radius: 12px;
-    border: 2px solid #f1f1f1;
 }
 
+/* Review Card */
 .review-card {
     display: flex;
-    padding: 20px;
-    border-bottom: 1px solid #ddd;
+    padding: 18px;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    background: #fafafa;
     align-items: flex-start;
     gap: 20px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
 }
-
-.review-card:last-child {
-    border-bottom: none;
+.review-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
 }
 
 .reviewer-avatar {
@@ -108,194 +118,165 @@
     height: 60px;
     border-radius: 50%;
     object-fit: cover;
+    border: 2px solid #ddd;
 }
 
 .review-details {
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .review-header {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
+    margin-bottom: 12px;
 }
 
 .review-header strong {
     font-size: 16px;
+    font-weight: 700;
+    color: #222;
+}
+
+.review-header span {
+    font-size: 14px;
+    color: #666;
 }
 
 .review-header .date {
     margin-left: auto;
-    color: #888;
-    font-size: 14px;
+    font-size: 12px;
+    color: #999;
 }
 
 .stars {
     display: flex;
     gap: 3px;
     font-size: 16px;
-    color: gold;
+    color: #f5b50a;
 }
 
-/* Metrics inside review card */
 .metrics {
-    margin: 10px 0;
+    margin: 12px 0;
 }
-
 .metrics li {
     font-size: 14px;
     display: flex;
     justify-content: space-between;
+    padding: 5px 0;
+    color: #444;
 }
 
-/* Delete Button Styling */
-.delete-button {
-    background-color: red;
-    color: white;
-    padding: 8px 14px;
-    border-radius: 6px;
-    font-weight: bold;
-    text-decoration: none;
-    display: inline-block;
-    margin-top: 10px;
-    align-self: flex-end;
-    transition: background-color 0.3s ease;
+.review-details p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #333;
+    margin-top: 6px;
 }
 
-.delete-button:hover {
-    background-color: darkred;
-}
-
-/* ---------- Date Filter Positioning - Upper Right ---------- */
+/* ---------- Date Filter Styling ---------- */
 .date-filter {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: center;
-    margin-bottom: -10px;
-    margin-top: 20px;
-    position: fixed;  /* Keeps the filter fixed in place */
-    top: 60px;        /* Keeps the filter 60px from the top of the screen */
-    right: 30px;      /* Keeps the filter 30px from the right edge of the screen */
-    z-index: 9999;    /* Ensures the filter stays above other elements */
-}
+    position: fixed;
+    top: 10px;
+    left: 13%;
+    padding: 10px 20px;
+    border-radius: 10px;
 
-/* Adjustments for smaller dropdown and button */
-.date-filter select {
-    padding: 6px 10px;
-    font-size: 12px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    background-color: transparent; /* Remove background color */
-    color: #333;
-    width: 130px;
 }
 
 .date-filter label {
     font-size: 14px;
-    font-weight: bold;
-    margin-right: 5px;
+    font-weight: 200;
+    color: #444;
+}
+
+.date-filter select {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    color: #333;
 }
 
 .date-filter button {
-    padding: 6px 12px;
-    font-size: 12px;
-    background-color: #4CAF50;
+    padding: 8px 16px;
+    font-size: 14px;
+    background-color: #2563eb;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
+    font-weight: 600;
 }
-
 .date-filter button:hover {
-    background-color: #45a049;
+    background-color: #1d4ed8;
 }
 
 /* ---------- Dark Mode ---------- */
 body.dark-mode .review-summary {
-    background: #333; /* Dark background for summary */
-    color: #e0e0e0; /* Light text for readability */
-    border-bottom: 3px solid #444;
+    background: #2e2e2e;
+    color: #e0e0e0;
+    border: none;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.6);
 }
-
 body.dark-mode .divider {
-    background-color: #444; /* Darker divider */
+    background-color: #555;
 }
-
-body.dark-mode .review-count h2,
-body.dark-mode .average-rating h2,
-body.dark-mode .metrics-summary h2 {
-    color: #e0e0e0; /* Light headings in dark mode */
-}
-
 body.dark-mode .review-number,
 body.dark-mode .rating-number {
-    color: #e0e0e0; /* Light color for review numbers */
+    color: #fff;
 }
-
 body.dark-mode .metrics-summary li {
-    color: #e0e0e0; /* Light text for metrics */
+    border-bottom: 1px dashed #666;
+    color: #ccc;
 }
-
 body.dark-mode .reviews-list {
-    background: #2c2f38; /* Dark background for reviews list */
-    color: #e0e0e0; /* Light text */
-    scrollbar-color: #888 #444; /* Adjust scrollbar for dark mode */
+    background: #2c2f38;
+    color: #e0e0e0;
 }
-
-body.dark-mode .reviews-list::-webkit-scrollbar-track {
-    background: #444; /* Dark track for scrollbar */
-}
-
-body.dark-mode .reviews-list::-webkit-scrollbar-thumb {
-    background-color: #888; /* Light thumb for scrollbar */
-}
-
 body.dark-mode .review-card {
-    background: #444; /* Dark card background */
-    border-bottom: 1px solid #555; /* Darker border */
+    background: #3a3d47;
+    border: 1px solid #555;
 }
-
-body.dark-mode .review-header strong,
+body.dark-mode .review-header strong {
+    color: #fff;
+}
+body.dark-mode .review-header span,
 body.dark-mode .review-header .date {
-    color: #e0e0e0; /* Light color for header and date */
+    color: #aaa;
 }
-
-body.dark-mode .stars {
-    color: gold; /* Keep gold color for stars */
+body.dark-mode .metrics li {
+    color: #ddd;
 }
-
-body.dark-mode .delete-button {
-    background-color: red;
-    color: white;
+body.dark-mode .date-filter {
+    background: #3a3d47;
+    border: 1px solid #555;
 }
-
-body.dark-mode .delete-button:hover {
-    background-color: darkred;
-}
-
 body.dark-mode .date-filter select {
-    background-color: #444; /* Dark background for select */
-    color: #e0e0e0; /* Light text in select */
-    border: 1px solid #666; /* Darker border */
+    background: #2e2e2e;
+    color: #eee;
+    border: 1px solid #666;
 }
-
 body.dark-mode .date-filter button {
-    background-color: #4CAF50; /* Green button stays green in dark mode */
-    color: white;
+    background-color: #2563eb;
 }
-
 body.dark-mode .date-filter button:hover {
-    background-color: #45a049;
+    background-color: #1d4ed8;
 }
 </style>
- <h1>FeedBack</h1>
+
+<!-- Filter Section (Fixed on Top Left) -->
 <div class="date-filter">
     <form method="get">
         <label for="filter_day">Day:</label>
         <select id="filter_day" name="filter_day">
-            <option value="">All</option> <!-- Option for "All" -->
+            <option value="">All</option>
             {% for day in days %}
                 <option value="{{ day }}" {% if day == request.GET.filter_day %}selected{% endif %}>{{ day }}</option>
             {% endfor %}
@@ -303,7 +284,7 @@ body.dark-mode .date-filter button:hover {
 
         <label for="filter_month">Month:</label>
         <select id="filter_month" name="filter_month">
-            <option value="">All</option> <!-- Option for "All" -->
+            <option value="">All</option>
             {% for value, month in months %}
                 <option value="{{ value }}" {% if value == request.GET.filter_month %}selected{% endif %}>{{ month }}</option>
             {% endfor %}
@@ -311,7 +292,7 @@ body.dark-mode .date-filter button:hover {
 
         <label for="filter_year">Year:</label>
         <select id="filter_year" name="filter_year">
-            <option value="">All</option> <!-- Option for "All" -->
+            <option value="">All</option>
             {% for year in years %}
                 <option value="{{ year }}" {% if year == request.GET.filter_year %}selected{% endif %}>{{ year }}</option>
             {% endfor %}
@@ -373,8 +354,6 @@ body.dark-mode .date-filter button:hover {
             </ul>
 
             <p>{{ review.comment }}</p>
-
-            <!-- Removed the delete button section -->
         </div>
     </div>
     {% empty %}

@@ -1,158 +1,150 @@
 {% extends 'client-base.html' %}
 {% block title %}Admin Access Requests{% endblock %}
 {% block content %}
+
 <style>
-    /* 🌞 LIGHT MODE */
-h2 {
-    margin-top: 20px;
+/* 🌞 LIGHT MODE */
+.admin-requests-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem;
 }
 
-ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-li {
-    background-color: white;
-    border-radius: 10px;
-    padding: 1.25rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    border-left-width: 4px;
-    border-left-color: #60a5fa;
-}
-
-li:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-}
-
-.approve-btn {
-    background-color: #10b981;
-    color: white;
-    padding: 10px 15px;
-    font-size: 14px;
-    font-weight: bold;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.approve-btn:hover {
-    background-color: #059669;
-    transform: translateY(-2px);
-}
-
-.approve-btn:active {
-    background-color: #047857;
-    transform: translateY(0);
-}
-
-h2 {
+.admin-requests-container h2 {
     font-size: 2rem;
-    font-weight: 700;
+    font-weight: 800;
     color: #1f2937;
     margin-bottom: 1.5rem;
 }
 
-p {
-    color: #4b5563;
+.admin-note {
+    background: linear-gradient(to right, #fef9c3, #fde68a);
+    border-left: 6px solid #f59e0b;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    color: #6b7280;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-p.text-gray-500 {
-    font-size: 1.125rem;
-    color: #6b7280;
+.admin-requests-list {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.admin-request-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    border-left: 6px solid #3b82f6;
+    transition: all 0.3s ease;
+}
+
+.admin-request-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+.admin-request-details p {
+    margin: 0.2rem 0;
+    font-size: 0.9rem;
+    color: #374151;
+}
+
+.admin-request-details p strong {
+    color: #111827;
+}
+
+.approve-btn {
+    background: linear-gradient(to right, #6366f1, #ec4899, #f43f5e);
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+.approve-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
 }
 
 /* 🌙 DARK MODE */
-body.dark-mode h2 {
-    color: #e0e0e0; /* Light heading color */
+body.dark-mode .admin-requests-container h2 {
+    color: #f3f4f6;
 }
 
-body.dark-mode ul {
-    color: #e0e0e0; /* Light text for list items */
+body.dark-mode .admin-note {
+    background: linear-gradient(to right, #facc15, #fbbf24);
+    color: #1f2937;
+    box-shadow: 0 4px 10px rgba(255,255,255,0.05);
 }
 
-body.dark-mode li {
-    background-color: #2c2f38; /* Dark background for list items */
-    color: #e0e0e0; /* Light text */
-    box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1); /* Lighter shadow for dark mode */
-    border-left-color: #3b82f6; /* Adjust border color for dark mode */
+body.dark-mode .admin-request-card {
+    background: #1f2937;
+    color: #e5e7eb;
+    box-shadow: 0 4px 12px rgba(255,255,255,0.08);
+    border-left-color: #60a5fa;
 }
 
-body.dark-mode li:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.15); /* Lighter shadow on hover */
+body.dark-mode .admin-request-details p {
+    color: #d1d5db;
 }
 
 body.dark-mode .approve-btn {
-    background-color: #34d399; /* Green button for approve in dark mode */
+    background: linear-gradient(to right, #10b981, #34d399, #059669);
     color: white;
-}
-
-body.dark-mode .approve-btn:hover {
-    background-color: #10b981; /* Darker green on hover */
-}
-
-body.dark-mode .approve-btn:active {
-    background-color: #059669; /* Even darker green on active */
-}
-
-body.dark-mode p {
-    color: #e0e0e0; /* Light text for paragraphs in dark mode */
-}
-
-body.dark-mode p.text-gray-500 {
-    color: #a1a1aa; /* Lighter gray text for the specific class */
 }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<h2 class="text-3xl font-extrabold mb-6 text-gray-800">Admin Access Requests</h2>
+<div class="admin-requests-container">
+    <h2>⚡ Admin Access Requests</h2>
 
-<p class="mb-6 text-gray-700 text-sm bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded-lg shadow-sm">
-    🔑 <strong>Note:</strong> Only users with usernames containing 
-    <code class="bg-gray-200 px-2 py-1 rounded">staff</code> and not yet admins 
-    will appear here.
-</p>
+    <div class="admin-note">
+        🔑 <strong>Note:</strong> Only users with usernames containing 
+        <code class="bg-gray-200 px-2 py-1 rounded">staff</code> and not yet admins 
+        will appear here.
+    </div>
 
-{% if requested_profiles %}
-    <ul class="space-y-6">
-        {% for profile in requested_profiles %}
-            <li class="p-6 border-l-4 border-blue-500 rounded-xl shadow-md bg-white hover:shadow-xl transition-all duration-300">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div class="space-y-2">
-                        <p class="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                            👤 {{ profile.user.get_full_name|default:"(No Name)" }}
-                        </p>
-                        <p class="text-sm text-gray-600"><strong>Username:</strong> {{ profile.user.username }}</p>
-                        <p class="text-sm text-gray-600"><strong>Email:</strong> {{ profile.user.email }}</p>
-                        <p class="text-sm text-gray-600"><strong>Phone:</strong> {{ profile.contact_number }}</p>
-                        <p class="text-sm text-gray-600"><strong>Address:</strong> {{ profile.address|default:"N/A" }}</p>
-                        <p class="text-sm text-gray-600"><strong>Province:</strong> {{ profile.province }}</p>
-                        <p class="text-sm text-gray-600"><strong>City:</strong> {{ profile.city }}</p>
+    {% if requested_profiles %}
+        <div class="admin-requests-list">
+            {% for profile in requested_profiles %}
+                <div class="admin-request-card">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <div class="admin-request-details">
+                            <p><strong>👤 Name:</strong> {{ profile.user.get_full_name|default:"(No Name)" }}</p>
+                            <p><strong>Username:</strong> {{ profile.user.username }}</p>
+                            <p><strong>Email:</strong> {{ profile.user.email }}</p>
+                            <p><strong>Phone:</strong> {{ profile.contact_number }}</p>
+                            <p><strong>Address:</strong> {{ profile.address|default:"N/A" }}</p>
+                            <p><strong>Province:</strong> {{ profile.province }}</p>
+                            <p><strong>City:</strong> {{ profile.city }}</p>
+                        </div>
+
+                        <form method="POST" action="{% url 'approve_admin' profile.user.id %}" 
+                              onsubmit="return confirmApprove(event, '{{ profile.user.username }}')">
+                            {% csrf_token %}
+                            <button type="submit" class="approve-btn">
+                                🛡️ Approve Admin
+                            </button>
+                        </form>
                     </div>
-
-                    <form method="POST" action="{% url 'approve_admin' profile.user.id %}" 
-                          onsubmit="return confirmApprove(event, '{{ profile.user.username }}')" 
-                          class="mt-4 md:mt-0">
-                        {% csrf_token %}
-                        <button type="submit" 
-                            class="relative inline-flex items-center justify-center px-10 py-4 rounded-2xl font-bold text-white bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 shadow-xl hover:scale-105 hover:shadow-2xl transition-all duration-300 overflow-hidden text-lg">
-                            <span class="relative flex items-center gap-3">
-                                🛡️ Request Admin
-                            </span>
-                        </button>
-                    </form>
                 </div>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p class="text-gray-500 text-lg mt-6 text-center italic">No valid admin requests at the moment.</p>
-{% endif %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-gray-500 text-lg mt-6 text-center italic">No valid admin requests at the moment.</p>
+    {% endif %}
+</div>
+
 <script>
 function confirmApprove(event, username) {
     event.preventDefault();

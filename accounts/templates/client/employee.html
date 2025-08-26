@@ -3,123 +3,140 @@
 {% block title %}Employee{% endblock %}
 
 {% block content %}
-  <style>
-    /* 🌞 LIGHT MODE */
+<style>
+/* 🌞 LIGHT MODE */
 .dashboard-header {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    margin-top: 1%;
+  margin-bottom: 20px;
 }
 
-.tracking h1 {
-    font-size: 28px;
-    margin-bottom: 8px;
+.dashboard-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #222;
+}
+
+.dashboard-header p {
+  font-size: 16px;
+  color: #555;
 }
 
 /* Download button */
 .download-wrapper {
-    text-align: right;
-    margin-bottom: 20px;
+  text-align: right;
+  margin-bottom: 20px;
 }
 
 .download-btn {
-    background: #f2f2f2;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: 600;
+  background: #4a90e2;
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+}
+.download-btn:hover {
+  background: #357abd;
+  transform: translateY(-2px);
+}
+
+/* Table wrapper */
+.table-container {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  overflow-x: auto;
 }
 
 /* Table */
 table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #fff;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
 }
 
 table th,
 table td {
-    border: 1px solid #ddd;
-    padding: 12px 16px;
-    text-align: left;
-    height: 50px;
+  padding: 14px 18px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
 }
 
 table th {
-    background: #f5f5f5;
-    font-weight: 600;
-    border-bottom: 2px solid #000;
+  background: #f9fafb;
+  font-weight: 700;
+  color: #333;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+table tr:hover {
+  background-color: #f5f7fa;
+}
+
+/* Profile Picture */
+.profile-pic {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ddd;
 }
 
 /* 🌙 DARK MODE */
-body.dark-mode .dashboard-header {
-    color: #e0e0e0; /* Light text color */
-}
-
-body.dark-mode .tracking h1 {
-    color: #e0e0e0; /* Light heading text */
-}
-
-body.dark-mode .download-wrapper {
-    color: #e0e0e0; /* Light text for download wrapper */
+body.dark-mode .dashboard-header h1,
+body.dark-mode .dashboard-header p {
+  color: #e0e0e0;
 }
 
 body.dark-mode .download-btn {
-    background: #444444; /* Dark background for the button */
-    color: #e0e0e0; /* Light text for the button */
-    border: none;
-    padding: 8px 18px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background-color 0.3s ease;
+  background: #1d4ed8;
+  color: #fff;
+}
+body.dark-mode .download-btn:hover {
+  background: #1e40af;
 }
 
-body.dark-mode .download-btn:hover {
-    background: #555555; /* Darker background on hover */
+body.dark-mode .table-container {
+  background: #2c2f38;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
 }
 
 body.dark-mode table {
-    background: #2c2f38; /* Dark table background */
-    color: #e0e0e0; /* Light text */
+  color: #e0e0e0;
 }
 
 body.dark-mode table th {
-    background: #333333; /* Dark header background */
-    color: #e0e0e0; /* Light header text */
-    border-bottom: 2px solid #444444; /* Darker border */
+  background: #374151;
+  color: #f3f4f6;
+  border-bottom: 1px solid #444;
 }
 
 body.dark-mode table td {
-    background: #444444; /* Dark cells */
-    color: #e0e0e0; /* Light text */
-    border: 1px solid #555555; /* Darker border for cells */
+  border-bottom: 1px solid #444;
 }
 
-body.dark-mode table th, 
-body.dark-mode table td {
-    transition: background-color 0.3s, color 0.3s;
-}
-
-/* Hover effect for dark mode table rows */
 body.dark-mode table tr:hover {
-    background-color: #555555; /* Slightly lighter background on hover */
+  background: #3f4957;
 }
-  </style>
+</style>
 
-  <div class="dashboard-header tracking">
-    <h1>Employees</h1>
-    <p>AudioMan Team</p>
-  </div>
+<div class="dashboard-header tracking">
+  <h1>Employees</h1>
+  <p>AudioMan Team</p>
+</div>
 
-  <!-- Download button -->
-  <div class="download-wrapper">
-    <button class="download-btn">Download</button>
-  </div>
+<!-- Download button -->
+<div class="download-wrapper">
+  <button class="download-btn">⬇ Download</button>
+</div>
 
-  <!-- Table -->
+<!-- Table -->
+<div class="table-container">
   <table>
     <thead>
       <tr>
@@ -136,28 +153,29 @@ body.dark-mode table tr:hover {
     </thead>
     <tbody>
       {% for profile in employees %}
-        <tr>
-          <td>{{ profile.user.username }}</td>
-          <td>{{ profile.user.first_name }}</td>
-          <td>{{ profile.user.last_name }}</td>
-          <td>{{ profile.user.email }}</td>
-          <td>{{ profile.contact_number }}</td>
-          <td>{{ profile.address }}</td>
-          <td>{{ profile.province }}</td>
-          <td>{{ profile.city }}</td>
-          <td>
-            {% if profile.profile_picture %}
-              <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" width="50" height="50" />
-            {% else %}
-              No Picture
-            {% endif %}
-          </td>
-        </tr>
+      <tr>
+        <td>{{ profile.user.username }}</td>
+        <td>{{ profile.user.first_name }}</td>
+        <td>{{ profile.user.last_name }}</td>
+        <td>{{ profile.user.email }}</td>
+        <td>{{ profile.contact_number }}</td>
+        <td>{{ profile.address }}</td>
+        <td>{{ profile.province }}</td>
+        <td>{{ profile.city }}</td>
+        <td>
+          {% if profile.profile_picture %}
+            <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="profile-pic" />
+          {% else %}
+            <span style="color:#888;">No Picture</span>
+          {% endif %}
+        </td>
+      </tr>
       {% empty %}
-        <tr>
-          <td colspan="9">No approved employees found.</td>
-        </tr>
+      <tr>
+        <td colspan="9" style="text-align:center; padding:20px;">No approved employees found.</td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
+</div>
 {% endblock %}

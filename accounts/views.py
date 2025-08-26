@@ -31,6 +31,7 @@ from django.db.models import Q
 from django.db.models import Avg
 from django.db.models.functions import Coalesce
 from django.core.paginator import Paginator
+from .models import Booking
 
 def register_view(request):
     if request.method == "POST":
@@ -797,13 +798,36 @@ def chatbot_api(request):
 
     return JsonResponse({"response": "Only GET method is allowed"})
 
+
 @login_required
 @admin_only
 def equipment(request):
-    # Get all equipment
-    equipment_list = Equipment.objects.all()
+    show = request.GET.get('show', 'all')
+    q = request.GET.get('q', '').strip()
 
-    # Notifications (show up to 5 newest "Processing" bookings)
+    # base queryset
+    qs = Equipment.objects.all()
+
+    # Search filter
+    if q:
+        qs = qs.filter(
+            Q(name__icontains=q) |
+            Q(condition__icontains=q) |
+            Q(current_location__icontains=q)
+        )
+
+    # Tabs filter
+    if show == 'maintenance':
+        qs = qs.filter(qty_maintenance__gt=0)
+    elif show == 'repair':
+        qs = qs.filter(qty_repair__gt=0)
+    elif show == 'available':
+        qs = qs.filter(quantity_available__gt=0)
+    elif show == 'rented':
+        qs = qs.filter(quantity_rented__gt=0)
+    # else 'all' → no extra filter
+
+    # Notifications (up to 5 newest "Processing")
     bookings = Booking.objects.all()
     notifications_qs = bookings.filter(status="Processing").order_by('-created_at')[:5]
     notifications = [
@@ -811,11 +835,21 @@ def equipment(request):
         for b in notifications_qs
     ]
 
-    return render(request, 'client/equipment.html', {
-        'equipment_list': equipment_list,
-        'notifications': notifications,  # Pass notifications to the template
-    })
+    # Badge counts (total inventory, not affected by search)
+    counts = {
+        'all': Equipment.objects.count(),
+        'available': Equipment.objects.filter(quantity_available__gt=0).count(),
+        'rented': Equipment.objects.filter(quantity_rented__gt=0).count(),
+        'maintenance': Equipment.objects.filter(qty_maintenance__gt=0).count(),
+        'repair': Equipment.objects.filter(qty_repair__gt=0).count(),
+    }
 
+    return render(request, 'client/equipment.html', {
+        'equipment_list': qs,
+        'notifications': notifications,
+        'show': show,      # for active tab in template
+        'counts': counts,  # for badges
+    })
 @login_required
 @admin_only
 def tracking(request):
@@ -1216,28 +1250,72 @@ def dashboard_redirect(request):
     else:
         return redirect('customer')  # Redirect to the customer dashboard
     
+
 @login_required
 def update_inventory(request, equipment_id):
-    if request.method == 'POST':
-        action = request.POST.get('action')  # action can be 'add_stock' or 'subtract_stock'
-        equipment = Equipment.objects.get(id=equipment_id)
+    if request.method != 'POST':
+        return HttpResponse("Invalid request.", status=400)
 
+    equipment = get_object_or_404(Equipment, id=equipment_id)
+    action = request.POST.get('action', '').strip()
+    qty_str = request.POST.get('qty', '1')
+
+    try:
+        qty = max(1, int(qty_str))
+    except ValueError:
+        qty = 1
+
+    try:
         if action == 'add_stock':
-            # Add 1 to the available stock
-            equipment.quantity_available += 1
+            # simple add to available
+            equipment.quantity_available += qty
+            equipment.status = 'Available'
             equipment.save()
+            messages.success(request, f"Added {qty} to {equipment.name} stock.")
+
         elif action == 'subtract_stock':
-            # Subtract 1 from the available stock, ensuring it's not below 0
-            if equipment.quantity_available > 0:
-                equipment.quantity_available -= 1
-                equipment.save()
-            else:
+            if equipment.quantity_available < qty:
                 return HttpResponse("Insufficient stock to subtract.", status=400)
+            equipment.quantity_available -= qty
+            # huwag gawing negative ang available
+            if equipment.quantity_available <= 0 and equipment.quantity_rented <= 0:
+                equipment.status = 'Under Maintenance' if equipment.qty_maintenance > 0 else 'Available'
+            equipment.save()
+            messages.success(request, f"Subtracted {qty} from {equipment.name} stock.")
 
-        # Redirect to the 'inventory_list' view after the update
-        return redirect('equipment')  # Ensure 'inventory_list' matches the URL name in urls.py
+        elif action == 'to_maintenance':
+            equipment.move_to_maintenance(qty)
+            messages.success(request, f"Moved {qty} of {equipment.name} to maintenance.")
 
-    return HttpResponse("Invalid request.", status=400)
+        elif action == 'back_from_maintenance':
+            equipment.return_from_maintenance(qty)
+            messages.success(request, f"Returned {qty} of {equipment.name} from maintenance to available.")
+
+        elif action == 'to_repair':
+            equipment.move_to_repair(qty)
+            messages.success(request, f"Moved {qty} of {equipment.name} to repair.")
+
+        elif action == 'back_from_repair':
+            equipment.return_from_repair(qty)
+            messages.success(request, f"Returned {qty} of {equipment.name} from repair to available.")
+
+        elif action == 'rent_out':
+            # optional kung gusto mong may rent button sa table
+            equipment.update_quantity(qty)
+            messages.success(request, f"Rented out {qty} of {equipment.name}.")
+
+        elif action == 'return_rental':
+            equipment.return_stock(qty)
+            messages.success(request, f"Returned {qty} of {equipment.name} (rental).")
+
+        else:
+            return HttpResponse("Unknown action.", status=400)
+
+    except ValueError as e:
+        # galing sa helper methods mo kapag kulang stock
+        return HttpResponse(str(e), status=400)
+
+    return redirect('inventory_list')
 
 from django.views.decorators.http import require_POST
 from django.shortcuts import redirect, get_object_or_404

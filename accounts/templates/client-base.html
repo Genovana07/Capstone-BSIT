@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,13 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}Dashboard{% endblock %}</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  {% load static %}
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Arial', sans-serif;
-      background: #fff;
-      color: #000;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f9fafb;
+      color: #111;
       display: flex;
       height: 100vh;
       overflow: hidden;
@@ -20,8 +21,9 @@
 
     .container { display: flex; width: 100%; }
 
+    /* Sidebar */
     .sidebar {
-      background: #000000;
+      background: #0d0d0d;
       color: #fff;
       width: 250px;
       padding: 20px;
@@ -30,22 +32,21 @@
       height: 100vh;
       position: fixed;
       transition: background 0.3s;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.4);
     }
 
     .logo {
       font-size: 24px;
       font-weight: bold;
       margin-bottom: 30px;
-      color: #fff;
       display: flex;
       align-items: center;
-      font-family: 'MavenPro', sans-serif;
       font-size: 1.8rem;
     }
     .logo .text-white { color: white; }
     .logo .text-yellow {
       background-color: #f1c40f;
-      color: #000000;
+      color: #000;
       padding: 2px 6px;
       border-radius: 4px;
       margin-left: 3px;
@@ -54,46 +55,55 @@
 
     .user { text-align: center; margin-bottom: 30px; }
     .avatar img.avatar-img {
-      width: 60px;
-      height: 60px;
+      width: 70px;
+      height: 70px;
       border-radius: 50%;
       object-fit: cover;
-      margin: 0 auto;
-      border: 2px solid #fff;
-      background-color: #f9f9f9;
+      margin: 0 auto 10px;
+      border: 2px solid #f1c40f;
+      background-color: #fff;
     }
 
-    .nav { margin-top: 30px; }
+    .nav { margin-top: 20px; }
     .nav a {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       padding: 12px;
-      color: #ccc;
+      color: #bbb;
       text-decoration: none;
       border-radius: 8px;
-      transition: background 0.3s, color 0.3s;
+      transition: all 0.3s ease;
+      font-weight: 500;
     }
     .nav a.active,
     .nav a:hover {
-      background: #444;
-      color: #fff;
+      background: linear-gradient(135deg, #f1c40f, #f39c12);
+      color: #111;
+      transform: translateX(6px);
+      font-weight: bold;
     }
 
+    /* Main Content */
     .main {
       flex-grow: 1;
-      padding: 20px;
+      padding: 25px;
       margin-left: 250px;
       overflow-y: auto;
       transition: background 0.3s, color 0.3s;
     }
 
+    /* Topbar */
     .topbar {
       display: flex;
       align-items: center;
       justify-content: flex-end;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e5e7eb;
+      margin-bottom: 20px;
     }
 
+    /* User info */
     .user-info {
       display: flex;
       align-items: center;
@@ -103,17 +113,13 @@
       font-size: 20px;
       margin-right: 12px;
     }
-    .user-info span {
-      font-size: 17px;
-      font-weight: bold;
-    }
+    .user-info span { font-size: 16px; font-weight: 600; }
     .user-info img {
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid #fff;
-      background-color: #f9f9f9;
+      border: 2px solid #f1c40f;
     }
 
     #topbarDropdown {
@@ -124,17 +130,18 @@
       background: #fff;
       color: #000;
       border: 1px solid #ccc;
-      border-radius: 8px;
+      border-radius: 10px;
       width: 180px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
       z-index: 100;
     }
     #topbarDropdown a {
       display: block;
       padding: 10px 15px;
       text-decoration: none;
-      color: #000;
+      color: #111;
       font-size: 14px;
+      transition: background 0.2s;
     }
     #topbarDropdown a:hover { background-color: #f5f5f5; }
 
@@ -162,9 +169,9 @@
       right: 0;
       background: white;
       color: black;
-      width: 250px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-      border-radius: 8px;
+      width: 260px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+      border-radius: 10px;
       z-index: 99;
       font-size: 14px;
     }
@@ -177,12 +184,14 @@
     .notif-dropdown ul li a {
       text-decoration: none;
       color: #333;
+      display: block;
     }
+    .notif-dropdown ul li:hover { background: #f9fafb; }
 
-    /* Alert messages */
+    /* Alerts */
     .messages {
       position: fixed;
-      top: 60px;
+      top: 70px;
       left: 50%;
       transform: translateX(-50%);
       width: 30%;
@@ -193,8 +202,8 @@
       border-radius: 6px;
       z-index: 9999;
     }
-    .alert-error { background-color: #f44336 !important; }
-    .alert-success { background-color: #4CAF50 !important; }
+    .alert-error { background-color: #e74c3c !important; }
+    .alert-success { background-color: #2ecc71 !important; }
     .alert {
       display: flex;
       align-items: center;
@@ -202,32 +211,58 @@
       height: 35px;
     }
 
-    /* Dark Mode Styles */
-    body.dark-mode {
-      background: #1e1e1e;
-      color: #f1f1f1;
+    /* Cards */
+    .content-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
-    body.dark-mode .sidebar { background: #111; }
-    body.dark-mode .nav a { color: #aaa; }
+    .content-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-thumb {
+      background: #bbb;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: #888; }
+
+    /* Dark Mode */
+    body.dark-mode { background: #1e1e1e; color: #f1f1f1; }
+    body.dark-mode .sidebar { background: #0d0d0d; }
+    body.dark-mode .nav a { color: #999; }
     body.dark-mode .nav a.active,
     body.dark-mode .nav a:hover {
-      background: #333;
-      color: #fff;
+      background: linear-gradient(135deg, #f1c40f, #f39c12);
+      color: #111;
     }
     body.dark-mode #topbarDropdown {
-      background: #222;
-      color: #fff;
+      background: #2a2a2a;
       border: 1px solid #444;
     }
-    body.dark-mode #topbarDropdown a { color: #fff; }
+    body.dark-mode #topbarDropdown a { color: #f1f1f1; }
     body.dark-mode #topbarDropdown a:hover { background: #333; }
+    body.dark-mode .content-card {
+      background: #2a2a2a;
+      color: #f1f1f1;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
 
-    /* Dark mode toggle button */
+    /* Dark mode toggle */
     .dark-toggle {
       font-size: 20px;
       cursor: pointer;
       margin-right: 20px;
+      color: #555;
+      transition: color 0.3s;
     }
+    body.dark-mode .dark-toggle { color: #f1c40f; }
   </style>
 </head>
 <body>
@@ -267,7 +302,7 @@
     <!-- Main Content -->
     <main class="main">
       <div class="topbar">
-        <!-- 🌙☀️ Dark Mode Toggle -->
+        <!-- Dark Mode Toggle -->
         <div class="dark-toggle" id="darkToggle">
           <i class="fas fa-moon"></i>
         </div>
@@ -304,11 +339,12 @@
         </div>
       </div>
 
+      <!-- Page content -->
       {% block content %}{% endblock %}
     </main>
   </div>
 
-  <!-- Display messages -->
+  <!-- Messages -->
   {% if messages %}
     <div class="messages" id="messageContainer">
       {% for message in messages %}
@@ -351,7 +387,7 @@
       }
     });
 
-    // 🌙☀️ Dark mode toggle
+    // Dark mode toggle
     const darkToggle = document.getElementById('darkToggle');
     darkToggle.addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');

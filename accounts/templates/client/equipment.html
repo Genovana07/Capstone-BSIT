@@ -4,292 +4,343 @@
 
 {% block content %}
 <div class="inventory-container">
-    <!-- Inventory Header -->
-    <div class="inventory-header">
-        <h1>Equipment List</h1>
-        <div class="filters">
-            <div class="filter-item">
-                <div class="stock-status">In Stock</div>
-            </div>
-            <div class="filter-item">
-                <div class="search-box">
-                    <input type="text" placeholder="Search" />
-                    <button><i class="fa fa-search"></i></button>
-                </div>
-            </div>
-            <div class="filter-item">
-                <div class="status-btn">Status</div>
-                <div class="status-btn">All</div>
-            </div>
-        </div>
+  <!-- Header -->
+  <div class="inventory-header">
+    <div class="header-top">
+      <h1>Equipment List</h1>
+
+      <!-- Search form (optional) -->
+      <form method="get" class="search-box" action="">
+        {# keep current filter while searching #}
+        {% if show %}<input type="hidden" name="show" value="{{ show }}">{% endif %}
+        <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search equipment">
+        <button type="submit" aria-label="Search">
+          <i class="fa fa-search"></i>
+        </button>
+      </form>
     </div>
 
-    <!-- Inventory Table -->
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+      <a href="?show=all" class="tab {% if show == 'all' %}active{% endif %}">
+        All <span class="badge">{{ counts.all }}</span>
+      </a>
+      <a href="?show=available" class="tab {% if show == 'available' %}active{% endif %}">
+        Available <span class="badge">{{ counts.available }}</span>
+      </a>
+      <a href="?show=rented" class="tab {% if show == 'rented' %}active{% endif %}">
+        Rented <span class="badge">{{ counts.rented }}</span>
+      </a>
+      <a href="?show=maintenance" class="tab {% if show == 'maintenance' %}active{% endif %}">
+        Under Maintenance <span class="badge">{{ counts.maintenance }}</span>
+      </a>
+      <a href="?show=repair" class="tab {% if show == 'repair' %}active{% endif %}">
+        Under Repair <span class="badge">{{ counts.repair }}</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Table wrapper for horizontal scroll on mobile -->
+  <div class="table-wrap">
     <table class="inventory-table">
-        <thead>
-            <tr>
-                <th>Equipment</th>
-                <th>Quantity Available</th>
-                <th>Quantity Rented</th>
-                <th>Condition</th>
-                <th>Actions</th>  <!-- This column will have buttons for adding/subtracting stock -->
-            </tr>
-        </thead>
-        <tbody>
-            {% for equipment in equipment_list %}
-            <tr>
-                <td>{{ equipment.name }}</td>
-                <td>{{ equipment.quantity_available }}</td>
-                <td>{{ equipment.quantity_rented }}</td>
-                <td>{{ equipment.condition }}</td>
-                <td>
-                    <!-- Add and Subtract buttons -->
-                    <form method="POST" action="{% url 'update_inventory' equipment.id %}">
-                        {% csrf_token %}
-                        <div class="action-buttons">
-                            <button type="submit" name="action" value="add_stock" class="action-btn add-btn">Add Stock</button>
-                            <button type="submit" name="action" value="subtract_stock" class="action-btn subtract-btn">Subtract Stock</button>
-                        </div>
-                    </form>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5">No equipment available.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+      <thead>
+        <tr>
+          <th>Equipment</th>
+          <th>Qty Available</th>
+          <th>Qty Rented</th>
+          <th>Under Maint</th>
+          <th>Under Repair</th>
+          <th>Condition</th>
+          <th style="min-width: 420px">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for equipment in equipment_list %}
+        <tr>
+          <td>
+            <div class="eq-name">
+              <span class="eq-title">{{ equipment.name }}</span>
+              <span class="eq-sub">{{ equipment.current_location|default:"No location set" }}</span>
+            </div>
+          </td>
+          <td>{{ equipment.quantity_available }}</td>
+          <td>{{ equipment.quantity_rented }}</td>
+          <td>{{ equipment.qty_maintenance }}</td>
+          <td>{{ equipment.qty_repair }}</td>
+          <td>
+            <span class="chip {{ equipment.condition|lower|slugify }}">
+              {{ equipment.condition }}
+            </span>
+          </td>
+          <td>
+            <form method="POST" action="{% url 'update_inventory' equipment.id %}">
+              {% csrf_token %}
+              <div class="actions-row">
+                <input type="number" name="qty" min="1" value="1" class="qty-input">
+                <input type="text" name="note" placeholder="Note" class="note-input">
+
+                <div class="btn-group">
+                  <button type="submit" name="action" value="add_stock" class="btn success">+ Stock</button>
+                  <button type="submit" name="action" value="subtract_stock" class="btn danger">- Stock</button>
+                </div>
+
+                <div class="btn-group">
+                  <button type="submit" name="action" value="to_maintenance" class="btn warn">→ Maint</button>
+                  <button type="submit" name="action" value="back_from_maintenance" class="btn soft">↩ Maint</button>
+                </div>
+
+                <div class="btn-group">
+                  <button type="submit" name="action" value="to_repair" class="btn warn">→ Repair</button>
+                  <button type="submit" name="action" value="back_from_repair" class="btn soft">↩ Repair</button>
+                </div>
+              </div>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7">No equipment available.</td></tr>
+        {% endfor %}
+      </tbody>
     </table>
+  </div>
 </div>
 
 <style>
-* 🌞 LIGHT MODE */
-.inventory-container {
-    background-color: #fff;
-    padding: 20px;
-    flex-grow: 1;
-    margin-top: -20px;
+/* Design tokens */
+:root {
+  --bg: #ffffff;
+  --fg: #1f2328;
+  --muted: #6b7280;
+  --card: #f8fafc;
+  --line: #e5e7eb;
+  --brand: #0d6efd;
+  --success: #22c55e;
+  --success-d: #16a34a;
+  --danger: #ef4444;
+  --danger-d: #dc2626;
+  --warn: #f59e0b;
+  --soft: #64748b;
 }
 
+body.dark-mode :root {
+  --bg: #000000;
+  --fg: #e5e7eb;
+  --muted: #9ca3af;
+  --card: #0b0b0b;
+  --line: #1f2937;
+  --brand: #3b82f6;
+  --success: #22c55e;
+  --success-d: #16a34a;
+  --danger: #ef4444;
+  --danger-d: #dc2626;
+  --warn: #f59e0b;
+  --soft: #94a3b8;
+}
+
+/* Container */
+.inventory-container {
+  background: var(--bg);
+  color: var(--fg);
+  padding: 20px;
+  flex-grow: 1;
+}
+
+/* Header */
 .inventory-header {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  display: grid;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.header-top {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .inventory-header h1 {
-    font-size: 28px;
-    font-weight: bold;
-    margin-top: 1%;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
 }
 
-.filters {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 30px;
-    margin-top: 20px;
-}
-
-.filter-item {
-    display: flex;
-    gap: 10px;
-}
-
-.stock-status, .status-btn {
-    font-weight: bold;
-    padding: 8px 16px;
-    background-color: #f2f2f2;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: center;
-}
-
+/* Search */
 .search-box {
-    display: flex;
-    align-items: center;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    overflow: hidden;
-    margin-left: -35vw;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 10px;
+  padding: 6px 8px;
 }
-
 .search-box input {
-    border: none;
-    padding: 8px 12px;
-    outline: none;
-    width: 250px;
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 240px;
+  color: inherit;
 }
-
 .search-box button {
-    background: none;
-    border: none;
-    padding: 8px 12px;
-    cursor: pointer;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px 6px;
+  color: var(--muted);
 }
 
-.search-box button i {
-    font-size: 16px;
+/* Tabs */
+.filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--fg);
+  background: var(--card);
+  font-weight: 600;
+  font-size: 13px;
+}
+.tab .badge {
+  background: var(--line);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.tab.active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+.tab.active .badge {
+  background: rgba(255,255,255,.2);
+  color: #fff;
 }
 
+/* Table */
+.table-wrap {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--card);
+}
 .inventory-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    border: 1px solid #ddd;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
 }
-
-.inventory-table th,
+.inventory-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  z-index: 1;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--muted);
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
 .inventory-table td {
-    border: 1px solid #ddd;
-    padding: 12px 10px;
-    text-align: left;
-    font-size: 14px;
+  padding: 12px;
+  border-top: 1px solid var(--line);
+  vertical-align: middle;
+  font-size: 14px;
+}
+.inventory-table tbody tr:hover {
+  background: rgba(13, 110, 253, 0.04);
 }
 
-.inventory-table th {
-    background-color: #f5f5f5;
-    font-weight: bold;
+/* Equipment name cell */
+.eq-name {
+  display: grid;
+}
+.eq-title { font-weight: 700 }
+.eq-sub { font-size: 12px; color: var(--muted) }
+
+/* Chips for condition */
+.chip {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--line);
+  color: var(--fg);
+}
+.chip.good { background: rgba(34,197,94,.15) }
+.chip.needs-repair { background: rgba(239,68,68,.15) }
+.chip.excellent { background: rgba(59,130,246,.15) }
+
+/* Actions */
+.actions-row {
+  display: grid;
+  grid-template-columns: 90px 1fr auto auto auto;
+  gap: 8px;
+  align-items: center;
+}
+.qty-input,
+.note-input {
+  height: 36px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+.qty-input { width: 90px }
+
+.btn-group {
+  display: inline-flex;
+  gap: 6px;
 }
 
-.inventory-table tr:hover {
-    background-color: #f9f9f9;
+.btn {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--fg);
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .06s ease, opacity .12s ease;
+  white-space: nowrap;
 }
+.btn:hover { transform: translateY(-1px) }
+.btn:active { transform: translateY(0) }
 
-/* Action Button Styling */
-.action-buttons {
-    display: flex;
-    gap: 10px;
+.btn.success { background: var(--success); color: #fff }
+.btn.success:hover { opacity: .92 }
+.btn.danger { background: var(--danger); color: #fff }
+.btn.danger:hover { opacity: .92 }
+.btn.warn { background: var(--warn); color: #111 }
+.btn.soft { background: var(--soft); color: #fff }
+
+/* Responsive */
+@media (max-width: 980px) {
+  .header-top { flex-direction: column; align-items: stretch }
+  .search-box { width: 100% }
+  .search-box input { width: 100% }
+
+  .table-wrap { overflow-x: auto }
+  .inventory-table { min-width: 900px }
+
+  .actions-row {
+    grid-template-columns: 80px 1fr;
+    grid-auto-rows: 36px;
+  }
+  .btn-group { justify-content: flex-start }
 }
-
-.action-btn {
-    padding: 8px 16px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    text-align: center;
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-.action-btn:hover {
-    transform: scale(1.05);
-}
-
-.add-btn {
-    background-color: #28a745;
-    color: #fff;
-}
-
-.add-btn:hover {
-    background-color: #218838;
-}
-
-.subtract-btn {
-    background-color: #dc3545;
-    color: #fff;
-}
-
-.subtract-btn:hover {
-    background-color: #c82333;
-}
-
-/* 🌙 DARK MODE (True Black Background) */
-body.dark-mode .inventory-container {
-    background-color: #000000; /* Black background for inventory container */
-    color: #e0e0e0; /* Light text for better contrast */
-}
-
-body.dark-mode .inventory-header h1 {
-    color: #e0e0e0; /* Light color for header */
-}
-
-body.dark-mode .filters {
-    color: #e0e0e0; /* Light text color for filter section */
-}
-
-body.dark-mode .stock-status,
-body.dark-mode .status-btn {
-    background-color: #444444; /* Dark background for filter buttons */
-    color: #ffffff; /* White text */
-}
-
-body.dark-mode .search-box {
-    border: 1px solid #666; /* Darker border for search box */
-}
-
-body.dark-mode .search-box input {
-    background-color: #333; /* Dark input background */
-    color: #e0e0e0; /* Light text for input */
-}
-
-body.dark-mode .search-box button {
-    background-color: #444444; /* Dark background for search button */
-    color: #e0e0e0; /* Light icon color */
-}
-
-body.dark-mode .inventory-table {
-    background-color: #111111; /* Dark table background */
-    color: #e0e0e0; /* Light text */
-}
-
-body.dark-mode .inventory-table th {
-    background-color: #333333; /* Dark header background */
-    color: #e0e0e0; /* Light header text */
-}
-
-body.dark-mode .inventory-table tr:hover {
-    background-color: #222222; /* Darker row hover effect */
-}
-
-/* Action Button Dark Mode */
-body.dark-mode .add-btn {
-    background-color: #28a745; /* Keep green color for Add button */
-    color: #fff;
-}
-
-body.dark-mode .add-btn:hover {
-    background-color: #218838;
-}
-
-body.dark-mode .subtract-btn {
-    background-color: #dc3545; /* Keep red color for Subtract button */
-    color: #fff;
-}
-
-body.dark-mode .subtract-btn:hover {
-    background-color: #c82333;
-}
-
-body.dark-mode .action-btn {
-    background-color: #444444; /* Dark background for action buttons */
-    color: #e0e0e0; /* Light text */
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .inventory-container {
-        padding: 10px;
-    }
-
-    .inventory-header h1 {
-        font-size: 24px;
-    }
-
-    .filters {
-        flex-direction: column;
-    }
-
-    .search-box input {
-        width: 100%;
-    }
-
-    .status-btn {
-        width: 100%;
-        text-align: center;
-    }
-}
-    
 </style>
-
 {% endblock %}

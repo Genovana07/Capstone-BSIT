@@ -3,180 +3,192 @@
 {% block title %}Tracking{% endblock %}
 
 {% block content %}
-  <style>
-    .dashboard-header {
-        margin: 30px 0;
-    }
+<style>
+  /* Container */
+  .tracking {
+    margin: 30px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  }
 
-    .tracking h1 {
-        margin-bottom: 20px;
-        font-size: 28px;
-        margin-top: 1%;
-    }
+  .tracking h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #333;
+    border-left: 6px solid #4f46e5;
+    padding-left: 12px;
+  }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        background: #fff;
-    }
+  /* Table Styling */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 10px;
+    overflow: hidden;
+  }
 
-    table th,
-    table td {
-        border: 1px solid #ddd;
-        padding: 12px 16px;
-        text-align: left;
-        height: 50px;
-    }
+  table th,
+  table td {
+    padding: 14px 18px;
+    text-align: left;
+  }
 
-    table th {
-        background: #f5f5f5;
-        font-weight: 600;
-    }
+  table th {
+    background: #f5f7fa;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 13px;
+    color: #444;
+  }
 
-    /* Style for the map container */
-    .map-container {
-        width: 400px;
-        height: 300px;
-    }
+  table tr:nth-child(even) {
+    background: #fafafa;
+  }
 
-    /* 🌙 DARK MODE */
-    body.dark-mode .tracking {
-        color: #e0e0e0; /* Light text color */
-    }
+  table td {
+    font-size: 14px;
+    color: #555;
+    vertical-align: top;
+  }
 
-    body.dark-mode table {
-        background-color: #2c2f38; /* Dark background for the table */
-        color: #e0e0e0; /* Light text */
-    }
+  table tr:hover {
+    background: #eef2ff;
+  }
 
-    body.dark-mode table th {
-        background-color: #333; /* Dark header background */
-        color: #e0e0e0; /* White text */
-    }
+  /* Equipment list */
+  td ul {
+    margin: 0;
+    padding-left: 18px;
+    list-style: disc;
+    color: #444;
+  }
 
-    body.dark-mode table td {
-        background-color: #444; /* Dark table cells */
-        color: #e0e0e0; /* White text */
-        border: 1px solid #555; /* Darker borders */
-    }
+  td p {
+    margin: 0;
+    font-style: italic;
+    color: #777;
+  }
 
-    body.dark-mode table tr:hover {
-        background-color: #555; /* Darker hover effect */
-    }
+  /* Map container */
+  .map-container {
+    width: 300px;
+    height: 200px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
 
-    /* Map container for dark mode */
-    body.dark-mode .map-container {
-        border: 2px solid #555; /* Dark border around the map */
-    }
+  /* 🌙 DARK MODE */
+  body.dark-mode .tracking {
+    background: #1e1f25;
+    color: #e0e0e0;
+  }
 
-    body.dark-mode .tracking h1 {
-        color: #e0e0e0; /* Light heading color */
-    }
+  body.dark-mode .tracking h1 {
+    color: #fff;
+    border-left-color: #6366f1;
+  }
 
-    /* Action button styles for dark mode (if any buttons are used in tracking) */
-    body.dark-mode .action-btn {
-        background-color: #444;
-        color: #fff;
-        border-radius: 5px;
-        padding: 8px 16px;
-        border: none;
-        cursor: pointer;
-    }
+  body.dark-mode table {
+    background: #2a2d35;
+    color: #e0e0e0;
+  }
 
-    body.dark-mode .action-btn:hover {
-        background-color: #555;
-    }
-  </style>
+  body.dark-mode table th {
+    background: #333642;
+    color: #f0f0f0;
+  }
 
-  <section class="tracking">
-    <h1>Tracking Bookings</h1>
-    {% if bookings %}
-      <table>
-        <thead>
-          <tr>
-            <th>Package Name</th>
-            <th>Event Date</th>
-            <th>Event Type</th>
-            <th>Full Address</th>
-            <th>Status</th>
-            <th>Equipment</th> <!-- General Equipment column for all packages -->
-            <th>Map</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for booking in bookings %}
-            <tr>
-              <td>{{ booking.package.title }}</td>
-              <td>{{ booking.event_date }}</td>
-              <td>{{ booking.event_type }}</td>
-              <td>{{ booking.fulladdress }}</td>
-              <td>Approved</td>
-              <td>
-                <!-- Display the equipment list dynamically for each package -->
-                {% if booking.package.equipment.all %}
-                  <ul>
-                    {% for package_equipment in booking.package.packageequipment_set.all %}
-                      <li>{{ package_equipment.equipment.name }} (Quantity: {{ package_equipment.quantity_required }})</li>
-                    {% endfor %}
-                  </ul>
-                {% else %}
-                  <p>No equipment assigned</p>
-                {% endif %}
-              </td>
-              <td>
-                <!-- Embed Leaflet Map based on the location entered in the booking -->
-                <div id="map-{{ booking.id }}" class="map-container"></div>
-                <script>
-                  // Load the map after the Leaflet library has been loaded
-                  function initMap(location, bookingId) {
-                    var geocoder = new XMLHttpRequest();
-                    var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
-                    geocoder.open('GET', url, true);
-                    geocoder.onreadystatechange = function () {
-                      if (geocoder.readyState == 4 && geocoder.status == 200) {
-                        var data = JSON.parse(geocoder.responseText);
-                        
-                        // Check the data returned from the geocoding API
-                        console.log('Geocoding Response:', data);
-                        
-                        if (data.length > 0) {
-                          var lat = data[0].lat;
-                          var lon = data[0].lon;
+  body.dark-mode table td {
+    background: #2a2d35;
+    border-color: #444;
+  }
 
-                          // Create a Leaflet map centered at the location
-                          var map = L.map('map-' + bookingId).setView([lat, lon], 15);
+  body.dark-mode table tr:hover {
+    background: #3b3f4a;
+  }
 
-                          // Add OpenStreetMap tile layer
-                          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                          }).addTo(map);
+  body.dark-mode td ul {
+    color: #ddd;
+  }
 
-                          // Add a marker at the location
-                          L.marker([lat, lon]).addTo(map)
-                            .bindPopup('Location: ' + location)
-                            .openPopup();
-                        } else {
-                          console.error('Location not found!');
-                        }
-                      }
-                    };
-                    geocoder.send();
+  body.dark-mode .map-container {
+    border: 2px solid #555;
+  }
+</style>
+
+<section class="tracking">
+  <h1>Tracking Bookings</h1>
+  {% if bookings %}
+    <table>
+      <thead>
+        <tr>
+          <th>Package</th>
+          <th>Event Date</th>
+          <th>Event Type</th>
+          <th>Address</th>
+          <th>Status</th>
+          <th>Equipment</th>
+          <th>Map</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in bookings %}
+        <tr>
+          <td>{{ booking.package.title }}</td>
+          <td>{{ booking.event_date }}</td>
+          <td>{{ booking.event_type }}</td>
+          <td>{{ booking.fulladdress }}</td>
+          <td><span style="color: #16a34a; font-weight: 600;">Approved</span></td>
+          <td>
+            {% if booking.package.equipment.all %}
+              <ul>
+                {% for package_equipment in booking.package.packageequipment_set.all %}
+                  <li>{{ package_equipment.equipment.name }} (x{{ package_equipment.quantity_required }})</li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p>No equipment assigned</p>
+            {% endif %}
+          </td>
+          <td>
+            <div id="map-{{ booking.id }}" class="map-container"></div>
+            <script>
+              function initMap(location, bookingId) {
+                var geocoder = new XMLHttpRequest();
+                var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
+                geocoder.open('GET', url, true);
+                geocoder.onreadystatechange = function () {
+                  if (geocoder.readyState == 4 && geocoder.status == 200) {
+                    var data = JSON.parse(geocoder.responseText);
+                    if (data.length > 0) {
+                      var lat = data[0].lat;
+                      var lon = data[0].lon;
+                      var map = L.map('map-' + bookingId).setView([lat, lon], 15);
+                      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap contributors'
+                      }).addTo(map);
+                      L.marker([lat, lon]).addTo(map).bindPopup(location).openPopup();
+                    }
                   }
+                };
+                geocoder.send();
+              }
+              initMap('{{ booking.location|escapejs }}', '{{ booking.id }}');
+            </script>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No approved bookings available.</p>
+  {% endif %}
+</section>
 
-                  // Initialize map for each booking dynamically
-                  initMap('{{ booking.location|escapejs }}', '{{ booking.id }}');
-                </script>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <p>No approved bookings available.</p>
-    {% endif %}
-  </section>
-
-  <!-- Include Leaflet.js and OpenStreetMap API -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 {% endblock %}

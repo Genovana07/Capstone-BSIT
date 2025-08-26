@@ -20,53 +20,115 @@ class Equipment(models.Model):
     name = models.CharField(max_length=200)
     quantity_available = models.IntegerField(default=0)
     quantity_rented = models.IntegerField(default=0)
-    condition = models.CharField(max_length=100, choices=[
-        ('Good', 'Good'),
-        ('Needs Repair', 'Needs Repair'),
-        ('Excellent', 'Excellent'),
-    ], default='Good')
-    
-    # Adding status field to track if the equipment is available, rented, or under maintenance
-    status = models.CharField(max_length=50, choices=[
-        ('Available', 'Available'),
-        ('Rented', 'Rented'),
-        ('Under Maintenance', 'Under Maintenance'),
-    ], default='Available')  # This ensures this field is present in your model
-    
-    # Field to store the last checked out date (nullable if it's not set)
+    qty_maintenance = models.PositiveIntegerField(default=0)
+    qty_repair = models.PositiveIntegerField(default=0)
+
+    condition = models.CharField(
+        max_length=100,
+        choices=[
+            ('Good', 'Good'),
+            ('Needs Repair', 'Needs Repair'),
+            ('Excellent', 'Excellent'),
+        ],
+        default='Good'
+    )
+
+    status = models.CharField(
+        max_length=50,
+        choices=[
+            ('Available', 'Available'),
+            ('Rented', 'Rented'),
+            ('Under Maintenance', 'Under Maintenance'),
+            ('Under Repair', 'Under Repair'),   # 🔥 Added
+            ('Decommissioned', 'Decommissioned'),  # optional
+        ],
+        default='Available'
+    )
+
     last_checked_out_date = models.DateField(null=True, blank=True)
-    
-    # Location where the equipment is currently stored or located (nullable if not set)
     current_location = models.CharField(max_length=255, blank=True, null=True)
+    last_updated = models.DateTimeField(auto_now=True)  # 🔥 New field
 
     def __str__(self):
         return self.name
 
-    def update_quantity(self, quantity_rented):
-        """Update the available and rented quantities for the equipment."""
-        
-        # Check if there is enough stock available
+    # --- STOCK MANAGEMENT METHODS ---
+
+    def update_quantity(self, quantity_rented: int):
+        """Rent equipment and update stock safely."""
         if quantity_rented > self.quantity_available:
-            raise ValueError(f"Not enough stock available for {self.name}. Only {self.quantity_available} available.")
-        
-        # Deduct the rented quantity from available stock
+            raise ValueError(
+                f"Not enough stock available for {self.name}. Only {self.quantity_available} available."
+            )
         self.quantity_available -= quantity_rented
-        
-        # Add to the rented quantity
         self.quantity_rented += quantity_rented
-        
-        # Save the changes in the database
+        self.status = "Rented" if self.quantity_rented > 0 else "Available"
         self.save()
 
-        print(f"Updated {self.name}: {self.quantity_available} available, {self.quantity_rented} rented.")
-
-    def return_stock(self, quantity_rented):
-        """Restore the rented equipment back to inventory."""
+    def return_stock(self, quantity_rented: int):
+        """Return rented equipment back to inventory."""
+        if quantity_rented > self.quantity_rented:
+            raise ValueError(
+                f"Cannot return {quantity_rented}. Only {self.quantity_rented} rented out."
+            )
         self.quantity_available += quantity_rented
         self.quantity_rented -= quantity_rented
+        self.status = "Available"
         self.save()
 
-        print(f"Returned {quantity_rented} of {self.name} to inventory. Available: {self.quantity_available}, Rented: {self.quantity_rented}")
+    def move_to_maintenance(self, qty=1):
+        """Send available stock to maintenance."""
+        if qty > self.quantity_available:
+            raise ValueError("Not enough available stock to move to maintenance.")
+        self.quantity_available -= qty
+        self.qty_maintenance += qty
+        self.status = "Under Maintenance"
+        self.save()
+
+    def return_from_maintenance(self, qty=1):
+        """Return stock from maintenance back to available."""
+        if qty > self.qty_maintenance:
+            raise ValueError("Not enough stock in maintenance to return.")
+        self.qty_maintenance -= qty
+        self.quantity_available += qty
+        self.status = "Available"
+        self.save()
+
+    def move_to_repair(self, qty=1):
+        """Send available stock to repair."""
+        if qty > self.quantity_available:
+            raise ValueError("Not enough available stock to move to repair.")
+        self.quantity_available -= qty
+        self.qty_repair += qty
+        self.status = "Under Repair"
+        self.save()
+
+    def return_from_repair(self, qty=1):
+        """Return stock from repair back to available."""
+        if qty > self.qty_repair:
+            raise ValueError("Not enough stock in repair to return.")
+        self.qty_repair -= qty
+        self.quantity_available += qty
+        self.status = "Available"
+        self.save()
+
+    # --- PROPERTIES ---
+
+    @property
+    def total_stock(self):
+        """Total stock across all categories."""
+        return (
+            self.quantity_available +
+            self.quantity_rented +
+            self.qty_maintenance +
+            self.qty_repair
+        )
+
+    @property
+    def is_available(self):
+        """Check if equipment can be rented."""
+        return self.quantity_available > 0
+
 
 class ServicePackage(models.Model):
     title = models.CharField(max_length=100)

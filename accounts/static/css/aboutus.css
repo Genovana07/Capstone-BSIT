@@ -49,6 +49,7 @@ body {
 
 .content {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 40px;
 }
@@ -70,8 +71,23 @@ body {
 }
 
 .text-box {
-  flex: 1;
-  text-align: justify;
+  flex: 1 1 300px;
+  position: relative;
+  padding-bottom: 60px; 
+}
+
+.text-box p {
+  overflow: hidden;
+  max-height: 4.5em; 
+  transition: max-height 0.6s ease;
+}
+
+.text-box.expanded p {
+  max-height: 500px; 
+}
+
+.more-text {
+  display: none; 
 }
 
 .history {
@@ -87,16 +103,20 @@ p {
   color: var(--text-color);
 }
 
+
 .read-more {
-  margin-top: 30px;
-  padding: 10px 24px;
-  background: var(--light-color);
-  border: 2px solid var(--accent-color);
-  border-radius: 25px;
-  color: var(--accent-color);
-  font-size: 1rem;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 18px;
+  border: none;
+  background: #23194f;
+  color: white;
+  border-radius: 6px;
   cursor: pointer;
-  transition: 0.3s ease;
+  font-size: 14px;
+  transition: background 0.3s ease;
 }
 
 .read-more:hover {
@@ -136,32 +156,53 @@ p {
 }
 
 .choose-us-title {
+  font-size: 2.5rem;
+  font-weight: 800;
   text-align: center;
-  font-size: 2.4rem;
-  color: var(--primary-color);
-  margin: 90px 0 40px;
+  margin-bottom: 3rem;
+  color: #23194f;
+  letter-spacing: 1px;
 }
 
 .why-choose-us {
   display: flex;
   justify-content: center;
-  gap: 32px;
+  gap: 3rem; 
+  flex-wrap: wrap; 
+  max-width: 1100px;
   margin: 0 auto;
-  max-width: 1000px;
+  padding: 1rem;
 }
 
 .info-box {
-  background: var(--light-color);
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: var(--shadow-light);
-  flex: 1;
-  text-align: justify;
+  text-align: center;
+  flex: 1 1 280px; 
+  max-width: 320px;
+  padding: 1rem;
+}
+
+.info-title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.8rem;
+  color: #23194f;
+}
+
+.info-desc {
+  font-size: 1.1rem;
+  color: #666;
+  line-height: 1.6;
+  text-align: center;
+  margin: 0 auto;
+  max-width: 280px;
+  white-space: normal;
+  letter-spacing: normal;
+  word-spacing: normal;
 }
 
 .team-section {
   background: var(--secondary-color);
-  padding: 60px;
+  padding: 10px;
   border-radius: 16px;
   margin-top: 100px;
   text-align: center;
@@ -209,9 +250,10 @@ p {
 
 .member img {
   width: 100%;
-  height: 180px;
+  height: 220px;   /* increased height for uniform size */
   object-fit: cover;
   border-radius: 10px;
+  margin-top: 15px;  /* moves the image slightly lower */
 }
 
 .member p {
@@ -232,4 +274,27 @@ button {
 
 button:hover {
   color: var(--accent-color);
+}
+
+/* ✅ Responsive adjustments */
+@media (max-width: 768px) {
+  .content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .image-box {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+  }
+
+  .text-box {
+    width: 100%;
+  }
+
+  .read-more {
+    font-size: 13px;
+    padding: 6px 14px;
+  }
 }

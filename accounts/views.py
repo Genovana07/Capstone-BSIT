@@ -32,6 +32,7 @@ from django.db.models import Avg
 from django.db.models.functions import Coalesce
 from django.core.paginator import Paginator
 from .models import Booking
+from .models import BookingChecklist, ChecklistItem
 
 def register_view(request):
     if request.method == "POST":
@@ -621,7 +622,7 @@ def dashboard(request):
         for entry in raw_monthly
     ]
 
-    # Notifications (show up to 5 newest "Processing" bookings)
+    # Notifications
     notifications_qs = bookings.filter(status="Processing").order_by('-created_at')[:5]
     notifications = [
         f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
@@ -631,6 +632,14 @@ def dashboard(request):
     event_type_data = bookings.values('event_type').annotate(count=Count('id'))
     package_popularity = bookings.values('package__title').annotate(count=Count('id')).order_by('-count')
     status_data = bookings.values('status').annotate(count=Count('id'))
+
+    # === Feedback Aggregation ===
+    reviews = Review.objects.all()
+    avg_quality = reviews.aggregate(avg=Avg('quality'))['avg'] or 0
+    avg_timeliness = reviews.aggregate(avg=Avg('timeliness'))['avg'] or 0
+    avg_professionalism = reviews.aggregate(avg=Avg('professionalism'))['avg'] or 0
+    avg_value_for_money = reviews.aggregate(avg=Avg('value_for_money'))['avg'] or 0
+    average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0  # <- use 'rating' field
 
     return render(request, 'client/dashboard.html', {
         'booking_count': booking_count,
@@ -643,10 +652,16 @@ def dashboard(request):
         'package_popularity': list(package_popularity),
         'status_data': list(status_data),
 
-        # 🔔 Notifications passed to client-base.html
         'notifications': notifications,
-    })
 
+        # Feedback context
+        'reviews': reviews,
+        'avg_quality': round(avg_quality, 1),
+        'avg_timeliness': round(avg_timeliness, 1),
+        'avg_professionalism': round(avg_professionalism, 1),
+        'avg_value_for_money': round(avg_value_for_money, 1),
+        'average_rating': round(average_rating, 1),
+    })
 @login_required
 @admin_only
 def booking(request):
@@ -1042,6 +1057,18 @@ def accept_booking(request, booking_id):
         equipment.update_quantity(quantity_required)  # This will update the stock
 
     if inventory_updated:
+        # ✅ Create checklist for the booking if it doesn’t exist
+        from .models import BookingChecklist, ChecklistItem  # import inside to avoid circular issues
+        checklist, created = BookingChecklist.objects.get_or_create(booking=booking)
+
+        if created:
+            for pkg_eq in booking.package.packageequipment_set.all():
+                ChecklistItem.objects.create(
+                    checklist=checklist,
+                    equipment=pkg_eq.equipment,
+                    quantity_required=pkg_eq.quantity_required
+                )
+
         # Add the event to the calendar (this part updates the event in the calendar)
         events = {
             "date": booking.event_date.strftime("%Y-%m-%d"),
@@ -1049,12 +1076,12 @@ def accept_booking(request, booking_id):
             "time": booking.event_time.strftime("%H:%M"),
             "end_time": booking.end_time.strftime("%H:%M") if booking.end_time else None
         }
-        messages.success(request, f"Booking {booking.id} has been successfully accepted and inventory updated.")
+        messages.success(request, f"Booking {booking.id} has been successfully accepted, inventory updated, and checklist created.")
     else:
         booking.status = 'Processing'
         booking.save()
 
-    return redirect('booking') 
+    return redirect('booking')
 
 @login_required
 def reject_booking(request, booking_id):
@@ -1331,3 +1358,71 @@ def cancel_booking(request, booking_id):
     # Add Django success message
     messages.success(request, f"Booking #{booking.id} has been cancelled successfully.")
     return redirect("mybookings")
+
+@login_required
+@admin_only
+def checklist_view(request):
+    bookings = Booking.objects.filter(status="Accepted").select_related("checklist")
+    return render(request, "client/checklist.html", {"bookings": bookings})
+
+
+@login_required
+@admin_only
+def checklist_detail(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+    checklist, created = BookingChecklist.objects.get_or_create(booking=booking)
+
+    # kung bagong gawa yung checklist, kailangan din natin i-populate ng equipment
+    if created:
+        for pkg_eq in booking.package.packageequipment_set.all():
+            ChecklistItem.objects.create(
+                checklist=checklist,
+                equipment=pkg_eq.equipment,
+                quantity_required=pkg_eq.quantity_required
+            )
+
+    if request.method == "POST":
+        all_confirmed = True
+        for item in checklist.items.all():
+            received_qty = int(request.POST.get(f"received_{item.id}", item.quantity_received))
+            confirmed = f"confirm_{item.id}" in request.POST
+
+            item.quantity_received = received_qty
+            item.confirmed = confirmed
+            item.save()
+
+            if not confirmed or received_qty < item.quantity_required:
+                all_confirmed = False
+
+        checklist.is_confirmed = all_confirmed
+        checklist.save()
+
+        messages.success(request, "Checklist updated successfully!")
+        return redirect("checklist_detail", booking_id=booking.id)
+
+    return render(request, "client/checklist_detail.html", {"booking": booking, "checklist": checklist})
+
+import csv
+def download_employees(request):
+    # Create the HttpResponse object with CSV header
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="employees.csv"'
+
+    writer = csv.writer(response)
+    # CSV header
+    writer.writerow(['Username', 'First Name', 'Last Name', 'Email', 'Phone', 'Address', 'Province', 'City'])
+
+    employees = Profile.objects.all()  # Or filter if needed
+    for emp in employees:
+        writer.writerow([
+            emp.user.username,
+            emp.user.first_name,
+            emp.user.last_name,
+            emp.user.email,
+            emp.contact_number,
+            emp.address,
+            emp.province,
+            emp.city
+        ])
+
+    return response

@@ -54,6 +54,9 @@ urlpatterns = [
 
     # Dashboard redirect
     path('dashboard-redirect/', dashboard_redirect, name='dashboard_redirect'),
+    path("checklist/", views.checklist_view, name="checklist"),
+    path("checklist/<int:booking_id>/", views.checklist_detail, name="checklist_detail"),
+    path('employees/download/', views.download_employees, name='download_employees'),
 ]
 
 # ✅ Serve media files (if in DEBUG mode)

@@ -9,9 +9,8 @@
     <div class="header-top">
       <h1>Equipment List</h1>
 
-      <!-- Search form (optional) -->
+      <!-- Search form -->
       <form method="get" class="search-box" action="">
-        {# keep current filter while searching #}
         {% if show %}<input type="hidden" name="show" value="{{ show }}">{% endif %}
         <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search equipment">
         <button type="submit" aria-label="Search">
@@ -22,25 +21,15 @@
 
     <!-- Filter Tabs -->
     <div class="filter-tabs">
-      <a href="?show=all" class="tab {% if show == 'all' %}active{% endif %}">
-        All <span class="badge">{{ counts.all }}</span>
-      </a>
-      <a href="?show=available" class="tab {% if show == 'available' %}active{% endif %}">
-        Available <span class="badge">{{ counts.available }}</span>
-      </a>
-      <a href="?show=rented" class="tab {% if show == 'rented' %}active{% endif %}">
-        Rented <span class="badge">{{ counts.rented }}</span>
-      </a>
-      <a href="?show=maintenance" class="tab {% if show == 'maintenance' %}active{% endif %}">
-        Under Maintenance <span class="badge">{{ counts.maintenance }}</span>
-      </a>
-      <a href="?show=repair" class="tab {% if show == 'repair' %}active{% endif %}">
-        Under Repair <span class="badge">{{ counts.repair }}</span>
-      </a>
+      <a href="?show=all" class="tab {% if show == 'all' %}active{% endif %}">All <span class="badge">{{ counts.all }}</span></a>
+      <a href="?show=available" class="tab {% if show == 'available' %}active{% endif %}">Available <span class="badge">{{ counts.available }}</span></a>
+      <a href="?show=rented" class="tab {% if show == 'rented' %}active{% endif %}">Rented <span class="badge">{{ counts.rented }}</span></a>
+      <a href="?show=maintenance" class="tab {% if show == 'maintenance' %}active{% endif %}">Under Maintenance <span class="badge">{{ counts.maintenance }}</span></a>
+      <a href="?show=repair" class="tab {% if show == 'repair' %}active{% endif %}">Under Repair <span class="badge">{{ counts.repair }}</span></a>
     </div>
   </div>
 
-  <!-- Table wrapper for horizontal scroll on mobile -->
+  <!-- Table -->
   <div class="table-wrap">
     <table class="inventory-table">
       <thead>
@@ -50,8 +39,7 @@
           <th>Qty Rented</th>
           <th>Under Maint</th>
           <th>Under Repair</th>
-          <th>Condition</th>
-          <th style="min-width: 420px">Actions</th>
+          <th style="min-width: 250px">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -68,16 +56,10 @@
           <td>{{ equipment.qty_maintenance }}</td>
           <td>{{ equipment.qty_repair }}</td>
           <td>
-            <span class="chip {{ equipment.condition|lower|slugify }}">
-              {{ equipment.condition }}
-            </span>
-          </td>
-          <td>
-            <form method="POST" action="{% url 'update_inventory' equipment.id %}">
+            <form method="POST" class="inventory-form" action="{% url 'update_inventory' equipment.id %}">
               {% csrf_token %}
               <div class="actions-row">
                 <input type="number" name="qty" min="1" value="1" class="qty-input">
-                <input type="text" name="note" placeholder="Note" class="note-input">
 
                 <div class="btn-group">
                   <button type="submit" name="action" value="add_stock" class="btn success">+ Stock</button>
@@ -98,12 +80,39 @@
           </td>
         </tr>
         {% empty %}
-        <tr><td colspan="7">No equipment available.</td></tr>
+        <tr><td colspan="6">No equipment available.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.querySelectorAll('.inventory-form').forEach(form => {
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+
+    const actionBtn = e.submitter;
+    let actionText = actionBtn.textContent.trim();
+
+    Swal.fire({
+      title: 'Confirm Action?',
+      text: `Are you sure you want to "${actionText}"?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#0d6efd',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, proceed'
+    }).then((result) => {
+      if(result.isConfirmed){
+        form.submit();
+      }
+    });
+  });
+});
+</script>
+</script>
 
 <style>
 /* Design tokens */

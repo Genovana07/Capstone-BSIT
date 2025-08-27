@@ -38,13 +38,14 @@
 
 <!-- Charts Section -->
 <section class="charts">
-  <div class="chart-box bar-chart">
+  <!-- Row 1 -->
+  <div class="chart-box">
     <h2>Popular Packages</h2>
     <p>Most booked sound packages</p>
     <canvas id="packageChart"></canvas>
   </div>
 
-  <div class="chart-box donut-chart">
+  <div class="chart-box">
     <h2>Booking Status</h2>
     <p>Completed, Processing, Canceled, etc.</p>
     <canvas id="statusChart"></canvas>
@@ -55,25 +56,36 @@
                                  {% elif forloop.counter0 == 2 %}#F59E0B
                                  {% elif forloop.counter0 == 3 %}#F87171
                                  {% elif forloop.counter0 == 4 %}#A78BFA
-                                 {% else %}#F472B6{% endif %}">
-        </span> {{ item.status }} - {{ item.count }}</li>
+                                 {% else %}#F472B6{% endif %}"></span>
+        {{ item.status }} - {{ item.count }}</li>
       {% endfor %}
     </ul>
   </div>
 
-  <div class="chart-box line-chart">
+  <!-- Row 2 -->
+  <div class="chart-box">
     <h2>Bookings Per Month</h2>
     <p>Monthly booking trends</p>
     <canvas id="monthlyChart"></canvas>
   </div>
 
-  <!-- Placeholder Box -->
-  <div class="chart-box placeholder">
-    <h2>Coming Soon</h2>
-    <p>Another chart or analytics here</p>
+  <div class="chart-box feedback-analytics">
+    <h2>Customer Feedback Summary</h2>
+    <p>Aggregated metrics from all reviews</p>
+    <div class="review-summary">
+      <div class="review-count">
+        <h3>Total Reviews</h3>
+        <p class="review-number">{{ reviews.count }}</p>
+      </div>
+      <div class="average-rating">
+        <h3>Average Rating</h3>
+        <p class="rating-number">{{ average_rating|default:"0" }} ★</p>
+        <span>Overall Satisfaction</span>
+      </div>
+    </div>
+    <canvas id="feedbackChart" height="300"></canvas>
   </div>
 </section>
-
 
 <!-- Customer Feedback Section -->
 <section class="customer-feedback">
@@ -121,75 +133,46 @@
   </div>
 </section>
 
-<!-- Chart.js -->
+<!-- Chart.js + DataLabels Plugin -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+
 <script>
   const packageData = {{ package_popularity|safe }};
   const statusData = {{ status_data|safe }};
   const monthlyData = {{ bookings_per_month|safe }};
 
-  // Bar Chart
-  const packageLabels = packageData.map(p => p["package__title"]);
-  const packageCounts = packageData.map(p => p.count);
-
+  // Popular Packages
   new Chart(document.getElementById('packageChart'), {
     type: 'bar',
     data: {
-      labels: packageLabels,
-      datasets: [{
-        label: 'Bookings',
-        data: packageCounts,
-        backgroundColor: '#60A5FA',
-        borderRadius: 6
-      }]
+      labels: packageData.map(p => p["package__title"]),
+      datasets: [{ label: 'Bookings', data: packageData.map(p => p.count), backgroundColor: '#60A5FA', borderRadius: 6 }]
     },
-    options: {
-      responsive: true,
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            stepSize: 1
-          }
-        }
-      }
-    }
+    options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
   });
 
-  // Donut Chart
-  const statusLabels = statusData.map(s => s.status);
-  const statusCounts = statusData.map(s => s.count);
-
+  // Booking Status
   new Chart(document.getElementById('statusChart'), {
     type: 'doughnut',
     data: {
-      labels: statusLabels,
-      datasets: [{
-        data: statusCounts,
-        backgroundColor: ['#34D399','#60A5FA','#F59E0B','#F87171','#A78BFA','#F472B6'],
-        borderWidth: 1
-      }]
+      labels: statusData.map(s => s.status),
+      datasets: [{ data: statusData.map(s => s.count), backgroundColor: ['#34D399','#60A5FA','#F59E0B','#F87171','#A78BFA','#F472B6'], borderWidth: 1 }]
     },
-    options: {
-      responsive: true,
-      cutout: '65%'
-    }
+    options: { responsive: true, cutout: '65%' }
   });
 
-  // Line Chart
-  const monthLabels = monthlyData.map(m => {
-    const date = new Date(m.month);
-    return date.toLocaleString('default', { month: 'short' }) + ' ' + date.getFullYear();
-  });
-  const monthCounts = monthlyData.map(m => m.count);
-
+  // Monthly Bookings
   new Chart(document.getElementById('monthlyChart'), {
     type: 'line',
     data: {
-      labels: monthLabels,
+      labels: monthlyData.map(m => {
+        const date = new Date(m.month);
+        return date.toLocaleString('default', { month: 'short' }) + ' ' + date.getFullYear();
+      }),
       datasets: [{
         label: 'Monthly Bookings',
-        data: monthCounts,
+        data: monthlyData.map(m => m.count),
         fill: true,
         borderColor: '#10b981',
         backgroundColor: 'rgba(16, 185, 129, 0.2)',
@@ -197,284 +180,98 @@
         pointRadius: 4
       }]
     },
+    options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+  });
+
+  // Feedback Metrics
+  new Chart(document.getElementById('feedbackChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Quality','Timeliness','Professionalism','Value for Money'],
+      datasets: [{
+        label: 'Average Rating',
+        data: [
+          {{ avg_quality|default:"0" }},
+          {{ avg_timeliness|default:"0" }},
+          {{ avg_professionalism|default:"0" }},
+          {{ avg_value_for_money|default:"0" }}
+        ],
+        backgroundColor: ['rgba(16,185,129,0.6)','rgba(59,130,246,0.6)','rgba(251,191,36,0.6)','rgba(239,68,68,0.6)'],
+        borderColor: ['#10b981','#3b82f6','#fbbf24','#ef4444'],
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
     options: {
       responsive: true,
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            stepSize: 1
-          }
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          anchor: 'end',
+          align: 'end',
+          color: '#111827',
+          font: { weight: 'bold', size: 14 }
         }
-      }
-    }
+      },
+      scales: { y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } } }
+    },
+    plugins: [ChartDataLabels]
   });
 </script>
 
 <!-- Styles -->
 <style>
-body {
-  font-family: 'Inter', sans-serif;
-  background: #f8fafc;
-  color: #1e293b;
-  line-height: 1.5;
-}
+body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.5; }
+h2 { font-size: 22px; font-weight: 600; color: #111827; margin-bottom: 15px; }
 
-/* Section Titles */
-h2 {
-  font-size: 22px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 15px;
-}
-
-/* === Cards Styling === */
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 25px;
-  margin-top: 30px;
-}
-
-.card {
-  padding: 25px;
-  border-radius: 16px;
-  font-size: 18px;
-  font-weight: 500;
-  color: white;
-  text-align: center;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-  cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.card:hover {
-  transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 10px 18px rgba(0,0,0,0.15);
-}
-
-.card i {
-  font-size: 28px;
-  margin-bottom: 10px;
-  opacity: 0.9;
-}
-
-.card span {
-  font-size: 26px;
-  font-weight: bold;
-  margin-top: 10px;
-  display: block;
-}
-
-/* Gradient Backgrounds for Cards */
+/* Cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; margin-top: 30px; }
+.card { padding: 25px; border-radius: 16px; font-size: 18px; font-weight: 500; color: white; text-align: center; box-shadow: 0 6px 12px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 10px 18px rgba(0,0,0,0.15); }
+.card i { font-size: 28px; margin-bottom: 10px; opacity: 0.9; }
+.card span { font-size: 26px; font-weight: bold; margin-top: 10px; display: block; }
 .card-booking { background: linear-gradient(135deg, #34D399, #059669); }
 .card-revenue { background: linear-gradient(135deg, #60A5FA, #2563eb); }
 .card-profit { background: linear-gradient(135deg, #F59E0B, #d97706); }
 .card-pending { background: linear-gradient(135deg, #F87171, #dc2626); }
 
-/* === Quick Actions === */
-.quick-actions {
-  margin-top: 50px;
-  background: #fff;
-  padding: 25px;
-  border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-}
+/* Quick Actions */
+.quick-actions { margin-top: 50px; background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
+.quick-actions .actions { display: flex; gap: 15px; flex-wrap: wrap; }
+.quick-actions .actions button { flex: 1; padding: 12px 24px; background: linear-gradient(135deg, #34D399, #10b981); color: white; border: none; border-radius: 10px; font-weight: 500; cursor: pointer; transition: background 0.3s, transform 0.2s; }
+.quick-actions .actions button:hover { background: linear-gradient(135deg, #2563eb, #3b82f6); transform: translateY(-3px); }
 
-.quick-actions h2 {
-  font-size: 20px;
-  margin-bottom: 20px;
-}
+/* Recent Activity */
+.recent-activity { margin-top: 40px; background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 8px rgba(0,0,0,0.06); }
+.recent-activity li { margin: 10px 0; padding: 10px; background: #f9fafb; border-radius: 8px; transition: background 0.2s; }
+.recent-activity li:hover { background: #e0f2fe; }
 
-.quick-actions .actions {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-}
+/* Charts */
+.charts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; margin-top: 40px; }
+.chart-box { padding: 25px; background: #fff; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); min-height: 350px; }
+#packageChart, #statusChart, #monthlyChart, #feedbackChart { width: 100% !important; height: 300px !important; }
 
-.quick-actions .actions button {
-  flex: 1;
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #34D399, #10b981);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
-}
+/* Customer Feedback */
+.customer-feedback { margin-top: 40px; background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
+.feedback-summary { display: flex; gap: 30px; flex-wrap: wrap; }
+.feedback-item { flex: 1; padding: 20px; background: #f9fafb; border-radius: 12px; transition: background 0.2s; }
+.feedback-item:hover { background: #e0f2fe; }
 
-.quick-actions .actions button:hover {
-  background: linear-gradient(135deg, #2563eb, #3b82f6);
-  transform: translateY(-3px);
-}
+/* Upcoming Events */
+.upcoming-events { margin-top: 40px; background: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
+.event-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.event-item { display: flex; gap: 15px; align-items: center; padding: 20px; border-radius: 12px; background: #f9fafb; box-shadow: 0 4px 8px rgba(0,0,0,0.05); transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.event-item:hover { transform: translateY(-5px); box-shadow: 0 8px 14px rgba(0,0,0,0.12); }
+.event-date { background: linear-gradient(135deg, #60A5FA, #2563eb); color: white; border-radius: 8px; padding: 12px 16px; text-align: center; min-width: 60px; box-shadow: inset 0 -2px 4px rgba(0,0,0,0.15); }
+.event-date .day { font-size: 22px; font-weight: bold; display: block; }
+.event-date .month { font-size: 14px; text-transform: uppercase; }
+.event-details h3 { font-size: 18px; font-weight: 600; margin-bottom: 6px; color: #111827; }
+.event-details p { font-size: 14px; color: #4b5563; margin: 3px 0; display: flex; align-items: center; }
+.event-details i { color: #2563eb; margin-right: 6px; }
 
-/* === Recent Activity === */
-.recent-activity {
-  margin-top: 40px;
-  background: #fff;
-  padding: 20px;
-  border-radius: 16px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.06);
-}
-
-.recent-activity ul {
-  margin-top: 10px;
-}
-
-.recent-activity li {
-  margin: 10px 0;
-  padding: 10px;
-  background: #f9fafb;
-  border-radius: 8px;
-  transition: background 0.2s;
-}
-
-.recent-activity li:hover {
-  background: #e0f2fe;
-}
-
-/* === Charts Section === */
-.charts {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 30px;
-  margin-top: 40px;
-}
-
-.chart-box {
-  padding: 25px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-}
-
-.chart-box h2 {
-  font-size: 18px;
-  margin-bottom: 10px;
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.chart-box p {
-  font-size: 14px;
-  color: #6b7280;
-  margin-bottom: 15px;
-}
-
-#packageChart, #statusChart, #monthlyChart {
-  height: 320px !important;
-}
-
-/* === Customer Feedback Section === */
-.customer-feedback {
-  margin-top: 40px;
-  background: #fff;
-  padding: 25px;
-  border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-}
-
-.feedback-summary {
-  display: flex;
-  gap: 30px;
-  flex-wrap: wrap;
-}
-
-.feedback-item {
-  flex: 1;
-  padding: 20px;
-  background: #f9fafb;
-  border-radius: 12px;
-  transition: background 0.2s;
-}
-
-.feedback-item:hover {
-  background: #e0f2fe;
-}
-
-.feedback-item h3 {
-  font-size: 18px;
-  margin-bottom: 10px;
-}
-
-/* === Upcoming Events Section === */
-.upcoming-events {
-  margin-top: 40px;
-  background: #fff;
-  padding: 25px;
-  border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-}
-
-.upcoming-events h2 {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 20px;
-}
-
-.event-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.event-item {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  padding: 20px;
-  border-radius: 12px;
-  background: #f9fafb;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.event-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 14px rgba(0,0,0,0.12);
-}
-
-.event-date {
-  background: linear-gradient(135deg, #60A5FA, #2563eb);
-  color: white;
-  border-radius: 8px;
-  padding: 12px 16px;
-  text-align: center;
-  min-width: 60px;
-  box-shadow: inset 0 -2px 4px rgba(0,0,0,0.15);
-}
-
-.event-date .day {
-  font-size: 22px;
-  font-weight: bold;
-  display: block;
-}
-
-.event-date .month {
-  font-size: 14px;
-  text-transform: uppercase;
-}
-
-.event-details h3 {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 6px;
-  color: #111827;
-}
-
-.event-details p {
-  font-size: 14px;
-  color: #4b5563;
-  margin: 3px 0;
-  display: flex;
-  align-items: center;
-}
-
-.event-details i {
-  color: #2563eb;
-  margin-right: 6px;
-}
+/* Legend Dots */
+.legend { list-style: none; padding: 0; margin: 15px 0 0 0; display: flex; flex-wrap: wrap; gap: 15px; }
+.legend li { display: flex; align-items: center; font-size: 14px; color: #374151; }
+.legend .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
 </style>
-
 {% endblock %}

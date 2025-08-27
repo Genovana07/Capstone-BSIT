@@ -1,0 +1,181 @@
+{% extends "client-base.html" %}
+{% block title %}Equipment Checklist{% endblock %}
+
+{% block content %}
+<div class="checklist-container">
+    <h2>Equipment Checklist</h2>
+    <div class="table-wrapper">
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Package</th>
+                    <th>Customer</th>
+                    <th>Event Date</th>
+                    <th>Location</th>
+                    <th>Checklist</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                    <tr>
+                        <td>{{ booking.package.title }}</td>
+                        <td>{{ booking.full_name }}</td>
+                        <td>{{ booking.event_date }}</td>
+                        <td>{{ booking.location }}</td>
+                        <td>
+                            <a href="{% url 'checklist_detail' booking.id %}" class="btn-view">View Checklist</a>
+                        </td>
+                        <td>
+                            {% if booking.checklist.is_confirmed %}
+                                <span class="status confirmed">✅ Confirmed</span>
+                            {% else %}
+                                <span class="status pending">❌ Pending</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="no-data">No accepted bookings yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+/* 🌞 Light Mode */
+.checklist-container {
+    margin: 30px 0;
+}
+
+.checklist-container h2 {
+    font-size: 24px;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Table Style */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 16px;
+    text-align: left;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.styled-table thead {
+    background: #f5f5f5;
+}
+
+.styled-table th {
+    font-weight: 600;
+    border-bottom: 2px solid #ddd;
+}
+
+.styled-table tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.styled-table tbody tr:hover {
+    background-color: #e6f2ff; /* Highlight row */
+}
+
+/* Buttons */
+.btn-view {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #3498db;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    transition: background 0.3s ease;
+}
+.btn-view:hover {
+    background-color: #217dbb;
+}
+
+/* Status Labels */
+.status {
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+.status.confirmed {
+    background-color: #d4edda;
+    color: #155724;
+}
+.status.pending {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* No Data Row */
+.no-data {
+    text-align: center;
+    font-style: italic;
+    color: #888;
+}
+
+/* 🌙 Dark Mode */
+body.dark-mode .checklist-container h2 {
+    color: #e0e0e0;
+}
+
+body.dark-mode .styled-table {
+    background: #2c2f38;
+    color: #e0e0e0;
+}
+
+body.dark-mode .styled-table thead {
+    background: #333;
+}
+
+body.dark-mode .styled-table th {
+    border-bottom: 2px solid #444;
+    color: #f0f0f0;
+}
+
+body.dark-mode .styled-table tbody tr:nth-child(even) {
+    background-color: #3a3d46;
+}
+
+body.dark-mode .styled-table tbody tr:hover {
+    background-color: #50535c;
+}
+
+body.dark-mode .btn-view {
+    background-color: #2980b9;
+}
+body.dark-mode .btn-view:hover {
+    background-color: #1c5982;
+}
+
+body.dark-mode .status.confirmed {
+    background-color: #264d3b;
+    color: #80ffb0;
+}
+body.dark-mode .status.pending {
+    background-color: #5a2e2e;
+    color: #ff9999;
+}
+
+body.dark-mode .no-data {
+    color: #bbb;
+}
+</style>
+{% endblock %}

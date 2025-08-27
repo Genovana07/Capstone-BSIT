@@ -247,3 +247,21 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review by {self.customer_name} on {self.booking_date}"
+    
+class BookingChecklist(models.Model):
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name="checklist")
+    is_confirmed = models.BooleanField(default=False)  # Kung na-confirm na lahat ng equipment
+
+    def __str__(self):
+        return f"Checklist for Booking {self.booking.id}"
+
+
+class ChecklistItem(models.Model):
+    checklist = models.ForeignKey(BookingChecklist, on_delete=models.CASCADE, related_name="items")
+    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
+    quantity_required = models.IntegerField()
+    quantity_received = models.IntegerField(default=0)
+    confirmed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.equipment.name} - {self.quantity_received}/{self.quantity_required}"

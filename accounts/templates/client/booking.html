@@ -50,83 +50,88 @@
             <th>Action</th>
         </tr>
     </thead>
-    <tbody>
-        {% for booking in bookings %}
-            <tr>
-                <td>{{ booking.package.title }}</td>
-                <td>{{ booking.full_name }}</td>
-                <td>{{ booking.event_type }}</td>
-                <td>{{ booking.event_date }}</td>
-                <td>{{ booking.location }}</td>
-                <td>
-                    <span class="badge 
-                        {% if booking.status == 'Processing' %}processing
-                        {% elif booking.status == 'Accepted' %}accepted
-                        {% elif booking.status == 'Rejected' %}rejected
-                        {% elif booking.status == 'Cancelled' %}cancelled
-                        {% else %}not-processed{% endif %}">
-                        {{ booking.status }}
-                    </span>
-                </td>
-                <td>{{ booking.price }}</td>
-                <td class="actions">
-                    <a href="javascript:void(0);" class="view" onclick="openModal({{ booking.id }})">
-                        <i class="fa fa-eye"></i> View
-                    </a>
-                    {% if booking.status == 'Processing' %}
-                        <a href="javascript:void(0);" class="accept" 
-                        onclick="confirmAction('{% url 'accept_booking' booking.id %}', 'accept')">
-                            <i class="fa fa-check"></i> Accept
-                        </a>
-                        <a href="javascript:void(0);" class="reject"
-                        onclick="rejectBooking('{% url 'reject_booking' booking.id %}')">
-                        <i class="fa fa-times"></i> Reject
-                        </a>
-                    {% endif %}
+<tbody>
+{% for booking in bookings %}
+<tr>
+    <td>{{ booking.package.title }}</td>
+    <td>{{ booking.full_name }}</td>
+    <td>{{ booking.event_type }}</td>
+    <td>{{ booking.event_date }}</td>
+    <td>{{ booking.location }}</td>
+    <td>
+        <span class="badge 
+            {% if booking.status == 'Processing' %}processing
+            {% elif booking.status == 'Accepted' %}accepted
+            {% elif booking.status == 'Rejected' %}rejected
+            {% elif booking.status == 'Cancelled' %}cancelled
+            {% else %}not-processed{% endif %}">
+            {{ booking.status }}
+        </span>
+    </td>
+    <td>{{ booking.price }}</td>
+    <td class="actions">
+        <!-- View Button -->
+        <a href="javascript:void(0);" class="view" onclick="openModal({{ booking.id }})">
+            <i class="fa fa-eye"></i> View
+        </a>
 
-                    {% if booking.status == 'Accepted' %}
-                    <a href="javascript:void(0);" class="complete" 
-                     onclick="confirmAction('{% url 'complete_booking' booking.id %}', 'complete')">
-                <i class="fa fa-check-circle"></i> Complete
-                    </a>
-                {% endif %}
-                </td>
-            </tr>
+        <!-- Accept / Reject Buttons -->
+        {% if booking.status == 'Processing' %}
+            <a href="javascript:void(0);" class="accept" onclick="confirmAction('{% url 'accept_booking' booking.id %}', 'accept')">
+                <i class="fa fa-check"></i> Accept
+            </a>
+            <a href="javascript:void(0);" class="reject" onclick="rejectBooking('{% url 'reject_booking' booking.id %}')">
+                <i class="fa fa-times"></i> Reject
+            </a>
+        {% elif booking.status == 'Accepted' %}
+            <!-- Complete Button logic -->
+            {% if booking.checklist.is_confirmed %}
+                <a href="javascript:void(0);" class="complete" onclick="confirmAction('{% url 'complete_booking' booking.id %}', 'complete')">
+                    <i class="fa fa-check-circle"></i> Complete
+                </a>
+            {% else %}
+                <button class="btn btn-secondary" disabled>
+                    <i class="fa fa-check-circle"></i> Complete (Pending Checklist)
+                </button>
+            {% endif %}
+        {% endif %}
+    </td>
+</tr>
 
-            <!-- Modal for View -->
-            <div id="viewModal{{ booking.id }}" class="modal">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Booking Details for {{ booking.package.title }}</h5>
-                            <button type="button" class="btn-close" onclick="closeModal({{ booking.id }})"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p><strong>Full Name:</strong> {{ booking.full_name }}</p>
-                            <p><strong>Email:</strong> {{ booking.email }}</p>
-                            <p><strong>Contact Number:</strong> {{ booking.contact_number }}</p>
-                            <p><strong>Event Date:</strong> {{ booking.event_date }}</p>
-                            <p><strong>Event Time:</strong> {{ booking.event_time }}</p>
-                            <p><strong>End Time:</strong> {{ booking.end_time|time:"g:i A" }}</p>
-                            <p><strong>Event Type:</strong> {{ booking.event_type }}</p>
-                            <p><strong>Location:</strong> {{ booking.location }}</p>
-                            <p><strong>Full Address:</strong> {{ booking.fulladdress}}</p>
-                            <p><strong>Audience Size:</strong> {{ booking.audience_size }}</p>
-                            <p><strong>Status:</strong> {{ booking.status }}</p>
-                            <p><strong>Reason for Cancellation:</strong> {{ booking.cancel_reason }}</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary close-btn" onclick="closeModal({{ booking.id }})">Close</button>
-                        </div>
-                    </div>
-                </div>
+<!-- Modal for View -->
+<div id="viewModal{{ booking.id }}" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Booking Details for {{ booking.package.title }}</h5>
+                <button type="button" class="btn-close" onclick="closeModal({{ booking.id }})">&times;</button>
             </div>
-        {% empty %}
-            <tr>
-                <td colspan="9">You have no bookings yet.</td>
-            </tr>
-        {% endfor %}
-    </tbody>
+            <div class="modal-body">
+                <p><strong>Full Name:</strong> {{ booking.full_name }}</p>
+                <p><strong>Email:</strong> {{ booking.email }}</p>
+                <p><strong>Contact Number:</strong> {{ booking.contact_number }}</p>
+                <p><strong>Event Date:</strong> {{ booking.event_date }}</p>
+                <p><strong>Event Time:</strong> {{ booking.event_time }}</p>
+                <p><strong>End Time:</strong> {{ booking.end_time|time:"g:i A" }}</p>
+                <p><strong>Event Type:</strong> {{ booking.event_type }}</p>
+                <p><strong>Location:</strong> {{ booking.location }}</p>
+                <p><strong>Full Address:</strong> {{ booking.fulladdress}}</p>
+                <p><strong>Audience Size:</strong> {{ booking.audience_size }}</p>
+                <p><strong>Status:</strong> {{ booking.status }}</p>
+                <p><strong>Reason for Cancellation:</strong> {{ booking.cancel_reason }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="close-btn" onclick="closeModal({{ booking.id }})">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% empty %}
+<tr>
+    <td colspan="9">You have no bookings yet.</td>
+</tr>
+{% endfor %}
+</tbody>
 </table>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

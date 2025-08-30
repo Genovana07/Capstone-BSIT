@@ -9,10 +9,10 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('services/', views.services_view, name='services'),
     path('aboutus/', views.aboutus, name='aboutus'),
-    path('contactus/', views.contactus, name='contactus'),
     path('register/', views.register_view, name='register'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+    path("contact/", views.contactus, name="contactus"),
 
     # User pages (login required)
     path('profile/', views.profile, name='profile'),

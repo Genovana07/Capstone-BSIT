@@ -33,6 +33,7 @@ from django.db.models.functions import Coalesce
 from django.core.paginator import Paginator
 from .models import Booking
 from .models import BookingChecklist, ChecklistItem
+from .models import ContactMessage
 
 def register_view(request):
     if request.method == "POST":
@@ -449,9 +450,38 @@ def aboutus(request):
     return render(request, "accounts/aboutus.html", {'team_members': team_members})
 
 # Contact Us Page
-def contactus(request):
-    return render(request, "accounts/contactus.html")
 
+
+def contactus(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        subject = request.POST.get("subject")
+        message = request.POST.get("message")
+
+        # Save to DB
+        ContactMessage.objects.create(
+            name=name,
+            email=email,
+            subject=subject,
+            message=message
+        )
+
+        # Send email to admin
+        send_mail(
+            subject=f"New Inquiry: {subject}",
+            message=f"From: {name} <{email}>\n\nMessage:\n{message}",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.DEFAULT_FROM_EMAIL],  # admin email
+            fail_silently=False,
+        )
+
+        # Flash message
+        messages.success(request, "✅ Your message has been sent successfully!")
+        return redirect("contactus")  # dapat tugma ito sa urls.py name="contactus"
+
+    # GET request → render template
+    return render(request, "accounts/contactus.html")
 @login_required
 def profile(request):
     user = request.user

@@ -4,6 +4,7 @@
 {% block title %}Contact Us{% endblock %}
 
 {% block content %}
+
 <div class="contact-container">
     <!-- Left Section -->
     <div class="contact-left">
@@ -37,13 +38,19 @@
 
         <div class="social-icons">
             <p>FOLLOW US</p>
-            <img src="{% static 'images/facebook.png' %}" alt="Facebook" class="social-icon" />
-            <img src="{% static 'images/instagram.png' %}" alt="Instagram" class="social-icon" />
-            <img src="{% static 'images/youtube.png' %}" alt="YouTube" class="social-icon" />
+            <a href="https://www.facebook.com/" target="_blank">
+                <img src="{% static 'images/facebook.png' %}" alt="Facebook" class="social-icon" />
+            </a>
+            <a href="https://www.instagram.com/" target="_blank">
+                <img src="{% static 'images/instagram.png' %}" alt="Instagram" class="social-icon" />
+            </a>
+            <a href="https://www.youtube.com/" target="_blank">
+                <img src="{% static 'images/youtube.png' %}" alt="YouTube" class="social-icon" />
+            </a>
         </div>
     </div>
 
-    <!-- Right Section - Contact Form -->
+    <!-- Contact Form -->
     <div class="contact-right">
         <h2 class="contact-form-title">Your Details</h2>
         <p>Let us know how to get back to you.</p>
@@ -76,7 +83,7 @@
     </div>
 </div>
 
-<!-- Footer (you can move this to base.html if shared across pages) -->
+<!-- Footer -->
 <footer class="footer">
     <div class="logo">
         <span style="color: white; font-weight: bold; font-size: 1.5rem;">AUDIO</span><span style="background-color: #f1c40f; color: black; font-weight: bold; padding: 2px 6px; margin-left: 4px; border-radius: 3px; font-size: 1.5rem;">MAN</span><br>
@@ -101,6 +108,35 @@
         <p>+63 912 345 6789</p>
     </div>
 </footer>
+<div class="footer-bottom">
+  © 2025 Audioman. All Rights Reserved.
+</div>
 
 <link rel="stylesheet" href="{% static 'css/contactus.css' %}">
+
+<!-- ✅ Inline Notification Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageBox = document.getElementById('message-box');
+    const msg = messageBox.getAttribute('data-message');
+    const tag = messageBox.getAttribute('data-tags');
+
+    if (msg) {
+        messageBox.textContent = msg;
+        if (tag === 'success') {
+            messageBox.classList.add('alert-success');
+        } else {
+            messageBox.classList.add('alert-error');
+        }
+        messageBox.style.display = 'block';
+
+        // Auto hide after 3.5 seconds
+        setTimeout(function() {
+            messageBox.style.opacity = '0';
+            setTimeout(() => messageBox.style.display = 'none', 500);
+        }, 3500);
+    }
+});
+</script>
+
 {% endblock %}

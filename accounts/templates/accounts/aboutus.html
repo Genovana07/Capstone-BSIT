@@ -18,7 +18,8 @@
         <span class="short-text">
           Audioman originated as a modest passion project established by a group of individuals who shared a deep appreciation for music and live events. Equipped with only a few speakers and basic lighting equipment, the team initially supported intimate gatherings and community programs.
         </span>
-        <span class="more-text">
+        <span class="dots">...</span>
+        <span class="more-text" style="display: none;">
           As their reputation for quality and reliability grew, opportunities expanded from private occasions such as birthdays and weddings to larger-scale functions. This steady demand allowed Audioman to enhance its equipment, refine its services, and broaden its professional team.
 
           Over time, the company transitioned from handling small productions to delivering comprehensive event solutions. Today, Audioman is recognized as a trusted provider of premium sound and lighting services, supporting concerts, festivals, corporate functions, and other major events within local communities and nearby cities.
@@ -66,7 +67,7 @@
 <section class="team-section">
   <h2 class="team-title">Meet <span>Our Team</span></h2>
   <p class="team-description">
-      We are a passionate team dedicated to delivering outstanding service and unforgettable event experiences.
+    We are a passionate team dedicated to delivering outstanding service and unforgettable event experiences.
   </p>
 
   <div class="team-carousel-wrapper">
@@ -135,56 +136,34 @@
 
 <link rel="stylesheet" href="{% static 'css/aboutus.css' %}">
 
-<!-- ✅ Read More Toggle Script -->
+<!-- ✅ Clean Read More Toggle Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.text-box').forEach(function (box) {
-    const btn  = box.querySelector('.read-more');
-    const para = box.querySelector('h2 + p');
-    if (!btn || !para) return;
+    const btn   = box.querySelector('.read-more');
+    const dots  = box.querySelector('.dots');
+    const more  = box.querySelector('.more-text');
 
-    let dots = para.querySelector('.dots');
-    let more = para.querySelector('.more-text');
+    if (!btn || !dots || !more) return;
 
-    if (!more) {
-      const full = (para.textContent || '').trim().replace(/\s+/g, ' ');
-      const match = full.match(/^(.+?[.!?])\s*(.*)$/);
-      if (!match || !match[2]) {
-        btn.style.display = 'none';
-        return;
-      }
-      const shortText = match[1];
-      const restText  = match[2];
-      para.textContent = '';
-      para.appendChild(document.createTextNode(shortText + ' '));
-
-      dots = document.createElement('span');
-      dots.className = 'dots';
-      dots.textContent = '...';
-      para.appendChild(dots);
-
-      more = document.createElement('span');
-      more.className = 'more-text';
-      more.textContent = ' ' + restText;
-      more.style.display = 'none';
-      para.appendChild(more);
-    } else {
-      more.style.display = 'none';
-      if (dots) dots.style.display = 'inline';
-    }
-
+    // Initial state
+    more.style.display = 'none';
+    dots.style.display = 'inline';
     btn.innerHTML = '&#9698; Read more';
 
     btn.addEventListener('click', function () {
       const expanded = more.style.display !== 'none';
+
       if (expanded) {
+        // Collapse
         more.style.display = 'none';
-        if (dots) dots.style.display = 'inline';
-        this.innerHTML = '&#9698; Read more';
+        dots.style.display = 'inline';
+        btn.innerHTML = '&#9698; Read more';
       } else {
+        // Expand
         more.style.display = 'inline';
-        if (dots) dots.style.display = 'none';
-        this.innerHTML = '&#9650; Read less';
+        dots.style.display = 'none';
+        btn.innerHTML = '&#9650; Read less';
       }
     });
   });

@@ -9,12 +9,13 @@
     <div class="title-line"></div>
     <div class="services-grid">
         {% for package in packages %}
+        <!-- Service Item Card -->
         <div class="service-item">
-            <img src="{% static 'images/package' %}{{ forloop.counter }}.png" alt="Service Image">
+            <img src="{% static 'images/package' %}{{ forloop.counter }}.png" alt="Service Image" onclick="openModal({{ forloop.counter }})">
             <h3>Package {{ forloop.counter }}: {{ package.title }}</h3>
-            <p>{{ package.description }}</p>
+            <p>{{ package.description|truncatechars:60 }}</p>
             <p><strong>Price: </strong>{{ package.price }}</p>
-            
+
             <div class="equipment-list" style="display: none;">
                 <h4>Included Equipment:</h4>
                 <ul>
@@ -23,17 +24,46 @@
                     {% endfor %}
                 </ul>
             </div>
-            
+
             <button class="see-more-btn" onclick="toggleEquipmentVisibility({{ forloop.counter }})">
                 See More
             </button>
 
             {% if user.is_authenticated %}
-                <button class="book-now" data-package="Package {{ forloop.counter }}" 
-                        onclick="confirmOpenBookingForm('{{ package.title }}')">Book Now</button>
+                <button class="book-now" onclick="confirmOpenBookingForm('{{ package.title }}')">Book Now</button>
             {% else %}
                 <button class="login-first" onclick="window.location.href='{% url 'login' %}'">Book Now</button>
             {% endif %}
+        </div>
+
+        <!-- Modal -->
+        <div id="modal-{{ forloop.counter }}" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal({{ forloop.counter }})">&times;</span>
+                <div class="modal-body">
+                    <div class="modal-image">
+                        <img src="{% static 'images/package' %}{{ forloop.counter }}.png" alt="Service Image">
+                    </div>
+                    <div class="modal-details">
+                        <h2>{{ package.title }}</h2>
+                        <p class="modal-desc">{{ package.description }}</p>
+                        <p class="modal-price"><strong>Price:</strong> {{ package.price }}</p>
+
+                        <h4>Included Equipment:</h4>
+                        <ul>
+                            {% for item in package.equipment %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+
+                        {% if user.is_authenticated %}
+                            <button class="modal-btn book-now" onclick="confirmOpenBookingForm('{{ package.title }}')">Book Now</button>
+                        {% else %}
+                            <button class="modal-btn login-first" onclick="window.location.href='{% url 'login' %}'">Book Now</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </div>
         {% endfor %}
     </div>
@@ -463,5 +493,171 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
 .see-more-btn:hover {
     background-color: #3a2d7c;
 }
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+}
+
+/* Modal Box */
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  max-width: 800px;
+  width: 95%;
+  padding: 20px;
+  position: relative;
+  animation: zoomIn 0.3s ease;
+}
+
+/* Close Button */
+.close {
+  position: absolute;
+  top: 10px; right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+}
+
+/* ---------------- MODAL STYLES ---------------- */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.65);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 900px;
+  width: 95%;
+  padding: 25px;
+  position: relative;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  animation: zoomIn 0.3s ease;
+}
+
+.close {
+  position: absolute;
+  top: 12px; right: 18px;
+  font-size: 30px;
+  font-weight: bold;
+  color: #555;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.close:hover {
+  color: #000;
+}
+
+.modal-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 25px;
+}
+
+.modal-image {
+  flex: 1 1 40%;
+  text-align: center;
+}
+
+.modal-image img {
+  max-width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.modal-details {
+  flex: 1 1 55%;
+}
+
+.modal-details h2 {
+  margin-bottom: 10px;
+  font-size: 1.6rem;
+  color: #333;
+}
+
+.modal-desc {
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.modal-price {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  color: #222;
+}
+
+.modal-details ul {
+  list-style: disc;
+  padding-left: 20px;
+  margin: 10px 0 20px;
+  color: #444;
+}
+
+/* Buttons inside modal */
+.modal-btn {
+  display: inline-block;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.modal-btn.book-now {
+  background: #23194f;
+  color: white;
+}
+
+.modal-btn.book-now:hover {
+  background: #23194f;
+}
+
+.modal-btn.login-first {
+  background: #607d8b;
+  color: white;
+}
+
+.modal-btn.login-first:hover {
+  background: #455a64;
+}
+
+/* Zoom Animation */
+@keyframes zoomIn {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
 </style>
+
+<script>
+function openModal(id) {
+    document.getElementById("modal-" + id).style.display = "flex";
+}
+function closeModal(id) {
+    document.getElementById("modal-" + id).style.display = "none";
+}
+window.onclick = function(event) {
+    document.querySelectorAll('.modal').forEach(modal => {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+}
+</script>
 {% endblock %}

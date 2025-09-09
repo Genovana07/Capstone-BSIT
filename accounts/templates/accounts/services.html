@@ -7,52 +7,81 @@
 <section class="services">
     <h2>OUR SERVICES</h2>
     <div class="title-line"></div>
+
     <div class="services-grid">
         {% for package in packages %}
-        <!-- Service Item Card -->
-        <div class="service-item">
-            <img src="{% static 'images/package' %}{{ forloop.counter }}.png" alt="Service Image" onclick="openModal({{ forloop.counter }})">
-            <h3>Package {{ forloop.counter }}: {{ package.title }}</h3>
-            <p>{{ package.description|truncatechars:60 }}</p>
-            <p><strong>Price: </strong>{{ package.price }}</p>
+<div class="service-item flex flex-col h-full">
+    <!-- Image -->
+    {% if package.image %}
+        <img src="{{ package.image.url }}" alt="{{ package.title }}">
+    {% else %}
+        <img src="{% static 'images/package' %}{{ forloop.counter }}.png" alt="{{ package.title }}">
+    {% endif %}
 
-            <div class="equipment-list" style="display: none;">
-                <h4>Included Equipment:</h4>
-                <ul>
-                    {% for item in package.equipment %}
-                    <li>{{ item }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
+    <!-- Title -->
+    <h3 class="package-title">{{ package.title }}</h3>
 
-            <button class="see-more-btn" onclick="toggleEquipmentVisibility({{ forloop.counter }})">
-                See More
-            </button>
+    <!-- Price -->
+    <p class="package-price">Price: 
+        {% if package.formatted_price %}
+            {{ package.formatted_price }}
+        {% else %}
+            {{ package.price }}
+        {% endif %}
+    </p>
 
-            {% if user.is_authenticated %}
-                <button class="book-now" onclick="confirmOpenBookingForm('{{ package.title }}')">Book Now</button>
-            {% else %}
-                <button class="login-first" onclick="window.location.href='{% url 'login' %}'">Book Now</button>
-            {% endif %}
-        </div>
+    <!-- Description -->
+    <div class="package-desc text-sm text-gray-700 whitespace-pre-line flex-1">
+        {{ package.description|linebreaksbr }}
+    </div>
 
-        <!-- Modal -->
+    <!-- Bolden Included Equipment -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll(".package-desc").forEach(desc => {
+                desc.innerHTML = desc.innerHTML.replace("Included Equipment:", "<strong>Included Equipment:</strong>");
+            });
+        });
+    </script>
+
+ <!-- Button -->
+    <div class="card-buttons mt-auto">
+        {% if user.is_authenticated %}
+            <button class="book-now w-full" onclick="confirmOpenBookingForm('{{ package.title }}')">Book Now</button>
+        {% else %}
+            <button class="login-first w-full" onclick="window.location.href='{% url 'login' %}'">Book Now</button>
+        {% endif %}
+    </div>
+</div>
+        <!-- Modal for Each Package -->
         <div id="modal-{{ forloop.counter }}" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeModal({{ forloop.counter }})">&times;</span>
                 <div class="modal-body">
                     <div class="modal-image">
-                        <img src="{% static 'images/package' %}{{ forloop.counter }}.png" alt="Service Image">
+                        {% if package.image %}
+                            <img src="{{ package.image.url }}" alt="{{ package.title }}">
+                        {% else %}
+                            <img src="{% static 'images/package' %}{{ forloop.counter }}.png" alt="{{ package.title }}">
+                        {% endif %}
                     </div>
                     <div class="modal-details">
                         <h2>{{ package.title }}</h2>
                         <p class="modal-desc">{{ package.description }}</p>
-                        <p class="modal-price"><strong>Price:</strong> {{ package.price }}</p>
+                        <p class="modal-price"><strong>Price:</strong> 
+                            {% if package.formatted_price %}
+                                {{ package.formatted_price }}
+                            {% else %}
+                                {{ package.price }}
+                            {% endif %}
+                        </p>
 
                         <h4>Included Equipment:</h4>
                         <ul>
-                            {% for item in package.equipment %}
-                            <li>{{ item }}</li>
+                            {% for pe in package.packagedequipment_set.all %}
+                                <li>{{ pe.quantity_required }} × {{ pe.equipment.name }}</li>
+                            {% empty %}
+                                <li>No equipment linked yet.</li>
                             {% endfor %}
                         </ul>
 
@@ -74,69 +103,122 @@
     <div class="booking-content">
         <span class="close-btn" onclick="closeBookingForm()">&times;</span>
         <h2>Book a Service</h2>
-        <form method="POST" action="{% url 'create_booking' %}" id="bookingForm">
+<form method="POST" action="{% url 'create_booking' %}" id="bookingForm">
     {% csrf_token %}
-    
-    <label for="selected_package">Package Selected</label>
-    <input type="text" id="selected_package" name="selected_package" readonly>
 
-    <label for="full_name">Full Name</label>
-    <input type="text" id="full_name" name="full_name" 
-           value="{{ user.first_name }} {{ user.last_name }}" required>
+    <div class="booking-form-grid">
+        <div class="full-width">
+            <label for="selected_package">Package Selected</label>
+            <input type="text" id="selected_package" name="selected_package" readonly>
+        </div>
 
-    <label for="email">Email Address</label>
-    <input type="email" id="email" name="email" value="{{ user.email }}" required>
+        <div>
+            <label for="full_name">Full Name</label>
+            <input type="text" id="full_name" name="full_name" value="{{ user.first_name }} {{ user.last_name }}" required>
+        </div>
 
-    <label for="contact_number">Contact Number</label>
-    <input type="tel" id="contact_number" name="contact_number" 
-           value="{{ profile.contact_number }}" required>
+        <div>
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" value="{{ user.email }}" required>
+        </div>
 
-    <label for="event_date">Event Date</label>
-    <input type="date" id="event_date" name="event_date" required>
+        <div>
+            <label for="contact_number">Contact Number</label>
+            <input type="tel" id="contact_number" name="contact_number" value="{{ profile.contact_number }}" required>
+        </div>
 
-    <label for="event_time">Start Time</label>
-    <select id="event_time" name="event_time" required>
-        <option value="">Select Start Time</option>
-    </select>
+        <div>
+            <label for="event_date">Event Date</label>
+            <input type="date" id="event_date" name="event_date" required>
+        </div>
 
-    <label for="end_time">End Time</label>
-    <select id="end_time" name="end_time" required>
-        <option value="">Select End Time</option>
-    </select>
+        <div>
+            <label for="event_time">Start Time</label>
+            <select id="event_time" name="event_time" required>
+                <option value="">Select Start Time</option>
+            </select>
+        </div>
 
-    <label for="event_type">Type of Event</label>
-    <select id="event_type" name="event_type" required>
-        <option value="">Select</option>
-        <option value="Wedding">Wedding</option>
-        <option value="Birthday">Birthday</option>
-        <option value="Corporate">Corporate</option>
-        <option value="Concert">Concert</option>
-        <option value="Seminar">Seminar</option>
-        <option value="Graduation">Graduation</option>
-        <option value="Awarding Ceremony">Awarding Ceremony</option>
-        <option value="Func raising">Fundraising</option>
-        <option value="Fashion Show">Fashion Show</option>
-        <option value="Church">Church</option>
-        <option value="Conference">Conference</option>
-        <option value="School Even">School Event</option>
-        <option value="Charity Event">Charity Event</option>
-    </select>
+        <div>
+            <label for="end_time">End Time</label>
+            <select id="end_time" name="end_time" required>
+                <option value="">Select End Time</option>
+            </select>
+        </div>
 
-    <label for="location">Event Location City</label>
-    <input type="text" id="location" name="location" 
-           value="{{ profile.city }}" required list="city-suggestions">
+        <div>
+            <label for="event_type">Type of Event</label>
+            <select id="event_type" name="event_type" required>
+                <option value="">Select</option>
+                <option value="Wedding">Wedding</option>
+                <option value="Birthday">Birthday</option>
+                <option value="Corporate">Corporate</option>
+                <option value="Concert">Concert</option>
+                <option value="Seminar">Seminar</option>
+                <option value="Graduation">Graduation</option>
+                <option value="Awarding Ceremony">Awarding Ceremony</option>
+                <option value="Fundraising">Fundraising</option>
+                <option value="Fashion Show">Fashion Show</option>
+                <option value="Church">Church</option>
+                <option value="Conference">Conference</option>
+                <option value="School Event">School Event</option>
+                <option value="Charity Event">Charity Event</option>
+            </select>
+        </div>
 
-    <datalist id="city-suggestions"></datalist>
+        <div>
+            <label for="location">Event Location City</label>
+            <input type="text" id="location" name="location" 
+                   value="{{ profile.city }}" required list="city-suggestions">
+            <datalist id="city-suggestions"></datalist>
+        </div>
 
-    <label for="fulladdress">Full Address</label>
-    <input type="text" id="fulladdress" name="fulladdress" 
-           value="{{ profile.address }}" required>
+        <div class="full-width">
+            <label for="fulladdress">Full Address</label>
+            <input type="text" id="fulladdress" name="fulladdress" 
+                   placeholder="Ex: Purok 3 Sitio Dapdap, Brgy. Dalahican, Lucena City, Quezon"
+                   value="{{ profile.address }}" required>
+        </div>
 
-    <label for="audience_size">Expected Number of Guests</label>
-    <input type="number" id="audience_size" name="audience_size" min="1" required>
+        <div class="full-width">
+            <label for="audience_size">Expected Number of Guests</label>
+            <input type="number" id="audience_size" name="audience_size" min="1" required>
+        </div>
+    </div>
 
     <button type="submit" class="submit-booking">Submit Booking Request</button>
 </form>
+    </div>
+</div>
+
+<!-- Toggle Script -->
+<script>
+function toggleDetails(counter, btn) {
+    const element = document.getElementById(`details-${counter}`);
+    if (element.style.display === "none") {
+        element.style.display = "block";
+        btn.textContent = "See Less";
+    } else {
+        element.style.display = "none";
+        btn.textContent = "See More";
+    }
+}
+
+function openModal(id) {
+    document.getElementById("modal-" + id).style.display = "flex";
+}
+function closeModal(id) {
+    document.getElementById("modal-" + id).style.display = "none";
+}
+window.onclick = function(event) {
+    document.querySelectorAll('.modal').forEach(modal => {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+}
+</script>
+
 <!-- SweetAlert2 CSS & JS -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- JavaScript to handle location input -->
@@ -218,6 +300,8 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
         }
     });
 });
+
+
 </script>
 
     </div>
@@ -390,6 +474,16 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
 <!-- External CSS -->
 <link rel="stylesheet" href="{% static 'css/services.css' %}">
 <style>
+.booking-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* two columns */
+  gap: 16px;
+}
+
+.booking-form-grid .full-width {
+  grid-column: span 2; /* para sa mga field na dapat buong row */
+}
+
 .booking-modal {
     display: none;
     position: fixed;
@@ -479,17 +573,16 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
 .see-more-btn {
     background-color: #23194f;
     color: white;
-    padding: 8px 16px; /* Reduced padding */
+    padding: 8px 16px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 0.9rem; /* Reduced font size */
+    font-size: 0.9rem;
     transition: background 0.3s ease;
     margin-top: 10px;
-    width: auto; /* Allow button to adjust its width based on content */
-    display: inline-block; /* To keep it inline with other elements */
+    width: auto;
+    display: inline-block;
 }
-
 .see-more-btn:hover {
     background-color: #3a2d7c;
 }
@@ -637,7 +730,24 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
 .modal-btn.login-first:hover {
   background: #455a64;
 }
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
 
+.service-item {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* make sure lahat same height */
+}
+
+.package-desc {
+  flex: 1; /* para itulak yung button pababa */
+}
 /* Zoom Animation */
 @keyframes zoomIn {
   from { transform: scale(0.6); opacity: 0; }

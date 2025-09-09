@@ -1,0 +1,125 @@
+{% extends "client-base.html" %}
+{% block content %}
+<style>
+    /* Container */
+    .form-container {
+        max-width: 600px;
+        margin: 3rem auto;
+        padding: 2rem;
+        background-color: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+
+    /* Header */
+    .form-container h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #111827;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    /* Form Fields */
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #374151;
+    }
+
+    .form-group label .required {
+        color: #dc2626;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        padding: 0.75rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 1rem;
+        color: #111827;
+        transition: all 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+    }
+
+    .form-group .help-text {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+
+    .form-group .error-text {
+        font-size: 0.875rem;
+        color: #dc2626;
+        margin-top: 0.25rem;
+    }
+
+    /* Submit Button */
+    .submit-btn {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #fff;
+        background-color: #2563eb;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .submit-btn:hover {
+        background-color: #1d4ed8;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+</style>
+
+<div class="form-container">
+    <!-- Header -->
+    <h2>
+        {% if package %}Edit Package{% else %}Add New Package{% endif %}
+    </h2>
+
+    <!-- Form -->
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">
+                {{ field.label }}
+                {% if field.field.required %}
+                <span class="required">*</span>
+                {% endif %}
+            </label>
+            {{ field }}
+            {% if field.help_text %}
+            <p class="help-text">{{ field.help_text }}</p>
+            {% endif %}
+            {% for error in field.errors %}
+            <p class="error-text">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="submit-btn">
+            {% if package %}Update{% else %}Save{% endif %}
+        </button>
+    </form>
+</div>
+{% endblock %}

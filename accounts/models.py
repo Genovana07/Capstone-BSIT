@@ -131,10 +131,16 @@ class Equipment(models.Model):
 
 
 class ServicePackage(models.Model):
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=200)
     description = models.TextField()
-    price = models.CharField(max_length=20)
-    equipment = models.ManyToManyField(Equipment, through='PackageEquipment')
+    price = models.CharField(max_length=50)
+    image = models.ImageField(upload_to='packages/', blank=True, null=True)
+    equipment = models.ManyToManyField(
+        Equipment,
+        through='PackageEquipment',
+        related_name='service_packages'
+    )
+
 
     def __str__(self):
         return self.title
@@ -142,7 +148,7 @@ class ServicePackage(models.Model):
 class PackageEquipment(models.Model):
     package = models.ForeignKey(ServicePackage, on_delete=models.CASCADE)
     equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
-    quantity_required = models.IntegerField()  # The quantity needed for the package
+    quantity_required = models.IntegerField(null=True, blank=True, default=0)
 
     def __str__(self):
         return f'{self.package.title} - {self.equipment.name}'
@@ -276,3 +282,13 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.subject}"
+    
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notif for {self.user.username} - {self.message[:20]}"

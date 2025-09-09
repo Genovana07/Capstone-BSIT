@@ -64,6 +64,7 @@
             {% elif booking.status == 'Accepted' %}accepted
             {% elif booking.status == 'Rejected' %}rejected
             {% elif booking.status == 'Cancelled' %}cancelled
+            {% elif booking.status == 'Completed' %}completed
             {% else %}not-processed{% endif %}">
             {{ booking.status }}
         </span>
@@ -381,7 +382,7 @@ function rejectBooking(url) {
     body.dark-mode .actions .complete { background-color: #27ae60; }
     body.dark-mode .close-btn { background-color: #444; }
     body.dark-mode .close-btn:hover { background-color: #666; }
-
+.completed { background-color: #28a745; } 
 </style>
 
 <script>

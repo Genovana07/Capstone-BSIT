@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}My Site{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
@@ -29,20 +30,47 @@
             <li><a href="{% url 'services' %}">Services</a></li>
             <li><a href="{% url 'aboutus' %}">About Us</a></li>
             <li><a href="{% url 'contactus' %}">Contact Us</a></li>
+
             {% if user.is_authenticated %}
-            <li class="profile-item">
-                <a href="{% url 'profile' %}" class="profile-link">
-                    {% if user.profile.profile_picture %}
-                        <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" style="width: 30px; height: 30px; border-radius: 50%;">
-                    {% else %}
-                        <img src="{% static 'images/profile-icon.png' %}" alt="Default Icon" style="width: 30px; height: 30px; border-radius: 50%;">
-                    {% endif %}
-                    <span class="profile-name">{{ user.username }}</span>
-                </a>
-            </li>
-            {% if user.is_staff %}
-                <li><a href="{% url 'dashboard' %}" class="dashboard-btn">Dashboard</a></li>
-            {% endif %}
+                <!-- Notification Bell -->
+                <li class="notification-item">
+                    <a href="#" class="notification-link" id="notificationBell">
+                        <i class="fas fa-bell"></i>
+                        {% if notifications_unread_count > 0 %}
+                            <span class="notification-badge">{{ notifications_unread_count }}</span>
+                        {% endif %}
+                    </a>
+                    <div class="notification-dropdown" id="notificationDropdown">
+                            {% if notifications %}
+                                <ul>
+                                    {% for notif in notifications %}
+                                        <li class="{% if not notif.is_read %}unread{% endif %}">
+                                            {{ notif.message }} <br>
+                                            <small>{{ notif.created_at|date:"M d, Y" }}</small>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="no-notifications">No notifications</p>
+                            {% endif %}
+                        </div>
+                </li>
+
+                <!-- Profile -->
+                <li class="profile-item">
+                    <a href="{% url 'profile' %}" class="profile-link">
+                        {% if user.profile.profile_picture %}
+                            <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture">
+                        {% else %}
+                            <img src="{% static 'images/profile-icon.png' %}" alt="Default Icon">
+                        {% endif %}
+                        <span class="profile-name">{{ user.username }}</span>
+                    </a>
+                </li>
+
+                {% if user.is_staff %}
+                    <li><a href="{% url 'dashboard' %}" class="dashboard-btn">Dashboard</a></li>
+                {% endif %}
             {% else %}
                 <li><a href="{% url 'register' %}">Register</a></li>
                 <li><a href="{% url 'login' %}">Login</a></li>
@@ -54,18 +82,57 @@
 {% block content %}{% endblock %}
 
 <script>
+    // Auto-hide messages
     document.addEventListener('DOMContentLoaded', function () {
         const messageContainer = document.getElementById('messageContainer');
-        
         if (messageContainer) {
             setTimeout(function() {
                 messageContainer.style.display = 'none';
             }, 2000);
         }
     });
+
+    // Notification dropdown toggle + mark as read
+    document.addEventListener('DOMContentLoaded', function () {
+        const bell = document.getElementById('notificationBell');
+        const dropdown = document.getElementById('notificationDropdown');
+        const badge = document.querySelector('.notification-badge');
+
+        if (bell && dropdown) {
+            bell.addEventListener('click', function(e) {
+                e.preventDefault();
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+
+                // Kapag binuksan yung dropdown → mark all as read
+                if (dropdown.style.display === 'block') {
+                    fetch("{% url 'mark_notifications_as_read' %}", {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": "{{ csrf_token }}",
+                            "Content-Type": "application/json"
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === "ok" && badge) {
+                            badge.style.display = 'none'; // alisin yung red number
+                        }
+                    });
+                }
+            });
+
+            // Close dropdown kapag nag click sa labas
+            document.addEventListener('click', function(e) {
+                if (!bell.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+        }
+    });
 </script>
 
 <style>
+/* Layout */
 .nav-header {
     display: flex;
     justify-content: space-between;
@@ -86,35 +153,12 @@ nav ul li {
     list-style: none;
 }
 
+/* Profile */
 .nav-header .profile-item {
     display: flex;
     align-items: center;
     gap: 10px;
     margin-left: auto;
-}
-
-.dashboard-btn {
-    background-color: #4CAF50;
-    padding: 12px 24px;
-    border-radius: 6px;
-    color: white;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-left: 15px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.dashboard-btn:hover {
-    background-color: #45a049;
-    transform: translateY(-2px);
-}
-
-.dashboard-btn:active {
-    transform: translateY(2px);
 }
 
 .profile-link img {
@@ -128,6 +172,27 @@ nav ul li {
     line-height: 30px;
 }
 
+/* Dashboard button */
+.dashboard-btn {
+    background-color: #4CAF50;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.dashboard-btn:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+}
+
+.dashboard-btn:active {
+    transform: translateY(2px);
+}
+
+/* Messages */
 .messages {
     position: fixed;
     top: 60px;
@@ -144,16 +209,10 @@ nav ul li {
 
 .alert-error {
     background-color: #f44336 !important;
-    color: white !important;
-    border: none !important;
-    box-shadow: none !important;
 }
 
 .alert-success {
     background-color: #4CAF50 !important;
-    color: white !important;
-    border: none !important;
-    box-shadow: none !important;
 }
 
 .alert {
@@ -161,6 +220,94 @@ nav ul li {
     align-items: center;
     justify-content: center;
     height: 35px;
+}
+
+/* Notification bell */
+.notification-item {
+    position: relative;
+}
+
+.notification-link {
+    position: relative;
+    font-size: 20px; /* 🔔 palakihin bell */
+    color: #333;
+    display: inline-block;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -4px;   /* dikit sa taas */
+    right: -4px; /* dikit sa gilid */
+    background: red;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 50%;
+    line-height: 1;
+    min-width: 18px;
+    text-align: center;
+}
+/* Notification dropdown */
+/* Dropdown container */
+.notification-dropdown {
+    display: none;
+    position: absolute;
+    top: 35px; 
+    right: 0;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    width: 320px;                 
+    max-height: 400px;          
+    overflow-y: auto;             
+    overflow-x: hidden;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* List style */
+.notification-dropdown ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column
+}
+
+/* Each notification item */
+.notification-dropdown li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    line-height: 1.4em;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+/* Hover effect (parang FB highlight) */
+.notification-dropdown li:hover {
+    background: #f5f6f7;
+}
+
+/* Unread notification (bold + light bg) */
+.notification-dropdown li.unread {
+    background: #eef3ff;
+    font-weight: 600;
+}
+
+/* Last item no border */
+.notification-dropdown li:last-child {
+    border-bottom: none;
+}
+
+/* Small timestamp text */
+.notification-dropdown small {
+    font-size: 12px;
+    color: #888;
 }
 </style>
 

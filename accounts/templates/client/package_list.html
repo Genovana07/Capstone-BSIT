@@ -1,0 +1,174 @@
+{% extends "client-base.html" %}
+{% block content %}
+<style>
+    /* Container */
+    .packages-container {
+        max-width: 1200px;
+        margin: 3rem auto;
+        padding: 0 1rem;
+    }
+
+    /* Header */
+    .packages-header {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+    }
+    @media(min-width: 640px) {
+        .packages-header {
+            flex-direction: row;
+            align-items: center;
+        }
+    }
+    .packages-header h2 {
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: #1f2937; /* dark gray */
+        margin-bottom: 1rem;
+    }
+    .packages-header a {
+        background-color: #16a34a;
+        color: #fff;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    .packages-header a:hover {
+        background-color: #15803d;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    /* Grid */
+    .packages-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    @media(min-width: 640px) {
+        .packages-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    @media(min-width: 1024px) {
+        .packages-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    /* Card */
+    .package-card {
+        background-color: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .package-card:hover {
+        transform: scale(1.03);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    .package-image {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .package-content {
+        padding: 1.5rem;
+    }
+    .package-content h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+    .package-content p {
+        color: #6b7280;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+    }
+    .package-content .price {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #111827;
+        margin-bottom: 1rem;
+    }
+
+    /* Buttons */
+    .package-buttons {
+        display: flex;
+        gap: 0.75rem;
+    }
+    .package-buttons a {
+        flex: 1;
+        padding: 0.6rem 1rem;
+        text-align: center;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        color: #fff;
+        transition: all 0.2s ease;
+    }
+    .package-buttons .edit-btn {
+        background-color: #2563eb;
+    }
+    .package-buttons .edit-btn:hover {
+        background-color: #1d4ed8;
+    }
+    .package-buttons .delete-btn {
+        background-color: #dc2626;
+    }
+    .package-buttons .delete-btn:hover {
+        background-color: #b91c1c;
+    }
+
+    /* Empty state */
+    .empty-message {
+        text-align: center;
+        color: #6b7280;
+        font-size: 1.1rem;
+        grid-column: 1 / -1;
+    }
+</style>
+
+<div class="packages-container">
+    <!-- Header -->
+    <div class="packages-header">
+        <h2>Our Service Packages</h2>
+        <a href="{% url 'package_add' %}">+ Add New Package</a>
+    </div>
+
+    <!-- Packages Grid -->
+    <div class="packages-grid">
+        {% for package in packages %}
+        <div class="package-card">
+            {% if package.image %}
+            <img src="{{ package.image.url }}" alt="{{ package.title }}" class="package-image">
+            {% else %}
+            <div class="package-image" style="background-color: #f3f4f6; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-weight: 600;">
+                No Image
+            </div>
+            {% endif %}
+            <div class="package-content">
+                <h3>{{ package.title }}</h3>
+                <p>{{ package.description|truncatewords:25 }}</p>
+                <p class="price">{{ package.price }}</p>
+                <div class="package-buttons">
+                    <a href="{% url 'package_edit' package.id %}" class="edit-btn">Edit</a>
+                    <a href="{% url 'package_delete' package.id %}" class="delete-btn">Delete</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="empty-message">No packages available at the moment.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

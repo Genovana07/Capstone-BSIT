@@ -57,6 +57,12 @@ urlpatterns = [
     path("checklist/", views.checklist_view, name="checklist"),
     path("checklist/<int:booking_id>/", views.checklist_detail, name="checklist_detail"),
     path('employees/download/', views.download_employees, name='download_employees'),
+    path('notifications/mark-as-read/', views.mark_notifications_as_read, name='mark_notifications_as_read'),
+    path('dashboard/packages/', views.package_list_view, name='package_list'),
+    path('dashboard/packages/add/', views.package_add_view, name='package_add'),
+    path('dashboard/packages/<int:package_id>/edit/', views.package_edit_view, name='package_edit'),
+    path('dashboard/packages/<int:package_id>/delete/', views.package_delete_view, name='package_delete'),
+    
 ]
 
 # ✅ Serve media files (if in DEBUG mode)

@@ -156,29 +156,69 @@
           </td>
           <td>
             <div id="map-{{ booking.id }}" class="map-container"></div>
-            <script>
-              function initMap(location, bookingId) {
-                var geocoder = new XMLHttpRequest();
-                var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
-                geocoder.open('GET', url, true);
-                geocoder.onreadystatechange = function () {
-                  if (geocoder.readyState == 4 && geocoder.status == 200) {
-                    var data = JSON.parse(geocoder.responseText);
-                    if (data.length > 0) {
-                      var lat = data[0].lat;
-                      var lon = data[0].lon;
-                      var map = L.map('map-' + bookingId).setView([lat, lon], 15);
-                      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; OpenStreetMap contributors'
-                      }).addTo(map);
-                      L.marker([lat, lon]).addTo(map).bindPopup(location).openPopup();
-                    }
-                  }
-                };
-                geocoder.send();
-              }
-              initMap('{{ booking.location|escapejs }}', '{{ booking.id }}');
-            </script>
+<script>
+  function initMap(location, barangay, city, bookingId) {
+    geocode(location, function(success, lat, lon, label) {
+      if (success) {
+        renderMap(lat, lon, label, bookingId);
+      } else {
+        // ⚠️ fallback to barangay (cleaned) + city
+        if (barangay) {
+          var cleanedBarangay = barangay.replace(/Brgy\.?/gi, "").trim(); 
+          var barangayQuery = cleanedBarangay + ", " + city;
+
+          geocode(barangayQuery, function(success2, lat2, lon2, label2) {
+            if (success2) {
+              renderMap(lat2, lon2, label2, bookingId);
+            } else {
+              // last fallback → city only
+              geocode(city, function(success3, lat3, lon3, label3) {
+                if (success3) {
+                  renderMap(lat3, lon3, label3, bookingId);
+                } else {
+                  document.getElementById('map-' + bookingId).innerHTML = "<p>No map found</p>";
+                }
+              });
+            }
+          });
+        }
+      }
+    });
+  }
+
+  function geocode(query, callback) {
+    var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == 4 && xhr.status == 200) {
+        var data = JSON.parse(xhr.responseText);
+        if (data.length > 0) {
+          callback(true, data[0].lat, data[0].lon, query);
+        } else {
+          callback(false);
+        }
+      }
+    };
+    xhr.send();
+  }
+
+  function renderMap(lat, lon, label, bookingId) {
+    var map = L.map('map-' + bookingId).setView([lat, lon], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    L.marker([lat, lon]).addTo(map).bindPopup(label).openPopup();
+  }
+
+  // 👇 Example usage
+  initMap(
+    '{{ booking.fulladdress|escapejs }} {{ booking.location|escapejs }}',  // full address
+    '{{ booking.fulladdress|escapejs }}',                                 // barangay fallback (cleaned)
+    '{{ booking.location|escapejs }}',                                    // city fallback
+    '{{ booking.id }}'
+  );
+</script>
           </td>
         </tr>
         {% endfor %}

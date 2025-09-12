@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_filters %}
+{% load star_extras %}
 
 {% block title %}Services{% endblock %}
 
@@ -10,88 +12,74 @@
 
     <div class="services-grid">
         {% for package in packages %}
-<div class="service-item flex flex-col h-full">
-    <!-- Image -->
-    {% if package.image %}
-        <img src="{{ package.image.url }}" alt="{{ package.title }}">
-    {% else %}
-        <img src="{% static 'images/package' %}{{ forloop.counter }}.png" alt="{{ package.title }}">
-    {% endif %}
+        <div class="service-item flex flex-col h-full">
+            <!-- Image -->
+            {% if package.image %}
+                <img src="{{ package.image.url }}" alt="{{ package.title }}">
+            {% else %}
+                <img src="{% static 'images/package' %}{{ forloop.counter }}.png" alt="{{ package.title }}">
+            {% endif %}
 
-    <!-- Title -->
-    <h3 class="package-title">{{ package.title }}</h3>
+            <!-- Title -->
+            <h3 class="package-title">{{ package.title }}</h3>
 
-    <!-- Price -->
-    <p class="package-price">Price: 
-        {% if package.formatted_price %}
-            {{ package.formatted_price }}
-        {% else %}
-            {{ package.price }}
-        {% endif %}
-    </p>
+            <!-- Price -->
+            <p class="package-price">Price: 
+                {% if package.formatted_price %}
+                    {{ package.formatted_price }}
+                {% else %}
+                    {{ package.price }}
+                {% endif %}
+            </p>
 
-    <!-- Description -->
-    <div class="package-desc text-sm text-gray-700 whitespace-pre-line flex-1">
-        {{ package.description|linebreaksbr }}
-    </div>
+            <!-- Description -->
+            <div class="package-desc text-sm text-gray-700 whitespace-pre-line flex-1">
+                {{ package.description|linebreaksbr }}
+            </div>
 
-    <!-- Bolden Included Equipment -->
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            document.querySelectorAll(".package-desc").forEach(desc => {
-                desc.innerHTML = desc.innerHTML.replace("Included Equipment:", "<strong>Included Equipment:</strong>");
-            });
-        });
-    </script>
+            <!-- Bolden Included Equipment -->
+            <script>
+                document.addEventListener("DOMContentLoaded", () => {
+                    document.querySelectorAll(".package-desc").forEach(desc => {
+                        desc.innerHTML = desc.innerHTML.replace("Included Equipment:", "<strong>Included Equipment:</strong>");
+                    });
+                });
+            </script>
 
- <!-- Button -->
-    <div class="card-buttons mt-auto">
-        {% if user.is_authenticated %}
-            <button class="book-now w-full" onclick="confirmOpenBookingForm('{{ package.title }}')">Book Now</button>
-        {% else %}
-            <button class="login-first w-full" onclick="window.location.href='{% url 'login' %}'">Book Now</button>
-        {% endif %}
-    </div>
-</div>
-        <!-- Modal for Each Package -->
-        <div id="modal-{{ forloop.counter }}" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeModal({{ forloop.counter }})">&times;</span>
-                <div class="modal-body">
-                    <div class="modal-image">
-                        {% if package.image %}
-                            <img src="{{ package.image.url }}" alt="{{ package.title }}">
-                        {% else %}
-                            <img src="{% static 'images/package' %}{{ forloop.counter }}.png" alt="{{ package.title }}">
-                        {% endif %}
-                    </div>
-                    <div class="modal-details">
-                        <h2>{{ package.title }}</h2>
-                        <p class="modal-desc">{{ package.description }}</p>
-                        <p class="modal-price"><strong>Price:</strong> 
-                            {% if package.formatted_price %}
-                                {{ package.formatted_price }}
-                            {% else %}
-                                {{ package.price }}
-                            {% endif %}
-                        </p>
+            <!-- ⭐ Rating -->
+            <div class="package-rating" style="margin-bottom: 8px;">
+                {% if package.avg_rating %}
+                    {% with package.avg_rating|star_counts as stars %}
+                        {% for i in stars.full %}
+                            <span style="color: gold; font-size: 18px;">★</span>
+                        {% endfor %}
+                        {% for i in stars.half %}
+                            <span style="color: gold; font-size: 18px;">⯨</span>
+                        {% endfor %}
+                        {% for i in stars.empty %}
+                            <span style="color: lightgray; font-size: 18px;">★</span>
+                        {% endfor %}
+                        <span style="font-size: 14px; margin-left: 6px;">
+                            ({{ package.avg_rating|floatformat:1 }}/5 from {{ package.review_count }} reviews)
+                        </span>
+                    {% endwith %}
+                {% else %}
+                    {% for i in "12345" %}
+                        <span style="color: lightgray; font-size: 18px;">★</span>
+                    {% endfor %}
+                    <span style="font-size: 14px; margin-left: 6px;">
+                        (0/5 from 0 reviews)
+                    </span>
+                {% endif %}
+            </div>
 
-                        <h4>Included Equipment:</h4>
-                        <ul>
-                            {% for pe in package.packagedequipment_set.all %}
-                                <li>{{ pe.quantity_required }} × {{ pe.equipment.name }}</li>
-                            {% empty %}
-                                <li>No equipment linked yet.</li>
-                            {% endfor %}
-                        </ul>
-
-                        {% if user.is_authenticated %}
-                            <button class="modal-btn book-now" onclick="confirmOpenBookingForm('{{ package.title }}')">Book Now</button>
-                        {% else %}
-                            <button class="modal-btn login-first" onclick="window.location.href='{% url 'login' %}'">Book Now</button>
-                        {% endif %}
-                    </div>
-                </div>
+            <!-- Button -->
+            <div class="card-buttons mt-auto">
+                {% if user.is_authenticated %}
+                    <button class="book-now w-full" onclick="confirmOpenBookingForm('{{ package.title }}')">Book Now</button>
+                {% else %}
+                    <button class="login-first w-full" onclick="window.location.href='{% url 'login' %}'">Book Now</button>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
@@ -103,93 +91,109 @@
     <div class="booking-content">
         <span class="close-btn" onclick="closeBookingForm()">&times;</span>
         <h2>Book a Service</h2>
-<form method="POST" action="{% url 'create_booking' %}" id="bookingForm">
-    {% csrf_token %}
+        <form method="POST" action="{% url 'create_booking' %}" id="bookingForm">
+            {% csrf_token %}
 
-    <div class="booking-form-grid">
-        <div class="full-width">
-            <label for="selected_package">Package Selected</label>
-            <input type="text" id="selected_package" name="selected_package" readonly>
-        </div>
+            <div class="booking-form-grid">
+                <div class="full-width">
+                    <label for="selected_package">Package Selected</label>
+                    <input type="text" id="selected_package" name="selected_package" readonly>
+                </div>
 
-        <div>
-            <label for="full_name">Full Name</label>
-            <input type="text" id="full_name" name="full_name" value="{{ user.first_name }} {{ user.last_name }}" required>
-        </div>
+                <div>
+                    <label for="full_name">Full Name</label>
+                    <input type="text" id="full_name" name="full_name" value="{{ user.first_name }} {{ user.last_name }}" required>
+                </div>
 
-        <div>
-            <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" value="{{ user.email }}" required>
-        </div>
+                <div>
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" value="{{ user.email }}" required>
+                </div>
 
-        <div>
-            <label for="contact_number">Contact Number</label>
-            <input type="tel" id="contact_number" name="contact_number" value="{{ profile.contact_number }}" required>
-        </div>
+                <div>
+                    <label for="contact_number">Contact Number</label>
+                    <input type="tel" id="contact_number" name="contact_number" value="{{ profile.contact_number }}" required>
+                </div>
 
-        <div>
-            <label for="event_date">Event Date</label>
-            <input type="date" id="event_date" name="event_date" required>
-        </div>
+                <div>
+                    <label for="event_date">Event Date</label>
+                    <input type="date" id="event_date" name="event_date" required>
+                </div>
 
-        <div>
-            <label for="event_time">Start Time</label>
-            <select id="event_time" name="event_time" required>
-                <option value="">Select Start Time</option>
-            </select>
-        </div>
+                <div>
+                    <label for="event_time">Start Time</label>
+                    <select id="event_time" name="event_time" required>
+                        <option value="">Select Start Time</option>
+                    </select>
+                </div>
 
-        <div>
-            <label for="end_time">End Time</label>
-            <select id="end_time" name="end_time" required>
-                <option value="">Select End Time</option>
-            </select>
-        </div>
+                <div>
+                    <label for="end_time">End Time</label>
+                    <select id="end_time" name="end_time" required>
+                        <option value="">Select End Time</option>
+                    </select>
+                </div>
 
-        <div>
-            <label for="event_type">Type of Event</label>
-            <select id="event_type" name="event_type" required>
-                <option value="">Select</option>
-                <option value="Wedding">Wedding</option>
-                <option value="Birthday">Birthday</option>
-                <option value="Corporate">Corporate</option>
-                <option value="Concert">Concert</option>
-                <option value="Seminar">Seminar</option>
-                <option value="Graduation">Graduation</option>
-                <option value="Awarding Ceremony">Awarding Ceremony</option>
-                <option value="Fundraising">Fundraising</option>
-                <option value="Fashion Show">Fashion Show</option>
-                <option value="Church">Church</option>
-                <option value="Conference">Conference</option>
-                <option value="School Event">School Event</option>
-                <option value="Charity Event">Charity Event</option>
-            </select>
-        </div>
+                <div>
+                    <label for="event_type">Type of Event</label>
+                    <select id="event_type" name="event_type" required>
+                        <option value="">Select</option>
+                        <option value="Wedding">Wedding</option>
+                        <option value="Birthday">Birthday</option>
+                        <option value="Corporate">Corporate</option>
+                        <option value="Concert">Concert</option>
+                        <option value="Seminar">Seminar</option>
+                        <option value="Graduation">Graduation</option>
+                        <option value="Awarding Ceremony">Awarding Ceremony</option>
+                        <option value="Fundraising">Fundraising</option>
+                        <option value="Fashion Show">Fashion Show</option>
+                        <option value="Church">Church</option>
+                        <option value="Conference">Conference</option>
+                        <option value="School Event">School Event</option>
+                        <option value="Charity Event">Charity Event</option>
+                    </select>
+                </div>
 
-        <div>
-            <label for="location">Event Location City</label>
-            <input type="text" id="location" name="location" 
-                   value="{{ profile.city }}" required list="city-suggestions">
-            <datalist id="city-suggestions"></datalist>
-        </div>
+                <div>
+                    <label for="location">Event Location City</label>
+                    <input type="text" id="location" name="location" value="{{ profile.city }}" required list="city-suggestions">
+                    <datalist id="city-suggestions"></datalist>
+                </div>
 
-        <div class="full-width">
-            <label for="fulladdress">Full Address</label>
-            <input type="text" id="fulladdress" name="fulladdress" 
-                   placeholder="Ex: Purok 3 Sitio Dapdap, Brgy. Dalahican, Lucena City, Quezon"
-                   value="{{ profile.address }}" required>
-        </div>
+                <div class="full-width">
+                    <label for="fulladdress">Full Address</label>
+                    <input type="text" id="fulladdress" name="fulladdress" placeholder="Ex: Purok 3 Sitio Dapdap, Brgy. Dalahican, Lucena City, Quezon" value="{{ profile.address }}" required>
+                </div>
 
-        <div class="full-width">
-            <label for="audience_size">Expected Number of Guests</label>
-            <input type="number" id="audience_size" name="audience_size" min="1" required>
-        </div>
-    </div>
+                <div class="full-width">
+                    <label for="audience_size">Expected Number of Guests</label>
+                    <input type="number" id="audience_size" name="audience_size" min="1" required>
+                </div>
+            </div>
 
-    <button type="submit" class="submit-booking">Submit Booking Request</button>
-</form>
+            <button type="submit" class="submit-booking">Submit Booking Request</button>
+        </form>
     </div>
 </div>
+
+<script>
+function confirmOpenBookingForm(packageTitle) {
+    document.getElementById("selected_package").value = packageTitle;
+    document.getElementById("booking-modal").style.display = "block";
+}
+
+function closeBookingForm() {
+    document.getElementById("booking-modal").style.display = "none";
+}
+
+window.onclick = function(event) {
+    document.querySelectorAll('.modal').forEach(modal => {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+}
+</script>
 
 <!-- Toggle Script -->
 <script>

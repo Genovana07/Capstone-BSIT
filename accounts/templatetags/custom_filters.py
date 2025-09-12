@@ -17,3 +17,12 @@ def rangefilter(value):
         return range(int(value))
     except Exception:
         return []
+
+@register.filter
+def star_range(value):
+    """Convert average rating into full stars and empty stars."""
+    try:
+        value = int(round(value))  # Round off average rating
+        return range(value)
+    except Exception:
+        return range(0)

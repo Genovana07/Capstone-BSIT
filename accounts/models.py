@@ -131,19 +131,39 @@ class Equipment(models.Model):
 
 
 class ServicePackage(models.Model):
+    EVENT_CHOICES = [
+        ("Wedding", "Wedding"),
+        ("Birthday", "Birthday"),
+        ("Corporate", "Corporate"),
+        ("Concert", "Concert"),
+        ("Seminar", "Seminar"),
+        ("Graduation", "Graduation"),
+        ("Awarding Ceremony", "Awarding Ceremony"),
+        ("Fundraising", "Fundraising"),
+        ("Fashion Show", "Fashion Show"),
+        ("Church", "Church"),
+        ("Conference", "Conference"),
+        ("School Event", "School Event"),
+        ("Charity Event", "Charity Event"),
+    ]
+
     title = models.CharField(max_length=200)
     description = models.TextField()
     price = models.CharField(max_length=50)
-    image = models.ImageField(upload_to='packages/', blank=True, null=True)
+    image = models.ImageField(upload_to="packages/", blank=True, null=True)
     equipment = models.ManyToManyField(
         Equipment,
-        through='PackageEquipment',
-        related_name='service_packages'
+        through="PackageEquipment",
+        related_name="service_packages"
+    )
+    category = models.CharField(
+        max_length=50,
+        choices=EVENT_CHOICES,
+        default="Wedding"
     )
 
-
     def __str__(self):
-        return self.title
+        return f"{self.title} ({self.category})"
 
 class PackageEquipment(models.Model):
     package = models.ForeignKey(ServicePackage, on_delete=models.CASCADE)

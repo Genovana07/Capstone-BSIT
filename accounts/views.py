@@ -122,10 +122,11 @@ def home(request):
 
 # Services View
 def services_view(request):
-    from .models import ServicePackage, Profile
-
-    # Kunin lahat ng packages sa database
-    packages = ServicePackage.objects.all()
+    # Kunin lahat ng packages sa database at isama ang average rating at review count
+    packages = ServicePackage.objects.all().annotate(
+        avg_rating=Avg('booking__review__rating'),
+        review_count=Count('booking__review')
+    )
 
     # Kunin user profile para ma-auto populate
     profile = None

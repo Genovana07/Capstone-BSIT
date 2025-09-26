@@ -26,10 +26,18 @@
     </div>
     <nav>
         <ul>
-            <li><a href="{% url 'home' %}">Home</a></li>
-            <li><a href="{% url 'services' %}">Services</a></li>
-            <li><a href="{% url 'aboutus' %}">About Us</a></li>
-            <li><a href="{% url 'contactus' %}">Contact Us</a></li>
+            <li class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+            <a href="{% url 'home' %}">Home</a>
+        </li>
+        <li class="{% if request.resolver_match.url_name == 'services' %}active{% endif %}">
+            <a href="{% url 'services' %}">Services</a>
+        </li>
+        <li class="{% if request.resolver_match.url_name == 'aboutus' %}active{% endif %}">
+            <a href="{% url 'aboutus' %}">About Us</a>
+        </li>
+        <li class="{% if request.resolver_match.url_name == 'contactus' %}active{% endif %}">
+            <a href="{% url 'contactus' %}">Contact Us</a>
+        </li>
 
             {% if user.is_authenticated %}
                 <!-- Notification Bell -->
@@ -151,6 +159,14 @@ nav ul {
 
 nav ul li {
     list-style: none;
+}
+
+/* ACTIVE STATE highlight sa nav */
+nav ul li.active a {
+    background-color: var(--highlight-bg);
+    color: var(--primary-color);
+    font-weight: 700;
+    border-radius: 5px;
 }
 
 /* Profile */

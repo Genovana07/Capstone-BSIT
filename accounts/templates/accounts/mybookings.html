@@ -48,6 +48,18 @@
     color: #7a3cff;
   }
 
+  /* ACTIVE STATE */
+  .sidebar li.active {
+    background: #d9e8ff;          
+    border-radius: 8px;            
+    padding: 10px;
+  }
+
+  .sidebar li.active a {
+    color: #1a73e8;                
+    font-weight: 700;               
+  }
+
   .main-content {
     flex-grow: 1;
     padding: 60px;
@@ -132,10 +144,22 @@
 <div class="container">
   <aside class="sidebar">
     <ul>
-      <li><img src="{% static 'images/profile-user.png' %}" alt="User Icon"> <span><a href="{% url 'profile' %}">Profile</a></span></li>
-      <li><img src="{% static 'images/open-book.png' %}" alt="Bookings Icon"> <span><a href="{% url 'mybookings' %}">My Bookings</a></span></li>
-      <li><img src="{% static 'images/history.png' %}" alt="History Icon"> <span><a href="{% url 'history' %}">History</a></span></li>
-      <li><img src="{% static 'images/logout.png' %}" alt="Logout Icon"><span><a href="javascript:void(0);" onclick="confirmLogout()">Logout</a></span></li>
+      <li class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+        <img src="{% static 'images/profile-user.png' %}" alt="Profile Icon">
+        <span><a href="{% url 'profile' %}">Profile</a></span>
+    </li>
+    <li class="{% if request.resolver_match.url_name == 'mybookings' %}active{% endif %}">
+        <img src="{% static 'images/open-book.png' %}" alt="Bookings Icon">
+        <span><a href="{% url 'mybookings' %}">My Bookings</a></span>
+    </li>
+    <li class="{% if request.resolver_match.url_name == 'history' %}active{% endif %}">
+        <img src="{% static 'images/history.png' %}" alt="History Icon">
+        <span><a href="{% url 'history' %}">History</a></span>
+    </li>
+    <li>
+        <img src="{% static 'images/logout.png' %}" alt="Logout Icon">
+        <span><a href="javascript:void(0);" onclick="confirmLogout()">Logout</a></span>
+    </li>
     </ul>
   </aside>
 

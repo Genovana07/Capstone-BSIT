@@ -3,22 +3,28 @@
 <style>
     /* Container */
     .form-container {
-        max-width: 600px;
-        margin: 3rem auto;
-        padding: 2rem;
-        background-color: #fff;
+        max-width: 650px;
+        margin: 4rem auto;
+        padding: 2.5rem;
+        background: linear-gradient(180deg, #ffffff, #f9fafb);
         border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease;
+    }
+
+    .form-container:hover {
+        transform: translateY(-3px);
     }
 
     /* Header */
     .form-container h2 {
-        font-size: 1.75rem;
+        font-size: 1.9rem;
         font-weight: 700;
         color: #111827;
         text-align: center;
         margin-bottom: 2rem;
+        letter-spacing: 0.5px;
     }
 
     /* Form Fields */
@@ -29,9 +35,10 @@
     }
 
     .form-group label {
-        font-weight: 500;
+        font-weight: 600;
         margin-bottom: 0.5rem;
         color: #374151;
+        font-size: 1rem;
     }
 
     .form-group label .required {
@@ -41,20 +48,27 @@
     .form-group input,
     .form-group textarea,
     .form-group select {
-        padding: 0.75rem 1rem;
+        padding: 0.85rem 1rem;
         border: 1px solid #d1d5db;
-        border-radius: 8px;
+        border-radius: 10px;
         font-size: 1rem;
         color: #111827;
-        transition: all 0.2s ease;
+        background-color: #f9fafb;
+        transition: all 0.25s ease;
     }
 
     .form-group input:focus,
     .form-group textarea:focus,
     .form-group select:focus {
         outline: none;
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+        border-color: #3b82f6;
+        background-color: #fff;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
+    }
+
+    .form-group textarea {
+        min-height: 120px;
+        resize: vertical;
     }
 
     .form-group .help-text {
@@ -72,20 +86,32 @@
     /* Submit Button */
     .submit-btn {
         width: 100%;
-        padding: 0.75rem 1rem;
+        padding: 0.9rem 1rem;
         font-weight: 600;
-        font-size: 1rem;
+        font-size: 1.05rem;
         color: #fff;
-        background-color: #2563eb;
+        background: linear-gradient(135deg, #2563eb, #1e40af);
         border: none;
-        border-radius: 10px;
+        border-radius: 12px;
         cursor: pointer;
         transition: all 0.3s ease;
+        letter-spacing: 0.5px;
     }
 
     .submit-btn:hover {
-        background-color: #1d4ed8;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+        .form-container {
+            padding: 1.5rem;
+        }
+        .form-container h2 {
+            font-size: 1.5rem;
+        }
     }
 </style>
 

@@ -1,27 +1,51 @@
 {% extends "client-base.html" %}
 {% block content %}
 <style>
-    /* Container */
+    /* ---------- FORM CONTAINER ---------- */
     .form-container {
         max-width: 600px;
         margin: 3rem auto;
-        padding: 2rem;
-        background-color: #fff;
+        padding: 2.5rem;
+        background: #fff;
+        border-radius: 16px;
         border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        animation: fadeUp 0.5s ease;
+        font-family: 'Poppins', sans-serif;
     }
 
-    /* Header */
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ---------- HEADER ---------- */
     .form-container h2 {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #111827;
+        font-size: 2rem;
+        font-weight: 800;
         text-align: center;
-        margin-bottom: 1.5rem;
+        color: #111827;
+        margin-bottom: 1.8rem;
+        position: relative;
     }
 
-    /* Form Fields */
+    .form-container h2::after {
+        content: "";
+        display: block;
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, #2563eb, #3b82f6);
+        border-radius: 2px;
+        margin: 0.5rem auto 0;
+    }
+
+    /* ---------- FORM FIELDS ---------- */
     .form-group {
         display: flex;
         flex-direction: column;
@@ -29,9 +53,10 @@
     }
 
     .form-group label {
-        font-weight: 500;
-        margin-bottom: 0.5rem;
+        font-weight: 600;
         color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
     }
 
     .form-group label .required {
@@ -41,64 +66,82 @@
     .form-group input,
     .form-group textarea,
     .form-group select {
-        padding: 0.75rem 1rem;
+        padding: 0.85rem 1rem;
         border: 1px solid #d1d5db;
-        border-radius: 8px;
+        border-radius: 10px;
         font-size: 1rem;
         color: #111827;
-        transition: all 0.2s ease;
+        background-color: #f9fafb;
+        transition: all 0.3s ease;
     }
 
     .form-group input:focus,
     .form-group textarea:focus,
     .form-group select:focus {
         outline: none;
+        background-color: #fff;
         border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.25);
+        transform: scale(1.01);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 120px;
     }
 
     .form-group .help-text {
-        font-size: 0.875rem;
+        font-size: 0.85rem;
         color: #6b7280;
-        margin-top: 0.25rem;
+        margin-top: 0.3rem;
     }
 
     .form-group .error-text {
-        font-size: 0.875rem;
+        font-size: 0.85rem;
         color: #dc2626;
-        margin-top: 0.25rem;
+        margin-top: 0.3rem;
+        font-weight: 500;
     }
 
-    /* Submit Button */
+    /* ---------- SUBMIT BUTTON ---------- */
     .submit-btn {
         width: 100%;
-        padding: 0.75rem 1rem;
-        font-weight: 600;
-        font-size: 1rem;
+        padding: 0.9rem 1rem;
+        font-weight: 700;
+        font-size: 1.05rem;
         color: #fff;
-        background-color: #2563eb;
+        background: linear-gradient(90deg, #2563eb, #3b82f6);
         border: none;
         border-radius: 10px;
         cursor: pointer;
         transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(37,99,235,0.3);
     }
 
     .submit-btn:hover {
-        background-color: #1d4ed8;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        background: linear-gradient(90deg, #1e40af, #2563eb);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37,99,235,0.4);
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 640px) {
+        .form-container {
+            padding: 1.8rem;
+        }
+        .form-container h2 {
+            font-size: 1.75rem;
+        }
     }
 </style>
 
 <div class="form-container">
-    <!-- Header -->
     <h2>
         {% if package %}Edit Package{% else %}Add New Package{% endif %}
     </h2>
 
-    <!-- Form -->
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
-
         {% for field in form %}
         <div class="form-group">
             <label for="{{ field.id_for_label }}">

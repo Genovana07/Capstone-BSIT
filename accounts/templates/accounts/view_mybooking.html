@@ -1,23 +1,168 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<h2>Booking Details</h2>
-<ul>
-  <li><strong>Package:</strong> {{ booking.package.title }}</li>
-  <li><strong>Event Type:</strong> {{ booking.event_type }}</li>
-  <li><strong>Date:</strong> {{ booking.event_date }}</li>
-  <li><strong>Time:</strong> {{ booking.event_time }}</li>
-  <p><strong>End Time:</strong> {{ booking.end_time|time:"g:i A" }}</p>
-  <li><strong>Location:</strong> {{ booking.location }}</li>
-  <li><strong>Status:</strong> {{ booking.status }}</li>
-  <li><strong>Total:</strong> {{ booking.price }}</li>
+<style>
+  body {
+    font-family: 'MavenPro', sans-serif;
+    background-color: #f8f9fc;
+  }
 
-  {% if booking.status == "Rejected" and booking.reject_reason %}
-      <li style="color: red;">
-        <strong>Reason for Rejection:</strong> {{ booking.reject_reason }}
+  /* === MAIN CONTAINER (centered below navbar) === */
+  .booking-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 100px; /* creates space below navbar */
+    min-height: 100vh;
+  }
+
+  /* === BOOKING CARD === */
+  .booking-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.06);
+    padding: 40px 50px;
+    width: 90%;
+    max-width: 650px;
+    text-align: left;
+  }
+
+  .booking-card h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e144e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+  }
+
+  .booking-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .booking-card li {
+    font-size: 15.5px;
+    color: #333;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .booking-card strong {
+    color: #1a1570;
+    width: 160px;
+    display: inline-block;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    text-transform: capitalize;
+  }
+
+  .status-badge.accepted { background: #28a745; }
+  .status-badge.rejected { background: #dc3545; }
+  .status-badge.processing { background: #007bff; }
+  .status-badge.cancelled { background: #6c757d; }
+  .status-badge.completed { background: #6f42c1; }
+
+  .reject-reason {
+    background-color: #ffe6e6;
+    border-left: 4px solid #dc3545;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 20px;
+    color: #b00020;
+    font-size: 15px;
+  }
+
+  .back-link {
+    display: block;
+    text-align: center;
+    margin-top: 25px;
+    color: #1a73e8;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 15px;
+  }
+
+  .back-link:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 768px) {
+    .booking-card {
+      padding: 25px 25px;
+    }
+
+    .booking-card strong {
+      width: 120px;
+    }
+
+    .booking-card h2 {
+      font-size: 20px;
+    }
+  }
+</style>
+
+<div class="booking-wrapper">
+  <div class="booking-card">
+    <h2>📋 Booking Details</h2>
+    <ul>
+      <li><strong>Package:</strong> {{ booking.package.title }}</li>
+      <li><strong>Event Type:</strong> {{ booking.event_type }}</li>
+      <li><strong>Date:</strong> {{ booking.event_date }}</li>
+      <li><strong>Start Time:</strong> {{ booking.event_time }}</li>
+      <li><strong>End Time:</strong> {{ booking.end_time|time:"g:i A" }}</li>
+      <li><strong>Location:</strong> {{ booking.location }}</li>
+      <li>
+        <strong>Status:</strong>
+        <span class="status-badge 
+          {% if booking.status|lower == 'accepted' %}accepted
+          {% elif booking.status|lower == 'rejected' %}rejected
+          {% elif booking.status|lower == 'processing' %}processing
+          {% elif booking.status|lower == 'cancelled' %}cancelled
+          {% elif booking.status|lower == 'completed' %}completed
+          {% endif %}">
+          {{ booking.status }}
+        </span>
       </li>
-  {% endif %}
-</ul>
+      <li><strong>Total:</strong> {{ booking.price }}</li>
+    </ul>
 
-<a href="{% url 'mybookings' %}">← Back to My Bookings</a>
+    {% if booking.status == "Rejected" and booking.reject_reason %}
+    <div class="reject-reason">
+      <strong>Reason for Rejection:</strong> {{ booking.reject_reason }}
+    </div>
+    {% endif %}
+
+    <a href="{% url 'mybookings' %}" class="back-link">← Back to My Bookings</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function confirmLogout() {
+  Swal.fire({
+    title: "Are you sure you want to logout?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#dc3545",
+    cancelButtonColor: "#6c757d",
+    confirmButtonText: "Yes, Logout"
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location.href = "{% url 'logout' %}";
+    }
+  });
+}
+</script>
 {% endblock %}

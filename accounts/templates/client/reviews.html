@@ -151,13 +151,26 @@ h1 {
     color: #999;
 }
 
+/* ---------- STAR RATING ---------- */
 .stars {
     display: flex;
     gap: 3px;
     font-size: 16px;
-    color: #f5b50a;
 }
 
+.stars .filled {
+    color: #f5b50a; /* Yellow for filled stars */
+}
+
+.stars .empty {
+    color: #ddd; /* Light gray for empty stars */
+}
+
+body.dark-mode .stars .empty {
+    color: #555; /* Darker gray for dark mode */
+}
+
+/* ---------- Metrics Section ---------- */
 .metrics {
     margin: 12px 0;
 }
@@ -340,9 +353,18 @@ body.dark-mode .date-filter button:hover {
             <div class="review-header">
                 <strong>{{ review.customer_name }}</strong>
                 <span>{{ review.event_type }}</span>
+                
+                <!-- ⭐ Star Rating -->
                 <span class="stars">
-                    {% for i in review.rating|rangefilter %}★{% endfor %}
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= review.rating %}
+                            <i class="fa-solid fa-star filled"></i>
+                        {% else %}
+                            <i class="fa-solid fa-star empty"></i>
+                        {% endif %}
+                    {% endfor %}
                 </span>
+
                 <span class="date">Booked on {{ review.booking_date|date:"M d, Y" }}</span>
             </div>
 

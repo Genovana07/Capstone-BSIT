@@ -1,28 +1,363 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block title %}About Us{% endblock %}
 
 {% block content %}
-<main class="container about-container">
+<style>
+@font-face {
+  font-family: 'MavenPro';
+  src: url("{% static 'fonts/MavenPro-Regular.ttf' %}") format('truetype');
+}
+
+:root {
+  --primary-color: #1e144e;
+  --secondary-color: #f4f4ff;
+  --accent-color: #7a3cff;
+  --text-color: #2a2a2a;
+  --light-color: #ffffff;
+  --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --font-main: 'MavenPro', sans-serif;
+}
+
+/* ========== GLOBAL ========== */
+body {
+  font-family: var(--font-main);
+  background-color: #fafafa;
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  scroll-behavior: smooth;
+}
+
+/* ===== FADE-IN EFFECT ===== */
+.fade-in {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.9s ease-out, transform 0.9s ease-out;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* === ABOUT CONTAINER === */
+.about-container {
+  max-width: 1100px;
+  margin: 60px auto;
+  background: var(--secondary-color);
+  padding: 50px;
+  border-radius: 14px;
+  box-shadow: var(--shadow-light);
+}
+
+/* === TITLES === */
+.title {
+  color: var(--primary-color);
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.title span {
+  color: var(--accent-color);
+}
+
+.line {
+  height: 3px;
+  border: none;
+  background: var(--accent-color);
+  width: 70px;
+  margin: 0 auto 35px;
+}
+
+/* === CONTENT (HISTORY) === */
+.content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 30px;
+}
+
+.image-box {
+  width: 320px;
+  height: 320px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-light);
+}
+
+.image-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.text-box {
+  flex: 1 1 320px;
+  position: relative;
+}
+
+.history {
+  font-size: 1.8rem;
+  color: var(--accent-color);
+  margin-bottom: 12px;
+  font-weight: bold;
+}
+
+.text-box p {
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+.read-more {
+  margin-top: 10px;
+  padding: 7px 15px;
+  border: none;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.3s ease;
+}
+
+.read-more:hover {
+  background: var(--accent-color);
+}
+
+/* === MISSION / VISION / VALUES === */
+.mission-vision-values {
+  background: #f8f9fc;
+  padding: 70px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 30px;
+  text-align: center;
+  border-radius: 14px;
+  box-shadow: var(--shadow-light);
+  max-width: 1000px;
+  margin: 70px auto;
+}
+
+.mission-vision-values .box {
+  background: var(--light-color);
+  border-radius: 14px;
+  padding: 35px 25px;
+  flex: 1 1 280px;
+  max-width: 300px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.mission-vision-values .box:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.mission-vision-values img {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 15px;
+}
+
+.mission-vision-values h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+
+.mission-vision-values .highlight {
+  color: var(--accent-color);
+}
+
+.mission-vision-values p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #555;
+}
+
+/* === WHY CHOOSE US === */
+.choose-us-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  text-align: center;
+  margin: 80px 0 30px;
+  color: var(--primary-color);
+}
+
+.why-choose-us {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  max-width: 950px;
+  margin: 0 auto 80px;
+}
+
+.choose-box {
+  background: var(--light-color);
+  border-radius: 14px;
+  box-shadow: var(--shadow-light);
+  padding: 30px 20px;
+  text-align: center;
+  flex: 1 1 250px;
+  max-width: 280px;
+  transition: all 0.3s ease;
+  border-top: 4px solid var(--accent-color);
+}
+
+.choose-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.choose-box h3 {
+  color: var(--primary-color);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.choose-box p {
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* === TEAM SECTION === */
+.team-section {
+  background: var(--secondary-color);
+  padding: 50px;
+  border-radius: 14px;
+  margin-top: 70px;
+  text-align: center;
+}
+
+.team-title {
+  font-size: 2.3rem;
+  color: var(--primary-color);
+  margin-bottom: 15px;
+}
+
+.team-title span {
+  color: var(--accent-color);
+}
+
+.team-members {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.member {
+  background: var(--light-color);
+  padding: 10px;
+  border-radius: 14px;
+  box-shadow: var(--shadow-light);
+  text-align: center;
+  width: 200px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.member:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.member img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.member p {
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: var(--primary-color);
+}
+
+/* === FOOTER === */
+.footer {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 50px 40px;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  text-align: left;
+}
+
+.footer .logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+.footer .column {
+  min-width: 200px;
+  margin-top: 20px;
+}
+
+.footer .column h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding: 12px;
+  background-color: var(--primary-color);
+  font-size: 0.9em;
+  color: white;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .content {
+    flex-direction: column;
+    align-items: center;
+  }
+  .mission-vision-values,
+  .why-choose-us {
+    flex-direction: column;
+  }
+  .about-container {
+    padding: 30px 15px;
+  }
+}
+</style>
+
+<!-- ABOUT SECTION -->
+<main class="container about-container fade-in">
   <h1 class="title">About <span>Us</span></h1>
   <hr class="line" />
 
   <div class="content">
-    <div class="image-box">
-      <img src="{% static 'images/about.png' %}" alt="Image">
+    <div class="image-box fade-in">
+      <img src="{% static 'images/about.png' %}" alt="About Image">
     </div>
-    <div class="text-box">
+    <div class="text-box fade-in">
       <h2 class="history">History</h2>
       <p>
         <span class="short-text">
-          Audioman originated as a modest passion project established by a group of individuals who shared a deep appreciation for music and live events. Equipped with only a few speakers and basic lighting equipment, the team initially supported intimate gatherings and community programs.
+          Audioman started as a humble passion project formed by a group of individuals who shared a love for music and live events...
         </span>
         <span class="dots">...</span>
-        <span class="more-text" style="display: none;">
-          As their reputation for quality and reliability grew, opportunities expanded from private occasions such as birthdays and weddings to larger-scale functions. This steady demand allowed Audioman to enhance its equipment, refine its services, and broaden its professional team.
-
-          Over time, the company transitioned from handling small productions to delivering comprehensive event solutions. Today, Audioman is recognized as a trusted provider of premium sound and lighting services, supporting concerts, festivals, corporate functions, and other major events within local communities and nearby cities.
+        <span class="more-text" style="display:none;">
+          As their reputation for reliability grew, opportunities expanded from birthdays and weddings to larger events. Today, Audioman stands as a trusted provider of premium sound and lighting services across cities.
         </span>
       </p>
       <button class="read-more">&#9698; Read more</button>
@@ -30,7 +365,8 @@
   </div>
 </main>
 
-<section class="mission-vision-values container">
+<!-- MISSION / VISION / VALUES -->
+<section class="mission-vision-values fade-in">
   <div class="box">
     <img src="{% static 'images/mission.png' %}" alt="Mission Icon">
     <h2>Our <span class="highlight">Mission</span></h2>
@@ -44,73 +380,43 @@
   <div class="box">
     <img src="{% static 'images/values.png' %}" alt="Values Icon">
     <h2>Our <span class="highlight">Values</span></h2>
-    <p>We value professionalism, creativity, commitment, and exceptional customer service in everything we do.</p>
+    <p>We value professionalism, creativity, commitment, and excellent customer service in everything we do.</p>
   </div>
 </section>
 
-<h2 class="choose-us-title">Why Choose Us?</h2>
-<section class="why-choose-us">
-  <div class="info-box">
-    <h3 class="info-title">Experience That Counts</h3>
-    <p class="info-desc">Over 10 years of bringing unforgettable events to life.</p>
+<!-- WHY CHOOSE US -->
+<h2 class="choose-us-title fade-in">Why Choose Us?</h2>
+<section class="why-choose-us fade-in">
+  <div class="choose-box">
+    <h3>Experience That Counts</h3>
+    <p>Over 10 years of bringing unforgettable events to life.</p>
   </div>
-  <div class="info-box">
-    <h3 class="info-title">Top-Tier Equipment</h3>
-    <p class="info-desc">Premium sound and lighting tailored for gatherings big or small.</p>
+  <div class="choose-box">
+    <h3>Top-Tier Equipment</h3>
+    <p>Premium sound and lighting tailored for gatherings big or small.</p>
   </div>
-  <div class="info-box">
-    <h3 class="info-title">Trusted by Many</h3>
-    <p class="info-desc">From major brands to happy clients, our track record speaks for itself.</p>
+  <div class="choose-box">
+    <h3>Trusted by Many</h3>
+    <p>From major brands to happy clients, our track record speaks for itself.</p>
   </div>
 </section>
 
-<section class="team-section">
+<!-- TEAM SECTION -->
+<section class="team-section fade-in">
   <h2 class="team-title">Meet <span>Our Team</span></h2>
-  <p class="team-description">
-    We are a passionate team dedicated to delivering outstanding service and unforgettable event experiences.
-  </p>
-
-  <div class="team-carousel-wrapper">
-    <div class="team-members">
-      <div class="member">
-        <img src="{% static 'images/member3.png' %}" alt="Team Member 3">
-        <p>Christian Dela Cruz</p>
-      </div>
-      <div class="member">
-        <img src="{% static 'images/member4.png' %}" alt="Team Member 4">
-        <p>Joseph Mendoza</p>
-      </div>
-      <div class="member">
-        <img src="{% static 'images/member5.png' %}" alt="Team Member 5">
-        <p>Arvin Santos</p>
-      </div>
-      <div class="member">
-        <img src="{% static 'images/member6.png' %}" alt="Team Member 6">
-        <p>Ronald Reyes</p>
-      </div>
-      <div class="member">
-        <img src="{% static 'images/member7.png' %}" alt="Team Member 7">
-        <p>Jomar Villanueva</p>
-      </div>
-      <div class="member">
-        <img src="{% static 'images/member8.png' %}" alt="Team Member 8">
-        <p>Erwin Garcia</p>
-      </div>
-      <div class="member">
-        <img src="{% static 'images/member2.png' %}" alt="Team Member 9">
-        <p>Jam Villa</p>
-      </div>
-    </div>
+  <div class="team-members">
+    <div class="member"><img src="{% static 'images/member3.png' %}" alt="Team Member"><p>Christian Dela Cruz</p></div>
+    <div class="member"><img src="{% static 'images/member4.png' %}" alt="Team Member"><p>Joseph Mendoza</p></div>
+    <div class="member"><img src="{% static 'images/member5.png' %}" alt="Team Member"><p>Arvin Santos</p></div>
   </div>
 </section>
 
-<!-- ✅ Consistent Footer -->
-<footer class="footer">
+<!-- FOOTER -->
+<footer class="footer fade-in">
   <div class="logo">
-    <span style="color: white; font-weight: bold; font-size: 1.5rem;">AUDIO</span>
-    <span style="background-color: #f1c40f; color: black; font-weight: bold; padding: 2px 6px; margin-left: 4px; border-radius: 3px; font-size: 1.5rem;">MAN</span><br>
-    <small style="color: white; text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Lights & Sounds</small>
-    <div style="font-size: 0.7rem; color: #ddd; margin-top: 10px; text-transform: uppercase;">Owned and Operated by: Audioman Events and Entertainment Corp.</div>
+    <span style="color:white;font-weight:bold;font-size:1.5rem;">AUDIO</span>
+    <span style="background:#f1c40f;color:black;padding:2px 6px;border-radius:3px;margin-left:4px;font-size:1.5rem;">MAN</span><br>
+    <small style="color:white;text-transform:uppercase;letter-spacing:1px;">Lights & Sounds</small>
   </div>
   <div class="column">
     <h3>Services</h3>
@@ -130,43 +436,34 @@
     <p>+63 912 345 6789</p>
   </div>
 </footer>
+
 <div class="footer-bottom">
   © 2025 Audioman. All Rights Reserved.
 </div>
 
-<link rel="stylesheet" href="{% static 'css/aboutus.css' %}">
-
-<!-- ✅ Clean Read More Toggle Script -->
 <script>
+/* READ MORE BUTTON */
 document.addEventListener('DOMContentLoaded', function () {
-  document.querySelectorAll('.text-box').forEach(function (box) {
-    const btn   = box.querySelector('.read-more');
-    const dots  = box.querySelector('.dots');
-    const more  = box.querySelector('.more-text');
-
-    if (!btn || !dots || !more) return;
-
-    // Initial state
-    more.style.display = 'none';
-    dots.style.display = 'inline';
-    btn.innerHTML = '&#9698; Read more';
-
-    btn.addEventListener('click', function () {
-      const expanded = more.style.display !== 'none';
-
-      if (expanded) {
-        // Collapse
-        more.style.display = 'none';
-        dots.style.display = 'inline';
-        btn.innerHTML = '&#9698; Read more';
-      } else {
-        // Expand
-        more.style.display = 'inline';
-        dots.style.display = 'none';
-        btn.innerHTML = '&#9650; Read less';
-      }
+  document.querySelectorAll('.read-more').forEach(button => {
+    button.addEventListener('click', function () {
+      const textBox = this.closest('.text-box');
+      const moreText = textBox.querySelector('.more-text');
+      const dots = textBox.querySelector('.dots');
+      const isExpanded = moreText.style.display === 'inline';
+      moreText.style.display = isExpanded ? 'none' : 'inline';
+      dots.style.display = isExpanded ? 'inline' : 'none';
+      this.innerHTML = isExpanded ? '&#9698; Read more' : '&#9650; Read less';
     });
   });
+
+  /* FADE-IN ON SCROLL */
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.2 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 });
 </script>
 {% endblock %}

@@ -87,51 +87,48 @@
   </div>
 </section>
 
-<!-- Customer Feedback Section -->
 <section class="customer-feedback">
   <h2>Customer Feedback</h2>
+  {% if latest_feedback %}
   <div class="feedback-summary">
     <div class="feedback-item">
       <h3>Latest Feedback</h3>
-      <p>"Great service! Everything was timely and smooth."</p>
-      <span>Customer: John Doe</span>
+      <p>"{{ latest_feedback.comment }}"</p>
+      <span>Customer: {{ latest_feedback.customer_name }}</span>
     </div>
     <div class="feedback-item">
       <h3>Rating</h3>
-      <p>4.5 Stars</p>
+      <p>{{ latest_feedback.rating }} Stars</p>
     </div>
   </div>
+  {% else %}
+  <p>No feedback yet.</p>
+  {% endif %}
 </section>
 
-<!-- Upcoming Events Section -->
 <section class="upcoming-events">
   <h2>Upcoming Events</h2>
   <div class="event-list">
-    <div class="event-item">
-      <div class="event-date">
-        <span class="day">15</span>
-        <span class="month">Jul</span>
+    {% if upcoming_events %}
+      {% for event in upcoming_events %}
+      <div class="event-item">
+        <div class="event-date">
+          <span class="day">{{ event.event_date|date:"d" }}</span>
+          <span class="month">{{ event.event_date|date:"b" }}</span>
+        </div>
+        <div class="event-details">
+          <h3>{{ event.event_type }}</h3>
+          <p><i class="fas fa-calendar-alt"></i> {{ event.event_date|date:"F d, Y" }}</p>
+          <p><i class="fas fa-map-marker-alt"></i> {{ event.event_location }}</p>
+        </div>
       </div>
-      <div class="event-details">
-        <h3>Wedding Event</h3>
-        <p><i class="fas fa-calendar-alt"></i> July 15, 2025</p>
-        <p><i class="fas fa-map-marker-alt"></i> St. John Church</p>
-      </div>
-    </div>
-
-    <div class="event-item">
-      <div class="event-date">
-        <span class="day">10</span>
-        <span class="month">Aug</span>
-      </div>
-      <div class="event-details">
-        <h3>Corporate Conference</h3>
-        <p><i class="fas fa-calendar-alt"></i> August 10, 2025</p>
-        <p><i class="fas fa-map-marker-alt"></i> Hilton Hotel</p>
-      </div>
-    </div>
+      {% endfor %}
+    {% else %}
+      <p>No upcoming events found.</p>
+    {% endif %}
   </div>
 </section>
+
 
 <!-- Chart.js + DataLabels Plugin -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

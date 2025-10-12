@@ -84,7 +84,7 @@ def register_view(request):
             messages.success(request, "Registration successful. You can now log in.")
             return redirect("login")
 
-    return render(request, "accounts/register.html")
+    return render(request, "accounts/register.html", {"hide_footer": True})
 # Login View
 def login_view(request):
     if request.method == "POST":
@@ -108,7 +108,8 @@ def login_view(request):
         else:
             messages.error(request, "Invalid email or password.")
 
-    return render(request, "accounts/login.html")
+    return render(request, "accounts/login.html", {"hide_footer": True})
+
 
 # Logout View
 def logout_view(request):

@@ -19,7 +19,7 @@
   --font-main: 'MavenPro', sans-serif;
 }
 
-/* ========== GLOBAL ========== */
+/* GLOBAL */
 body {
   font-family: var(--font-main);
   background-color: #fafafa;
@@ -29,7 +29,7 @@ body {
   scroll-behavior: smooth;
 }
 
-/* ===== FADE-IN EFFECT ===== */
+/* FADE-IN */
 .fade-in {
   opacity: 0;
   transform: translateY(30px);
@@ -41,7 +41,7 @@ body {
   transform: translateY(0);
 }
 
-/* === ABOUT CONTAINER === */
+/* ABOUT CONTAINER */
 .about-container {
   max-width: 1100px;
   margin: 60px auto;
@@ -51,7 +51,7 @@ body {
   box-shadow: var(--shadow-light);
 }
 
-/* === TITLES === */
+/* TITLES */
 .title {
   color: var(--primary-color);
   font-size: 2.5rem;
@@ -72,7 +72,7 @@ body {
   margin: 0 auto 35px;
 }
 
-/* === CONTENT (HISTORY) === */
+/* CONTENT (HISTORY) */
 .content {
   display: flex;
   flex-wrap: wrap;
@@ -129,7 +129,7 @@ body {
   background: var(--accent-color);
 }
 
-/* === MISSION / VISION / VALUES === */
+/* MISSION / VISION / VALUES */
 .mission-vision-values {
   background: #f8f9fc;
   padding: 70px 20px;
@@ -183,7 +183,7 @@ body {
   color: #555;
 }
 
-/* === WHY CHOOSE US === */
+/* WHY CHOOSE US */
 .choose-us-title {
   font-size: 2.2rem;
   font-weight: 800;
@@ -231,7 +231,7 @@ body {
   line-height: 1.5;
 }
 
-/* === TEAM SECTION === */
+/* TEAM SECTION */
 .team-section {
   background: var(--secondary-color);
   padding: 50px;
@@ -287,44 +287,18 @@ body {
   color: var(--primary-color);
 }
 
-/* === FOOTER === */
-.footer {
-  background-color: var(--primary-color);
-  color: white;
-  padding: 50px 40px;
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  text-align: left;
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .title {
+    font-size: 2rem;
+  }
+  .about-container {
+    padding: 30px 20px;
+    margin: 40px 10px;
+  }
 }
 
-.footer .logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-  line-height: 1.4;
-}
-
-.footer .column {
-  min-width: 200px;
-  margin-top: 20px;
-}
-
-.footer .column h3 {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.footer-bottom {
-  text-align: center;
-  padding: 12px;
-  background-color: var(--primary-color);
-  font-size: 0.9em;
-  color: white;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* === RESPONSIVE === */
 @media (max-width: 768px) {
   .content {
     flex-direction: column;
@@ -333,9 +307,37 @@ body {
   .mission-vision-values,
   .why-choose-us {
     flex-direction: column;
+    align-items: center;
   }
-  .about-container {
+  .mission-vision-values .box,
+  .choose-box {
+    max-width: 100%;
+  }
+  .image-box {
+    width: 100%;
+    height: auto;
+  }
+  .team-section {
     padding: 30px 15px;
+  }
+  .team-members {
+    flex-direction: column;
+    align-items: center;
+  }
+  .line {
+    display: none; /* Hides decorative line on small screens */
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.8rem;
+  }
+  .history {
+    font-size: 1.4rem;
+  }
+  .choose-us-title {
+    font-size: 1.8rem;
   }
 }
 </style>
@@ -411,38 +413,7 @@ body {
   </div>
 </section>
 
-<!-- FOOTER -->
-<footer class="footer fade-in">
-  <div class="logo">
-    <span style="color:white;font-weight:bold;font-size:1.5rem;">AUDIO</span>
-    <span style="background:#f1c40f;color:black;padding:2px 6px;border-radius:3px;margin-left:4px;font-size:1.5rem;">MAN</span><br>
-    <small style="color:white;text-transform:uppercase;letter-spacing:1px;">Lights & Sounds</small>
-  </div>
-  <div class="column">
-    <h3>Services</h3>
-    <p>Sound System Rental</p>
-    <p>Lighting Design</p>
-    <p>Event Production</p>
-  </div>
-  <div class="column">
-    <h3>Company</h3>
-    <p>About Us</p>
-    <p>Careers</p>
-    <p>Blog</p>
-  </div>
-  <div class="column">
-    <h3>Contact Us</h3>
-    <p>info@studioflow.com</p>
-    <p>+63 912 345 6789</p>
-  </div>
-</footer>
-
-<div class="footer-bottom">
-  © 2025 Audioman. All Rights Reserved.
-</div>
-
 <script>
-/* READ MORE BUTTON */
 document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.read-more').forEach(button => {
     button.addEventListener('click', function () {
@@ -456,7 +427,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  /* FADE-IN ON SCROLL */
+  /* FADE-IN EFFECT */
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) entry.target.classList.add('visible');

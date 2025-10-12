@@ -220,47 +220,6 @@ textarea.full-width {
     80% { opacity: 1; }
     100% { opacity: 0; display: none; }
 }
-
-/* Footer styling consistent with base */
-.footer {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 40px;
-    display: flex;
-    justify-content: space-around;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    margin-top: 20px;
-}
-
-.footer .logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-
-.footer .column {
-    min-width: 200px;
-}
-
-.footer .column h3 {
-    font-size: 1.2rem;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.footer .column p {
-    font-size: 0.95rem;
-    color: white;
-    margin-bottom: 6px;
-}
-
-.footer-bottom {
-    text-align: center;
-    padding: 10px;
-    font-size: 0.9em;
-    background-color: var(--primary-color);
-    color: white;
-}
 /* === Responsive adjustments for Contact Us page === */
 @media (max-width: 1024px) {
   .contact-container {

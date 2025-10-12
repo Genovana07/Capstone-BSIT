@@ -4,11 +4,10 @@
 {% block title %}Register{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/register.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'css/register.css' %}?v=4">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&family=Open+Sans&family=Roboto&display=swap" rel="stylesheet">
-<style>
-/* aboutus.css - Enhanced Aesthetic with Background Image */
 
+<style>
 @font-face {
   font-family: 'MavenPro';
   src: url('../fonts/MavenPro-Regular.ttf') format('truetype');
@@ -24,89 +23,93 @@
   --form-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
+/* === BASE === */
 html, body {
-  width: 100%;
   height: 100%;
-  font-family: var(--font-main);
   margin: 0;
   padding: 0;
+  font-family: var(--font-main);
   background-image: url("{% static 'images/eme2.jpg' %}");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
   position: relative;
+  overflow-x: hidden;
 }
 
 html::before, body::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background-color: rgba(0,0,0,0.5);
   z-index: -1;
 }
 
+/* === REGISTER PAGE === */
 .register-page {
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding: 60px 20px;
+  align-items: center;
+  min-height: 100vh;
+  padding: 30px 20px;
   box-sizing: border-box;
-  width: 100%;
-  position: relative;
-  z-index: 1;
 }
 
 .register-left {
-  width: 100%;
-  max-width: 620px;
   background: var(--light-color);
-  padding: 40px 32px;
+  padding: 32px 28px;
   border-radius: 16px;
   box-shadow: var(--form-shadow);
-  display: flex;
-  flex-direction: column;
+  width: 100%;
+  max-width: 600px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
+/* === TITLE === */
 .register-title {
   font-family: 'Oswald', sans-serif;
-  font-size: 2.2rem;
+  font-size: 2rem;
   text-align: center;
   color: var(--accent-color);
-  margin-bottom: 30px;
+  margin-bottom: 20px;
+  word-wrap: break-word;
 }
 
-.input-row {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
+/* === FORM GRID LAYOUT === */
+.register-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 20px;
+  box-sizing: border-box;
 }
 
 .input-group {
-  flex: 1;
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .input-group label {
-  display: block;
-  margin-bottom: 6px;
   font-weight: 600;
   color: var(--primary-color);
   font-size: 0.9rem;
+  margin-bottom: 6px;
+  word-wrap: break-word;
 }
 
 .input-group input,
 .input-group select {
   width: 100%;
-  padding: 12px;
+  padding: 10px 12px;
   border: 1px solid #ccc;
   border-radius: 8px;
   background-color: #f0f0f0;
-  font-size: 1rem;
+  font-size: 0.95rem;
   transition: 0.3s ease;
+  box-sizing: border-box;
 }
 
 .input-group input:focus,
@@ -117,13 +120,22 @@ html::before, body::before {
   box-shadow: 0 0 0 3px rgba(122, 60, 255, 0.2);
 }
 
-.password-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+/* === FULL WIDTH ROWS === */
+.input-group.full-width {
+  grid-column: span 2;
 }
 
+/* === PASSWORD STACK === */
+.password-stack {
+  grid-column: span 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* === REGISTER BUTTON === */
 .register-btn {
+  grid-column: span 2;
   background-color: var(--accent-color);
   color: white;
   padding: 14px;
@@ -132,7 +144,6 @@ html::before, body::before {
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
-  margin-top: 20px;
   transition: background 0.3s ease;
 }
 
@@ -140,27 +151,31 @@ html::before, body::before {
   background-color: #6027d4;
 }
 
+/* === SEPARATOR === */
 .separator {
+  grid-column: span 2;
   display: flex;
   align-items: center;
-  text-align: center;
-  margin: 30px 0;
-  font-weight: 600;
+  justify-content: center;
+  margin: 20px 0 10px;
   color: var(--primary-color);
+  font-weight: 600;
 }
 
 .separator hr {
   flex: 1;
   height: 1px;
-  border: none;
   background: var(--primary-color);
+  border: none;
 }
 
 .separator span {
-  margin: 0 12px;
+  margin: 0 10px;
 }
 
+/* === SOCIAL BUTTONS === */
 .social-register {
+  grid-column: span 2;
   display: flex;
   justify-content: center;
   gap: 16px;
@@ -169,7 +184,7 @@ html::before, body::before {
 .social-register button {
   background: transparent;
   border: 2px solid var(--accent-color);
-  padding: 10px;
+  padding: 8px;
   border-radius: 50%;
   transition: background 0.3s ease, transform 0.3s ease;
 }
@@ -180,136 +195,186 @@ html::before, body::before {
 }
 
 .social-register img {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
 }
 
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+/* === RESPONSIVE FIXES === */
+@media (max-width: 900px) {
+  .register-left {
+    padding: 28px 24px;
+    max-width: 500px;
+  }
+  .register-form {
+    gap: 14px 16px;
+  }
 }
 
+@media (max-width: 768px) {
+  .register-page {
+    align-items: flex-start;
+    padding-top: 50px;
+  }
 
+  .register-left {
+    max-width: 90%;
+    padding: 24px 20px;
+  }
+
+  .register-form {
+    grid-template-columns: 1fr;
+  }
+
+  .password-stack {
+    grid-template-columns: 1fr;
+  }
+
+  .register-title {
+    font-size: 1.6rem;
+  }
+
+  .register-btn {
+    font-size: 0.95rem;
+    padding: 12px;
+  }
+
+  .social-register img {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-left {
+    padding: 18px;
+    border-radius: 12px;
+  }
+
+  .register-title {
+    font-size: 1.4rem;
+  }
+
+  .input-group input,
+  .input-group select {
+    font-size: 0.9rem;
+    padding: 9px;
+  }
+}
 </style>
 
 <div class="register-page">
-    <div class="register-left">
-        <h2 class="register-title">Create an Account</h2>
+  <div class="register-left">
+    <h2 class="register-title">Create an Account</h2>
 
-        {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                    <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
 
-        <form class="register-form" method="POST" action="{% url 'register' %}">
-            {% csrf_token %}
-        
-            <div class="input-row">
-                <div class="input-group">
-                    <label for="first_name">First Name</label>
-                    <input type="text" id="first_name" name="first_name" placeholder="Firstname" required />
-                </div>
-                <div class="input-group">
-                    <label for="last_name">Last Name</label>
-                    <input type="text" id="last_name" name="last_name" placeholder="Lastname" required />
-                </div>
-            </div>
-            <div class="input-group">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" placeholder="Username" required />
-              </div>
-        
-            <div class="input-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" placeholder="Email" required />
-            </div>
-        
-            <div class="input-group">
-                <label for="phone">Phone Number</label>
-                <input type="text" id="phone" name="phone" placeholder="Phone number" required />
-            </div>
-        
-            <div class="input-group">
-                <label for="address">Address</label>
-                <input type="text" id="address" name="address" placeholder="Address" required />
-            </div>
-        
-            <div class="input-row">
-                <div class="input-group">
-                    <label for="province">Province</label>
-                    <select id="province" name="province" required onchange="updateCities()">
-                        <option value="">Select a Province</option>
-                        <option value="Batangas">Batangas</option>
-                        <option value="Cavite">Cavite</option>
-                        <option value="Laguna">Laguna</option>
-                        <option value="Quezon">Quezon</option>
-                        <option value="Rizal">Rizal</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label for="city">City</label>
-                    <select id="city" name="city" required>
-                        <option value="">Select a City</option>
-                    </select>
-                </div>
-            </div>
-        
-            <div class="password-stack">
-                <div class="input-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Password" required />
-                </div>
-                <div class="input-group">
-                    <label for="confirm_password">Confirm Password</label>
-                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required />
-                </div>
-            </div>
-        
-            <button type="submit" class="register-btn">Register</button>
-        
-            <div class="separator">
-                <hr><span>OR</span><hr>
-            </div>
-        
-            <div class="social-register">
-                <button type="button" class="google-register" disabled>
-                    <img src="{% static 'images/google.png' %}" alt="Google" />
-                </button>
-                <button type="button" class="facebook-register" disabled>
-                    <img src="{% static 'images/facebook.png' %}" alt="Facebook" />
-                </button>
-            </div>
-        </form>
-    </div>
+    <form class="register-form" method="POST" action="{% url 'register' %}">
+      {% csrf_token %}
+
+      <div class="input-group">
+        <label for="first_name">First Name</label>
+        <input type="text" id="first_name" name="first_name" placeholder="Firstname" required />
+      </div>
+
+      <div class="input-group">
+        <label for="last_name">Last Name</label>
+        <input type="text" id="last_name" name="last_name" placeholder="Lastname" required />
+      </div>
+
+      <div class="input-group full-width">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Username" required />
+      </div>
+
+      <div class="input-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" placeholder="Email" required />
+      </div>
+
+      <div class="input-group">
+        <label for="phone">Phone Number</label>
+        <input type="text" id="phone" name="phone" placeholder="Phone number" required />
+      </div>
+
+      <div class="input-group full-width">
+        <label for="address">Address</label>
+        <input type="text" id="address" name="address" placeholder="Address" required />
+      </div>
+
+      <div class="input-group">
+        <label for="province">Province</label>
+        <select id="province" name="province" required onchange="updateCities()">
+          <option value="">Select a Province</option>
+          <option value="Quezon">Quezon</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label for="city">City</label>
+        <select id="city" name="city" required>
+          <option value="">Select a City</option>
+        </select>
+      </div>
+
+      <div class="password-stack">
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Password" required />
+        </div>
+        <div class="input-group">
+          <label for="confirm_password">Confirm Password</label>
+          <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required />
+        </div>
+      </div>
+
+      <button type="submit" class="register-btn">Register</button>
+
+      <div class="separator"><hr><span>OR</span><hr></div>
+
+      <div class="social-register">
+        <button type="button" class="google-register" disabled>
+          <img src="{% static 'images/google.png' %}" alt="Google" />
+        </button>
+        <button type="button" class="facebook-register" disabled>
+          <img src="{% static 'images/facebook.png' %}" alt="Facebook" />
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script>
-    const provinceOptions = {
-        "Batangas": ["Balayan", "Batangas City", "Bauan", "Calaca", "Calatagan", "Cuenca", "Ibaan", "Lemery", "Lipa", "Lobo", "Mabini", "Malvar", "Mataasnakahoy", "Nasugbu", "Padre Garcia", "Rosario", "San Jose", "San Juan", "San Luis", "San Nicolas", "San Pascual", "Santa Teresita", "Santo Tomas", "Taal", "Talisay", "Tanauan", "Taysan", "Tingloy", "Tuy"],
-        "Cavite": ["Alfonso", "Amadeo", "Bacoor", "Carmona", "Cavite City", "Dasmariñas", "General Emilio Aguinaldo", "General Mariano Alvarez", "General Trias", "Imus", "Indang", "Kawit", "Magallanes", "Maragondon", "Mendez", "Naic", "Noveleta", "Rosario", "Silang", "Tagaytay", "Tanza", "Ternate", "Trece Martires"],
-        "Laguna": ["Alaminos", "Bay", "Biñan", "Cabuyao", "Calamba", "Calauan", "Cavinti", "Famy", "Kalayaan", "Liliw", "Los Baños", "Luisiana", "Lumban", "Mabitac", "Magdalena", "Majayjay", "Nagcarlan", "Paete", "Pagsanjan", "Pakil", "Pangil", "Pila", "Rizal", "San Pablo", "San Pedro", "Santa Cruz", "Santa Maria", "Santa Rosa", "Siniloan", "Victoria"],
-        "Quezon": ["Agdangan", "Alabat", "Atimonan", "Buenavista", "Burdeos", "Calauag", "Candelaria", "Catanauan", "Dolores", "General Luna", "General Nakar", "Guinayangan", "Gumaca", "Infanta", "Jomalig", "Lopez", "Lucban", "Lucena", "Macalelon", "Mauban", "Mulanay", "Padre Burgos", "Pagbilao", "Panukulan", "Patnanungan", "Perez", "Pitogo", "Plaridel", "Polillo", "Quezon", "Real", "Sampaloc", "San Andres", "San Antonio", "San Francisco", "San Narciso", "Sariaya", "Tagkawayan", "Tayabas", "Tiaong", "Unisan"],
-        "Rizal": ["Angono", "Antipolo", "Baras", "Binangonan", "Cainta", "Cardona", "Jalajala", "Morong", "Pililla", "Rodriguez", "San Mateo", "Tanay", "Taytay", "Teresa"]
-    };
+const provinceOptions = {
+  "Quezon": [
+    "Agdangan", "Alabat", "Atimonan", "Buenavista", "Burdeos", "Calauag", "Candelaria", "Catanauan",
+    "Dolores", "General Luna", "General Nakar", "Guinayangan", "Gumaca", "Infanta", "Jomalig",
+    "Lopez", "Lucban", "Lucena", "Macalelon", "Mauban", "Mulanay", "Padre Burgos", "Pagbilao",
+    "Panukulan", "Patnanungan", "Perez", "Pitogo", "Plaridel", "Polillo", "Quezon", "Real",
+    "Sampaloc", "San Andres", "San Antonio", "San Francisco", "San Narciso", "Sariaya", "Tagkawayan",
+    "Tayabas", "Tiaong", "Unisan"
+  ]
+};
 
-    function updateCities() {
-        const province = document.getElementById("province").value;
-        const citySelect = document.getElementById("city");
-        citySelect.innerHTML = '<option value="">Select a City</option>';
-
-        if (provinceOptions[province]) {
-            provinceOptions[province].forEach(function(city) {
-                const option = document.createElement("option");
-                option.value = city;
-                option.textContent = city;
-                citySelect.appendChild(option);
-            });
-        }
-    }
+function updateCities() {
+  const province = document.getElementById("province").value;
+  const citySelect = document.getElementById("city");
+  citySelect.innerHTML = '<option value="">Select a City</option>';
+  if (provinceOptions[province]) {
+    provinceOptions[province].forEach(city => {
+      const option = document.createElement("option");
+      option.value = city;
+      option.textContent = city;
+      citySelect.appendChild(option);
+    });
+  }
+}
 </script>
 {% endblock %}

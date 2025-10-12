@@ -263,23 +263,15 @@
   </div>
 </div>
 
-<!-- CHATBOT -->
+<!-- === CHATBOT TOGGLE SYSTEM === -->
 
-<!-- Lightbox Modal -->
-<div id="lightbox-modal" onclick="closeLightbox()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); justify-content:center; align-items:center; z-index:9999;">
-    <img id="lightbox-img">
-    <span onclick="closeLightbox()" style="position:absolute;top:20px;right:30px;font-size:2rem;color:white;cursor:pointer;">&times;</span>
-</div>
 <!-- Toggle Button -->
-<div id="chat-toggle" 
-     style="position: fixed; bottom: 50px; right: 30px; 
-            background: #0078d7; color: white; padding: 12px 16px; 
-            border-radius: 50%; cursor: pointer; z-index:10000;">
+<div class="chatbot-toggle" id="chatbot-toggle">
     💬
 </div>
 
-
-<div class="chatbot-container">
+<!-- Chatbot Container -->
+<div class="chatbot-container" id="chatbot">
     <!-- Header -->
     <div class="chatbot-header">
         <h2>Booking Chatbot 🤖</h2>
@@ -309,47 +301,38 @@
         </ul>
     </div>
 </div>
-<footer class="footer">
-    <div class="logo">
-        <span style="color: white; font-weight: bold; font-size: 1.5rem;">AUDIO</span><span style="background-color: #f1c40f; color: black; font-weight: bold; padding: 2px 6px; margin-left: 4px; border-radius: 3px; font-size: 1.5rem;">MAN</span><br>
-        <small style="color: white; text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Lights & Sounds</small>
-        <div style="font-size: 0.7rem; color: #ddd; margin-top: 10px; text-transform: uppercase;">Owned and Operated by: Audioman Events and Entertainment Corp.</div>
-    </div>
-    <div class="column">
-        <h3>Services</h3>
-        <p>Sound System Rental</p>
-        <p>Lighting Design</p>
-        <p>Event Production</p>
-    </div>
-    <div class="column">
-        <h3>Company</h3>
-        <p>About Us</p>
-        <p>Careers</p>
-        <p>Blog</p>
-    </div>
-    <div class="column">
-        <h3>Contact Us</h3>
-        <p>info@studioflow.com</p>
-        <p>+63 912 345 6789</p>
-    </div>
-</footer>
-<div class="footer-bottom">
-  © 2025 Audioman. All Rights Reserved.
-</div>
 
 <!-- SCRIPT -->
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const chatbot = document.querySelector(".chatbot-container");
-    const toggle = document.getElementById("chat-toggle");
+    // =========================
+    // CHATBOT TOGGLE
+    // =========================
+    const toggleBtn = document.getElementById("chatbot-toggle");
+    const chatbot = document.getElementById("chatbot");
+    let isOpen = false;
 
-    // default: hidden
-    chatbot.style.display = "none";
+    if (toggleBtn && chatbot) {
+        // Default: hidden
+        chatbot.style.display = "none";
 
-    toggle.addEventListener("click", function () {
-        chatbot.style.display = (chatbot.style.display === "none") ? "flex" : "none";
-    });
+        toggleBtn.addEventListener("click", function () {
+            if (!isOpen) {
+                chatbot.style.display = "flex";
+                chatbot.classList.remove("fade-out");
+                chatbot.style.animation = "fadeInUp 0.3s ease";
+                toggleBtn.textContent = "❌"; // change icon
+            } else {
+                chatbot.classList.add("fade-out");
+                toggleBtn.textContent = "💬"; // change icon back
+                setTimeout(() => {
+                    chatbot.style.display = "none";
+                }, 250);
+            }
+            isOpen = !isOpen;
+        });
+    }
 
     // =========================
     // TESTIMONIALS 
@@ -357,72 +340,121 @@ document.addEventListener("DOMContentLoaded", function () {
     const cards = document.getElementById("testimonial-cards");
     const dots = document.querySelectorAll(".dot");
 
-dots.forEach((dot, index) => {
-  dot.addEventListener("click", () => {
-    dots.forEach(d => d.classList.remove("active"));
-    dot.classList.add("active");
+    if (cards && dots.length > 0) {
+        dots.forEach((dot, index) => {
+            dot.addEventListener("click", () => {
+                dots.forEach(d => d.classList.remove("active"));
+                dot.classList.add("active");
 
-    // Move to the group corresponding to the dot
-    const offset = -index * 100; 
-    cards.style.transform = `translateX(${offset}%)`;
-  });
-});
-
-    // default: unang dot active
-    dots[0].classList.add("active");
-});
-
-
-function appendMessage(sender, message) {
-    const log = document.getElementById("chat-log");
-    const div = document.createElement("div");
-    div.textContent = sender + ": " + message;
-    log.appendChild(div);
-    log.scrollTop = log.scrollHeight;
-}
-
-document.getElementById("send-btn").addEventListener("click", sendMessage);
-document.getElementById("chat-input").addEventListener("keypress", function(e) {
-    if (e.key === "Enter") sendMessage();
-});
-
-function sendMessage() {
-    let input = document.getElementById("chat-input");
-    let message = input.value.trim();
-    if (message === "") return;
-
-    // Add user message to chatbox
-    let chatBox = document.getElementById("chat-box");
-    let userMsg = document.createElement("div");
-    userMsg.className = "text-right";
-    userMsg.innerHTML = `<span class="inline-block bg-blue-500 text-white px-3 py-2 rounded-lg mb-2">${message}</span>`;
-    chatBox.appendChild(userMsg);
-
-    // Scroll down
-    chatBox.scrollTop = chatBox.scrollHeight;
-
-    // Clear input
-    input.value = "";
-
-    // Send to API
-    fetch(`/accounts/chatbot-api/?message=${encodeURIComponent(message)}`)
-        .then(res => res.json())
-        .then(data => {
-            let botMsg = document.createElement("div");
-            botMsg.className = "text-left";
-            botMsg.innerHTML = `<span class="inline-block bg-gray-200 text-gray-800 px-3 py-2 rounded-lg mb-2">${data.response}</span>`;
-            chatBox.appendChild(botMsg);
-            chatBox.scrollTop = chatBox.scrollHeight;
+                // Move to the group corresponding to the dot
+                const offset = -index * 100; 
+                cards.style.transform = `translateX(${offset}%)`;
+            });
         });
-}
+        // Default: unang dot active
+        dots[0].classList.add("active");
+    }
 
+    // =========================
+    // CHATBOT MESSAGE HANDLER
+    // =========================
+    const sendBtn = document.getElementById("send-btn");
+    const inputField = document.getElementById("chat-input");
+    const chatBox = document.getElementById("chat-box");
+
+    function sendMessage() {
+        let message = inputField.value.trim();
+        if (message === "") return;
+
+        // Add user message
+        let userMsg = document.createElement("div");
+        userMsg.className = "text-right";
+        userMsg.innerHTML = `<span class="inline-block bg-blue-500 text-white px-3 py-2 rounded-lg mb-2">${message}</span>`;
+        chatBox.appendChild(userMsg);
+
+        // Scroll down
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Clear input
+        inputField.value = "";
+
+        // Send to API
+        fetch(`/accounts/chatbot-api/?message=${encodeURIComponent(message)}`)
+            .then(res => res.json())
+            .then(data => {
+                let botMsg = document.createElement("div");
+                botMsg.className = "text-left";
+                botMsg.innerHTML = `<span class="inline-block bg-gray-200 text-gray-800 px-3 py-2 rounded-lg mb-2">${data.response}</span>`;
+                chatBox.appendChild(botMsg);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+    }
+
+    if (sendBtn && inputField) {
+        sendBtn.addEventListener("click", sendMessage);
+        inputField.addEventListener("keypress", function (e) {
+            if (e.key === "Enter") sendMessage();
+        });
+    }
+
+    // =========================
+    // LIGHTBOX
+    // =========================
+    const lightboxModal = document.getElementById("lightbox-modal");
+    const lightboxImg = document.getElementById("lightbox-img");
+
+    window.openLightbox = function (src) {
+        if (lightboxModal && lightboxImg) {
+            lightboxImg.src = src;
+            lightboxImg.style.width = "100%";
+            lightboxImg.style.height = "auto";
+            lightboxModal.style.display = "flex";
+        }
+    };
+
+    window.closeLightbox = function () {
+        if (lightboxModal) {
+            lightboxModal.style.display = "none";
+        }
+    };
+
+    // =========================
+    // CAROUSEL (ARROWS)
+    // =========================
+    const cardsContainer = document.getElementById("testimonial-cards");
+    const leftArrow = document.querySelector(".left-arrow");
+    const rightArrow = document.querySelector(".right-arrow");
+
+    if (cardsContainer && leftArrow && rightArrow) {
+        const scrollAmount = cardsContainer.offsetWidth;
+
+        leftArrow.addEventListener("click", () => {
+            cardsContainer.scrollBy({
+                left: -scrollAmount,
+                behavior: "smooth"
+            });
+        });
+
+        rightArrow.addEventListener("click", () => {
+            cardsContainer.scrollBy({
+                left: scrollAmount,
+                behavior: "smooth"
+            });
+        });
+    }
+
+}); // END of DOMContentLoaded
+
+// =========================
+// OTHER HELPERS
+// =========================
 function getCookie(name) {
     let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.substring(0, name.length + 1) === (name + "=")) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
             }
@@ -431,50 +463,39 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// CSRF token helper (duplicate protection)
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== "") {
-    const cookies = document.cookie.split(";");
-    for (let cookie of cookies) {
-      cookie = cookie.trim();
-      if (cookie.substring(0, name.length + 1) === (name + "=")) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
-
 function scrollToContainer1() {
     var container = document.getElementById("container1");
-    container.style.display = "block";
-    container.scrollIntoView({ behavior: "smooth" });
+    if (container) {
+        container.style.display = "block";
+        container.scrollIntoView({ behavior: "smooth" });
+    }
 }
 
-function openLightbox(src) {
-    const modal = document.getElementById("lightbox-modal");
-    const img = document.getElementById("lightbox-img");
-    img.src = src;
-    img.style.width = '100%';
-    img.style.height = 'auto';
-    modal.style.display = "flex";
-}
+// =========================
+// FADE-IN ON SCROLL
+// =========================
+document.addEventListener("DOMContentLoaded", function () {
+  const fadeElements = document.querySelectorAll(
+    ".main-section, .highlights, .testimonials-container, .faq-container, .footer"
+  );
 
-function closeLightbox() {
-    document.getElementById("lightbox-modal").style.display = "none";
-}
+  fadeElements.forEach(el => el.classList.add("fade-in"));
 
-// (old moveCarousel kept here in case needed for arrows, but dots na ang gamit)
-let currentIndex = 0;
-function moveCarousel(direction) {
-    const cards = document.getElementById("testimonial-cards").children;
-    const totalCards = cards.length;
-    currentIndex = (currentIndex + direction + totalCards) % totalCards;
-    const cardWidth = cards[0].offsetWidth;
-    document.getElementById("testimonial-cards").style.transform = `translateX(-${cardWidth * currentIndex}px)`;
-}
+  const observer = new IntersectionObserver(
+    (entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("show");
+          observer.unobserve(entry.target); // i-once lang animation
+        }
+      });
+    },
+    { threshold: 0.1 }
+  );
+
+  fadeElements.forEach(el => observer.observe(el));
+});
 </script>
+
 <link rel="stylesheet" href="{% static 'css/home.css' %}">
 {% endblock %}

@@ -129,6 +129,19 @@
 .alert-success { background-color:#4CAF50; }
 .alert-error { background-color:#f44336; }
 .alert { display:flex; align-items:center; justify-content:center; height:35px; }
+ @media (max-width: 768px) {
+        .container {
+            flex-direction: column;
+        }
+
+        .sidebar {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid #ccc;
+        }
+
+        
+    }
 </style>
 
 <div class="container">

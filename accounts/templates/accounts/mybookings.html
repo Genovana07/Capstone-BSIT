@@ -3,62 +3,61 @@
 
 {% block content %}
 <style>
-  .container {
-    display: flex;
-    min-height: 100vh;
-    font-family: 'MavenPro', sans-serif;
-    background-color: #f9f9fb;
-  }
+  
 
-  .sidebar {
-    width: 240px;
-    background-color: #ffffff;
-    padding: 40px 20px;
-    border-right: 1px solid #e0e0e0;
-  }
+        .container {
+        display: flex;
+        min-height: 100vh;
+        font-family: 'MavenPro', sans-serif;
+    }
 
-  .sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
+    .sidebar {
+        width: 240px;
+        background-color: #ffffff;
+        padding: 40px 20px;
+        border-right: 1px solid #ddd;
+    }
 
-  .sidebar li {
-    display: flex;
-    align-items: center;
-    margin-bottom: 25px;
-    font-size: 18px;
-  }
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+    }
 
-  .sidebar li img {
-    width: 24px;
-    height: 24px;
-    margin-right: 12px;
-  }
+    .sidebar li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+        font-size: 18px;
+    }
 
-  .sidebar li span a {
-    color: #23194f;
-    font-weight: 500;
-    font-size: 16px;
-    text-decoration: none;
-    transition: color 0.3s ease;
-  }
+    .sidebar li img {
+        width: 24px;
+        height: 24px;
+        margin-right: 12px;
+    }
 
-  .sidebar li span a:hover {
-    color: #7a3cff;
-  }
+    .sidebar li span a {
+        color: #23194f;
+        font-weight: 500;
+        font-size: 16px;
+        text-decoration: none;
+    }
 
-  /* ACTIVE STATE */
-  .sidebar li.active {
-    background: #d9e8ff;          
-    border-radius: 8px;            
-    padding: 10px;
-  }
+    .sidebar li span a:hover {
+        color: #3a2d7c;
+    }
 
-  .sidebar li.active a {
-    color: #1a73e8;                
-    font-weight: 700;               
-  }
+    /* ACTIVE STATE */
+    .sidebar li.active {
+        background: #d9e8ff;          
+        border-radius: 8px;            
+        padding: 10px;
+    }
+
+    .sidebar li.active a {
+        color: #1a73e8;                
+        font-weight: 700;               
+    }
 
   .main-content {
     flex-grow: 1;
@@ -135,6 +134,19 @@
   a:hover {
     text-decoration: underline;
   }
+      @media (max-width: 768px) {
+        .container {
+            flex-direction: column;
+        }
+
+        .sidebar {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid #ccc;
+        }
+
+        
+    }
 </style>
 
 <form style="display:none;">

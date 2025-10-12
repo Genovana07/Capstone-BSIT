@@ -21,23 +21,31 @@
 {% endif %}
 
 <header class="nav-header">
-    <div class="logo">
-        <span class="text-white">AUDIO</span><span class="text-yellow">MAN</span>
+    <div class="left-section">
+        <div class="logo">
+            <span class="text-white">AUDIO</span><span class="text-yellow">MAN</span>
+        </div>
+
+        <!-- HAMBURGER BUTTON -->
+        <div class="hamburger" id="hamburger">
+            <i class="fas fa-bars"></i>
+        </div>
     </div>
-    <nav>
+
+    <nav id="navMenu">
         <ul>
             <li class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-            <a href="{% url 'home' %}">Home</a>
-        </li>
-        <li class="{% if request.resolver_match.url_name == 'services' %}active{% endif %}">
-            <a href="{% url 'services' %}">Services</a>
-        </li>
-        <li class="{% if request.resolver_match.url_name == 'aboutus' %}active{% endif %}">
-            <a href="{% url 'aboutus' %}">About Us</a>
-        </li>
-        <li class="{% if request.resolver_match.url_name == 'contactus' %}active{% endif %}">
-            <a href="{% url 'contactus' %}">Contact Us</a>
-        </li>
+                <a href="{% url 'home' %}">Home</a>
+            </li>
+            <li class="{% if request.resolver_match.url_name == 'services' %}active{% endif %}">
+                <a href="{% url 'services' %}">Services</a>
+            </li>
+            <li class="{% if request.resolver_match.url_name == 'aboutus' %}active{% endif %}">
+                <a href="{% url 'aboutus' %}">About Us</a>
+            </li>
+            <li class="{% if request.resolver_match.url_name == 'contactus' %}active{% endif %}">
+                <a href="{% url 'contactus' %}">Contact Us</a>
+            </li>
 
             {% if user.is_authenticated %}
                 <!-- Notification Bell -->
@@ -49,19 +57,19 @@
                         {% endif %}
                     </a>
                     <div class="notification-dropdown" id="notificationDropdown">
-                            {% if notifications %}
-                                <ul>
-                                    {% for notif in notifications %}
-                                        <li class="{% if not notif.is_read %}unread{% endif %}">
-                                            {{ notif.message }} <br>
-                                            <small>{{ notif.created_at|date:"M d, Y" }}</small>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <p class="no-notifications">No notifications</p>
-                            {% endif %}
-                        </div>
+                        {% if notifications %}
+                            <ul>
+                                {% for notif in notifications %}
+                                    <li class="{% if not notif.is_read %}unread{% endif %}">
+                                        {{ notif.message }} <br>
+                                        <small>{{ notif.created_at|date:"M d, Y" }}</small>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="no-notifications">No notifications</p>
+                        {% endif %}
+                    </div>
                 </li>
 
                 <!-- Profile -->
@@ -89,29 +97,63 @@
 
 {% block content %}{% endblock %}
 
+{% if not hide_footer %}
+<!-- ===== FOOTER ===== -->
+<footer class="footer fade-in">
+  <div class="logo">
+    <span style="color:white;font-weight:bold;font-size:1.5rem;">AUDIO</span>
+    <span style="background:#f1c40f;color:black;padding:2px 6px;border-radius:3px;margin-left:4px;font-size:1.5rem;">MAN</span><br>
+    <small style="color:white;text-transform:uppercase;letter-spacing:1px;">Lights & Sounds</small>
+  </div>
+  <div class="column">
+    <h3>Services</h3>
+    <p>Sound System Rental</p>
+    <p>Lighting Design</p>
+    <p>Event Production</p>
+  </div>
+  <div class="column">
+    <h3>Company</h3>
+    <p>About Us</p>
+    <p>Careers</p>
+    <p>Blog</p>
+  </div>
+  <div class="column">
+    <h3>Contact Us</h3>
+    <p>info@studioflow.com</p>
+    <p>+63 912 345 6789</p>
+  </div>
+</footer>
+
+<div class="footer-bottom">
+  © 2025 Audioman. All Rights Reserved.
+</div>
+{% endif %}
+
+<!-- ===== SCRIPTS ===== -->
 <script>
-    // Auto-hide messages
     document.addEventListener('DOMContentLoaded', function () {
         const messageContainer = document.getElementById('messageContainer');
         if (messageContainer) {
-            setTimeout(function() {
-                messageContainer.style.display = 'none';
-            }, 2000);
+            setTimeout(() => messageContainer.style.display = 'none', 2000);
         }
     });
 
-    // Notification dropdown toggle + mark as read
+    const hamburger = document.getElementById('hamburger');
+    const navMenu = document.getElementById('navMenu');
+    hamburger.addEventListener('click', () => {
+        navMenu.classList.toggle('open');
+        hamburger.classList.toggle('active');
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
         const bell = document.getElementById('notificationBell');
         const dropdown = document.getElementById('notificationDropdown');
         const badge = document.querySelector('.notification-badge');
 
         if (bell && dropdown) {
-            bell.addEventListener('click', function(e) {
+            bell.addEventListener('click', function (e) {
                 e.preventDefault();
                 dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-
-                // Kapag binuksan yung dropdown → mark all as read
                 if (dropdown.style.display === 'block') {
                     fetch("{% url 'mark_notifications_as_read' %}", {
                         method: "POST",
@@ -120,17 +162,14 @@
                             "Content-Type": "application/json"
                         }
                     })
-                    .then(response => response.json())
+                    .then(res => res.json())
                     .then(data => {
-                        if (data.status === "ok" && badge) {
-                            badge.style.display = 'none'; // alisin yung red number
-                        }
+                        if (data.status === "ok" && badge) badge.style.display = 'none';
                     });
                 }
             });
 
-            // Close dropdown kapag nag click sa labas
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 if (!bell.contains(e.target) && !dropdown.contains(e.target)) {
                     dropdown.style.display = 'none';
                 }
@@ -138,193 +177,230 @@
         }
     });
 </script>
-
 <style>
-/* Layout */
+/* === GENERAL LAYOUT === */
 .nav-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px;
+    padding: 12px 20px;
     width: 100%;
+    background-color: white;
+    border-bottom: 1px solid #ddd;
+    position: relative;
+    z-index: 100;
 }
 
+.left-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: 800;
+}
+.text-white { color: #23194f; }
+.text-yellow { color: #fbc531; }
+
+/* NAVIGATION MENU */
 nav ul {
     display: flex;
-    gap: 15px;
+    gap: 18px;
     margin: 0;
     padding: 0;
     align-items: center;
 }
+nav ul li { list-style: none; }
 
-nav ul li {
-    list-style: none;
-}
-
-/* ACTIVE STATE highlight sa nav */
-nav ul li.active a {
-    background-color: var(--highlight-bg);
-    color: var(--primary-color);
-    font-weight: 700;
+nav ul li a {
+    text-decoration: none;
+    color: #333;
+    padding: 8px 10px;
     border-radius: 5px;
+    transition: background 0.3s;
+}
+nav ul li.active a {
+    background-color: #eae6ff;
+    color: #7a3cff;
+    font-weight: 700;
 }
 
-/* Profile */
-.nav-header .profile-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: auto;
+/* === HAMBURGER BUTTON === */
+.hamburger {
+    display: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #23194f;
+}
+.hamburger.active i {
+    transform: rotate(90deg);
+    transition: 0.3s;
 }
 
+/* === RESPONSIVE NAV === */
+@media (max-width: 900px) {
+    .hamburger { display: block; }
+    nav {
+        position: absolute;
+        top: 60px;
+        right: 0;
+        background: white;
+        width: 250px;
+        border-left: 1px solid #ddd;
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+        height: calc(100vh - 60px);
+        overflow-y: auto;
+    }
+    nav.open { transform: translateX(0); }
+    nav ul {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+        gap: 15px;
+    }
+    nav ul li a {
+        display: block;
+        width: 100%;
+        padding: 10px 15px;
+    }
+    .notification-dropdown { right: 10px; }
+}
+
+/* PROFILE & DASHBOARD */
+.profile-item { display: flex; align-items: center; gap: 8px; }
 .profile-link img {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    object-fit: cover;
 }
-
-.profile-item .profile-name {
-    line-height: 30px;
-}
-
-/* Dashboard button */
+.profile-name { font-weight: 600; }
 .dashboard-btn {
     background-color: #4CAF50;
     padding: 8px 16px;
     border-radius: 6px;
     color: white;
-    text-decoration: none;
     font-weight: 600;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-decoration: none;
+    transition: background 0.3s ease;
+}
+.dashboard-btn:hover { background-color: #45a049; }
+
+/* NOTIFICATIONS */
+.notification-item { position: relative; }
+.notification-link { color: #333; font-size: 20px; position: relative; }
+.notification-badge {
+    position: absolute;
+    top: -4px; right: -4px;
+    background: red; color: white;
+    font-size: 11px; font-weight: bold;
+    padding: 2px 6px; border-radius: 50%;
+}
+.notification-dropdown {
+    display: none;
+    position: absolute;
+    top: 35px; right: 0;
+    background: #fff; border: 1px solid #ddd;
+    border-radius: 8px; width: 320px;
+    max-height: 400px; overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.notification-dropdown li {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.notification-dropdown li.unread {
+    background: #eef3ff; font-weight: 600;
 }
 
-.dashboard-btn:hover {
-    background-color: #45a049;
-    transform: translateY(-2px);
-}
-
-.dashboard-btn:active {
-    transform: translateY(2px);
-}
-
-/* Messages */
+/* ALERT MESSAGES */
 .messages {
     position: fixed;
-    top: 60px;
-    left: 50%;
+    top: 60px; left: 50%;
     transform: translateX(-50%);
-    width: 30%;
-    padding: 8px 15px;
-    color: white;
-    font-size: 14px;
+    width: 30%; padding: 8px 15px;
+    color: white; font-size: 14px;
     text-align: center;
     border-radius: 6px;
     z-index: 9999;
 }
+.alert-success { background-color: #4CAF50; }
+.alert-error { background-color: #f44336; }
+.alert { display: flex; align-items: center; justify-content: center; height: 35px; }
 
-.alert-error {
-    background-color: #f44336 !important;
+/* ===== FOOTER (UNIFORM ACROSS ALL PAGES) ===== */
+.footer {
+  background-color: var(--primary-color, #23194f);
+  color: white;
+  padding: 50px 40px;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  text-align: left;
+  transition: all 0.3s ease;
 }
 
-.alert-success {
-    background-color: #4CAF50 !important;
+/* LOGO */
+.footer .logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  line-height: 1.4;
+  text-align: center;
 }
 
-.alert {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 35px;
+/* COLUMNS */
+.footer .column {
+  min-width: 200px;
+  margin-top: 20px;
+  text-align: center;
 }
 
-/* Notification bell */
-.notification-item {
-    position: relative;
+.footer .column h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #fff;
 }
 
-.notification-link {
-    position: relative;
-    font-size: 20px; /* 🔔 palakihin bell */
-    color: #333;
-    display: inline-block;
+/* FOOTER BOTTOM */
+.footer-bottom {
+  text-align: center;
+  padding: 12px;
+  background-color: var(--primary-color, #23194f);
+  font-size: 0.9em;
+  color: white;
+  border-top: 1px solid rgba(255,255,255,0.2);
 }
 
-.notification-badge {
-    position: absolute;
-    top: -4px;   /* dikit sa taas */
-    right: -4px; /* dikit sa gilid */
-    background: red;
-    color: white;
-    font-size: 11px;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 50%;
-    line-height: 1;
-    min-width: 18px;
+/* === RESPONSIVE FOOTER === */
+@media (max-width: 900px) {
+  .footer {
+    flex-direction: column;
     text-align: center;
-}
-/* Notification dropdown */
-/* Dropdown container */
-.notification-dropdown {
-    display: none;
-    position: absolute;
-    top: 35px; 
-    right: 0;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    width: 320px;                 
-    max-height: 400px;          
-    overflow-y: auto;             
-    overflow-x: hidden;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    align-items: center;
+    gap: 30px;
+  }
+
+  .footer .logo {
+    margin-bottom: 20px;
+  }
+
+  .footer .column {
+    margin-top: 0;
+  }
+
+  .footer .column h3 {
+    margin-bottom: 8px;
+  }
+
+  .footer .column p {
+    margin: 4px 0;
+  }
 }
 
-/* List style */
-.notification-dropdown ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column
-}
-
-/* Each notification item */
-.notification-dropdown li {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 12px 15px;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 14px;
-    line-height: 1.4em;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-/* Hover effect (parang FB highlight) */
-.notification-dropdown li:hover {
-    background: #f5f6f7;
-}
-
-/* Unread notification (bold + light bg) */
-.notification-dropdown li.unread {
-    background: #eef3ff;
-    font-weight: 600;
-}
-
-/* Last item no border */
-.notification-dropdown li:last-child {
-    border-bottom: none;
-}
-
-/* Small timestamp text */
-.notification-dropdown small {
-    font-size: 12px;
-    color: #888;
-}
 </style>
 
 </body>

@@ -7,8 +7,8 @@
 
 {% block content %}
 <section class="services">
-    <h2>OUR SERVICES</h2>
-    <div class="title-line"></div>
+    <h2 class="section-title">Our Services</h2>
+    
 
     <div class="services-grid">
         {% for package in packages %}
@@ -311,33 +311,6 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
     </div>
 </div>
 
-<footer class="footer">
-    <div class="logo">
-        <span style="color: white; font-weight: bold; font-size: 1.5rem;">AUDIO</span><span style="background-color: #f1c40f; color: black; font-weight: bold; padding: 2px 6px; margin-left: 4px; border-radius: 3px; font-size: 1.5rem;">MAN</span><br>
-        <small style="color: white; text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Lights & Sounds</small>
-        <div style="font-size: 0.7rem; color: #ddd; margin-top: 10px; text-transform: uppercase;">Owned and Operated by: Audioman Events and Entertainment Corp.</div>
-    </div>
-    <div class="column">
-        <h3>Services</h3>
-        <p>Sound System Rental</p>
-        <p>Lighting Design</p>
-        <p>Event Production</p>
-    </div>
-    <div class="column">
-        <h3>Company</h3>
-        <p>About Us</p>
-        <p>Careers</p>
-        <p>Blog</p>
-    </div>
-    <div class="column">
-        <h3>Contact Us</h3>
-        <p>info@studioflow.com</p>
-        <p>+63 912 345 6789</p>
-    </div>
-</footer>
-<div class="footer-bottom">
-  © 2025 Audioman. All Rights Reserved.
-</div>
 
 <!-- JavaScript -->
 <script>
@@ -478,6 +451,7 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
 <!-- External CSS -->
 <link rel="stylesheet" href="{% static 'css/services.css' %}">
 <style>
+/* === GRID FORM === */
 .booking-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr; /* two columns */
@@ -488,141 +462,112 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
   grid-column: span 2; /* para sa mga field na dapat buong row */
 }
 
+/* === BOOKING MODAL === */
 .booking-modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    z-index: 9999;
-    overflow-y: auto;
-    padding: 20px;
-    box-sizing: border-box;
+  display: none;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  overflow-y: auto;
+  padding: 20px;
+  box-sizing: border-box;
 }
+
 .booking-content {
-    background: white;
-    max-width: 600px;
-    width: 100%;
-    margin: auto;
-    border-radius: 10px;
-    padding: 25px;
-    position: relative;
-    font-family: 'MavenPro', sans-serif;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    animation: fadeIn 0.3s ease-in-out;
+  background: white;
+  max-width: 600px;
+  width: 100%;
+  margin: auto;
+  border-radius: 10px;
+  padding: 25px;
+  position: relative;
+  font-family: 'MavenPro', sans-serif;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-in-out;
 }
+
 @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
+
 .close-btn {
-    position: absolute;
-    top: 12px;
-    right: 18px;
-    font-size: 28px;
-    cursor: pointer;
-    color: #333;
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  font-size: 28px;
+  cursor: pointer;
+  color: #333;
 }
+
 .booking-content h2 {
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-    color: #23194f;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #23194f;
 }
+
 .booking-content label {
-    display: block;
-    margin-top: 12px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: #444;
+  display: block;
+  margin-top: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #444;
 }
+
 .booking-content input,
 .booking-content select,
 .booking-content textarea {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 0.95rem;
-    margin-top: 5px;
-    background-color: #f9f9f9;
-    box-sizing: border-box;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  margin-top: 5px;
+  background-color: #f9f9f9;
+  box-sizing: border-box;
 }
+
 .booking-content textarea {
-    resize: vertical;
-    min-height: 80px;
+  resize: vertical;
+  min-height: 80px;
 }
+
 .submit-booking {
-    margin-top: 25px;
-    width: 100%;
-    background-color: #23194f;
-    color: white;
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.3s ease;
+  margin-top: 25px;
+  width: 100%;
+  background-color: #23194f;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
 }
 .submit-booking:hover {
-    background-color: #3a2d7c;
-}
-@media screen and (max-width: 600px) {
-    .booking-content {
-        padding: 20px 15px;
-    }
-    .booking-content h2 {
-        font-size: 1.5rem;
-    }
+  background-color: #3a2d7c;
 }
 
+/* === SEE MORE BUTTON === */
 .see-more-btn {
-    background-color: #23194f;
-    color: white;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background 0.3s ease;
-    margin-top: 10px;
-    width: auto;
-    display: inline-block;
+  background-color: #23194f;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+  margin-top: 10px;
+  width: auto;
+  display: inline-block;
 }
 .see-more-btn:hover {
-    background-color: #3a2d7c;
-}
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.6);
-  justify-content: center;
-  align-items: center;
+  background-color: #3a2d7c;
 }
 
-/* Modal Box */
-.modal-content {
-  background: #fff;
-  border-radius: 12px;
-  max-width: 800px;
-  width: 95%;
-  padding: 20px;
-  position: relative;
-  animation: zoomIn 0.3s ease;
-}
-
-/* Close Button */
-.close {
-  position: absolute;
-  top: 10px; right: 20px;
-  font-size: 28px;
-  font-weight: bold;
-  color: #333;
-  cursor: pointer;
-}
-
-/* ---------------- MODAL STYLES ---------------- */
+/* === MODAL === */
 .modal {
   display: none;
   position: fixed;
@@ -647,14 +592,14 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
 
 .close {
   position: absolute;
-  top: 12px; right: 18px;
+  top: 12px;
+  right: 18px;
   font-size: 30px;
   font-weight: bold;
   color: #555;
   cursor: pointer;
   transition: 0.2s;
 }
-
 .close:hover {
   color: #000;
 }
@@ -669,7 +614,6 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
   flex: 1 1 40%;
   text-align: center;
 }
-
 .modal-image img {
   max-width: 100%;
   border-radius: 12px;
@@ -706,7 +650,7 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
   color: #444;
 }
 
-/* Buttons inside modal */
+/* === MODAL BUTTONS === */
 .modal-btn {
   display: inline-block;
   padding: 12px 20px;
@@ -721,19 +665,19 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
   background: #23194f;
   color: white;
 }
-
 .modal-btn.book-now:hover {
-  background: #23194f;
+  background: #3a2d7c;
 }
 
 .modal-btn.login-first {
   background: #607d8b;
   color: white;
 }
-
 .modal-btn.login-first:hover {
   background: #455a64;
 }
+
+/* === SERVICES GRID === */
 .services-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -746,16 +690,105 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  height: 100%; /* make sure lahat same height */
+  height: 100%;
 }
 
 .package-desc {
-  flex: 1; /* para itulak yung button pababa */
+  flex: 1;
 }
-/* Zoom Animation */
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #23194f;
+  text-transform: uppercase;
+  border-bottom: 2px solid #23194f;
+  padding-bottom: 4px;
+}
+
+/* Pag maliit na screen, tanggalin yung line */
+@media screen and (max-width: 768px) {
+  .section-title {
+    border-bottom: none !important;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+}
+/* === ANIMATIONS === */
 @keyframes zoomIn {
   from { transform: scale(0.6); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
+}
+
+/* === RESPONSIVE ADJUSTMENTS === */
+@media screen and (max-width: 900px) {
+  .modal-body {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .modal-details {
+    flex: 1 1 100%;
+    text-align: center;
+  }
+
+  .modal-details ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .modal-btn {
+    width: 100%;
+    margin-top: 10px;
+  }
+}
+
+@media screen and (max-width: 700px) {
+  .booking-form-grid {
+    grid-template-columns: 1fr; /* one column layout for mobile */
+  }
+
+  .booking-content {
+    padding: 20px 15px;
+  }
+
+  .booking-content h2 {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  .booking-content label {
+    font-size: 0.9rem;
+  }
+
+  .submit-booking {
+    font-size: 0.95rem;
+  }
+
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .modal-content {
+    padding: 18px;
+  }
+
+  .modal-details h2 {
+    font-size: 1.3rem;
+  }
+
+  .modal-desc {
+    font-size: 0.9rem;
+  }
+
+  .modal-btn {
+    font-size: 0.9rem;
+  }
 }
 </style>
 

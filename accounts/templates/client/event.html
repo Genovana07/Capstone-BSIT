@@ -267,25 +267,52 @@ body.dark-mode .event-box.other {
           eventDiv.style.padding = "2px 4px";
           eventDiv.style.wordBreak = "break-word";
 
-          // 🎨 Color based on event type
-          let bgColor = "#e2e8f0"; // default gray
-          switch (event.type.toLowerCase()) {
-            case "wedding":
-              bgColor = "#ffe4e1"; // soft pink
-              break;
-            case "birthday":
-              bgColor = "#e9d5ff"; // light violet
-              break;
-            case "corporate":
-              bgColor = "#c7f9cc"; // light green
-              break;
-            case "concert":
-              bgColor = "#bae6fd"; // light blue
-              break;
-            case "other":
-              bgColor = "#fef08a"; // yellow
-              break;
-          }
+         // 🎨 Color based on event type
+let bgColor = "#e2e8f0"; // default gray
+
+switch (event.type.toLowerCase()) {
+  case "wedding":
+    bgColor = "#ffe4e1"; // soft pink
+    break;
+  case "birthday":
+    bgColor = "#fbcfe8"; // pastel pink
+    break;
+  case "corporate":
+    bgColor = "#c7f9cc"; // light green
+    break;
+  case "concert":
+    bgColor = "#bae6fd"; // light blue
+    break;
+  case "seminar":
+    bgColor = "#fde68a"; // warm yellow
+    break;
+  case "graduation":
+    bgColor = "#ddd6fe"; // soft lavender
+    break;
+  case "awarding ceremony":
+    bgColor = "#fcd34d"; // gold tone
+    break;
+  case "fundraising":
+    bgColor = "#bbf7d0"; // mint green
+    break;
+  case "fashion show":
+    bgColor = "#f9a8d4"; // rosy pink
+    break;
+  case "church":
+    bgColor = "#cbd5e1"; // calm gray-blue
+    break;
+  case "conference":
+    bgColor = "#93c5fd"; // sky blue
+    break;
+  case "school event":
+    bgColor = "#a7f3d0"; // aquamarine
+    break;
+  case "charity event":
+    bgColor = "#fef9c3"; // soft cream
+    break;
+  default:
+    bgColor = "#e2e8f0"; // default gray
+}
 
           eventDiv.style.backgroundColor = bgColor;
 

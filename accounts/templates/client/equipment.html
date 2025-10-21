@@ -93,7 +93,10 @@ document.querySelectorAll('.inventory-form').forEach(form => {
   form.addEventListener('submit', function(e){
     e.preventDefault();
 
-    const actionBtn = e.submitter;
+    // ✅ FIX: get the clicked button even on older browsers
+    const actionBtn = e.submitter || document.activeElement;
+    if (!actionBtn) return;
+
     let actionText = actionBtn.textContent.trim();
 
     Swal.fire({
@@ -106,13 +109,20 @@ document.querySelectorAll('.inventory-form').forEach(form => {
       confirmButtonText: 'Yes, proceed'
     }).then((result) => {
       if(result.isConfirmed){
+        // ✅ make sure the button value is sent
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = actionBtn.name;
+        hidden.value = actionBtn.value;
+        form.appendChild(hidden);
+
         form.submit();
       }
     });
   });
 });
 </script>
-</script>
+
 
 <style>
 /* Design tokens */

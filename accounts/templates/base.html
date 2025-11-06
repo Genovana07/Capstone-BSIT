@@ -11,13 +11,20 @@
 <body>
 
 {% if messages %}
-    <div class="messages" id="messageContainer">
-        {% for message in messages %}
-            <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    </div>
+<div class="messages" id="messageContainer">
+    {% for message in messages %}
+        <div class="alert
+            {% if 'success' in message.tags %}
+                alert-success
+            {% elif 'error' in message.tags or 'danger' in message.tags %}
+                alert-error
+            {% else %}
+                alert-info
+            {% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
 {% endif %}
 
 <header class="nav-header">
@@ -241,7 +248,28 @@ nav ul li.active a {
 
 /* === RESPONSIVE NAV === */
 @media (max-width: 900px) {
-    .hamburger { display: block; }
+ .nav-header {
+        justify-content: space-between; /* Ensure left and right alignment */
+        align-items: center;
+        position: relative;
+    }
+
+    .left-section {
+        flex: 1;
+        justify-content: flex-start;
+    }
+
+    /* Make hamburger stay at the top-right corner */
+    .hamburger {
+        position: absolute;
+        right: 20px;
+        top: 18px;
+        display: block;
+        font-size: 24px;
+        cursor: pointer;
+        color: #23194f;
+    }
+
     nav {
         position: absolute;
         top: 60px;
@@ -255,12 +283,14 @@ nav ul li.active a {
         overflow-y: auto;
     }
     nav.open { transform: translateX(0); }
+
     nav ul {
         flex-direction: column;
         align-items: flex-start;
         padding: 20px;
         gap: 15px;
     }
+}
     nav ul li a {
         display: block;
         width: 100%;
@@ -288,49 +318,273 @@ nav ul li.active a {
 }
 .dashboard-btn:hover { background-color: #45a049; }
 
-/* NOTIFICATIONS */
-.notification-item { position: relative; }
-.notification-link { color: #333; font-size: 20px; position: relative; }
-.notification-badge {
-    position: absolute;
-    top: -4px; right: -4px;
-    background: red; color: white;
-    font-size: 11px; font-weight: bold;
-    padding: 2px 6px; border-radius: 50%;
+/* ==== NOTIFICATIONS ==== */
+.notification-item {
+  position: relative;
+  display: inline-block;
 }
+
+/* Bell Icon */
+.notification-link {
+  color: #23194f;
+  font-size: 22px;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+.notification-link:hover {
+  transform: scale(1.1);
+  color: #7a3cff;
+}
+
+/* Red Badge */
+.notification-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: linear-gradient(135deg, #ff3b3b, #ff6b6b);
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 3px 6px;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(255, 0, 0, 0.4);
+}
+
+/* === Dropdown Box === */
 .notification-dropdown {
-    display: none;
-    position: absolute;
-    top: 35px; right: 0;
-    background: #fff; border: 1px solid #ddd;
-    border-radius: 8px; width: 320px;
-    max-height: 400px; overflow-y: auto;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: none;
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  width: 330px;
+  max-height: 420px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  flex-direction: column;
+  backdrop-filter: blur(6px);
+  z-index: 999;
+}
+.notification-dropdown.show {
+  display: flex;
+  animation: fadeIn 0.25s ease;
+}
+
+/* Sticky Header */
+.notif-header {
+  padding: 12px 16px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #23194f, #7a3cff);
+  color: white;
+  border-radius: 12px 12px 0 0;
+  font-size: 15px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Header Button (optional) */
+.notif-header button {
+  background: rgba(255, 255, 255, 0.25);
+  border: none;
+  color: white;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.notif-header button:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* List Items */
+.notification-dropdown ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
 }
 .notification-dropdown li {
-    padding: 12px 15px;
-    border-bottom: 1px solid #f0f0f0;
+  padding: 14px 18px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 .notification-dropdown li.unread {
-    background: #eef3ff; font-weight: 600;
+  background: #f1ecff;
+  font-weight: 600;
+  border-left: 4px solid #7a3cff;
+}
+.notification-dropdown li:hover {
+  background: #f9f8ff;
+  transform: translateX(3px);
 }
 
-/* ALERT MESSAGES */
+.notif-message {
+  color: #333;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.notif-date {
+  font-size: 12px;
+  color: #888;
+  text-align: right;
+  font-style: italic;
+}
+.no-notifications {
+  padding: 20px;
+  color: #777;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Scrollbar Style */
+.notification-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+.notification-dropdown::-webkit-scrollbar-thumb {
+  background: #c9b8ff;
+  border-radius: 6px;
+}
+.notification-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #a68cff;
+}
+.notification-dropdown::-webkit-scrollbar-track {
+  background-color: #f5f5f5;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === RESPONSIVE FIXES === */
+
+/* For tablets & small laptops */
+@media (max-width: 1024px) {
+  .notification-dropdown {
+    right: -10px;
+    width: 280px;
+    max-height: 400px;
+  }
+}
+
+/* For mobile phones */
+@media (max-width: 768px) {
+  .notification-item {
+    position: static; /* so dropdown can center */
+  }
+
+  .notification-dropdown {
+    position: fixed;
+    top: 65px;
+    right: 50%;
+    transform: translateX(50%); /* ✅ center horizontally */
+    width: 92vw;               /* ✅ use screen width */
+    max-height: 70vh;
+    border-radius: 14px;
+    z-index: 9999;
+  }
+
+  .notif-header {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+
+  .notif-header button {
+    font-size: 11px;
+    padding: 3px 7px;
+  }
+
+  .notification-dropdown li {
+    padding: 12px 14px;
+  }
+
+  .notif-message {
+    font-size: 13px;
+  }
+
+  .notif-date {
+    font-size: 11px;
+  }
+}
+
+/* Extra small screens (older phones) */
+@media (max-width: 480px) {
+  .notification-dropdown {
+    top: 60px;
+    width: 94vw;
+    max-height: 65vh;
+    font-size: 13px;
+  }
+
+  .notif-message {
+    font-size: 12.5px;
+  }
+
+  .notif-header {
+    font-size: 13px;
+  }
+}
+
+/* ALERT CONTAINER */
 .messages {
     position: fixed;
-    top: 60px; left: 50%;
+    top: 60px;
+    left: 50%;
     transform: translateX(-50%);
-    width: 30%; padding: 8px 15px;
-    color: white; font-size: 14px;
-    text-align: center;
-    border-radius: 6px;
+    width: 30%;
+    padding: 0;
+    background: none; /* remove any green bg */
+    border: none;
     z-index: 9999;
 }
-.alert-success { background-color: #4CAF50; }
-.alert-error { background-color: #f44336; }
-.alert { display: flex; align-items: center; justify-content: center; height: 35px; }
 
+/* BASE ALERT */
+.alert {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 35px;
+    width: 100%;
+    margin: 5px 0;
+    color: white;
+    font-size: 14px;
+    text-align: center;
+    border-radius: 6px;
+    border: none;
+}
+
+/* SUCCESS */
+.alert-success {
+    background-color: #4CAF50;
+}
+
+/* ERROR */
+.alert-error {
+    background-color: #f44336;
+}
 /* ===== FOOTER (UNIFORM ACROSS ALL PAGES) ===== */
 .footer {
   background-color: var(--primary-color, #23194f);

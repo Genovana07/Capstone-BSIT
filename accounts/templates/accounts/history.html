@@ -111,6 +111,30 @@
   .form-group .rating input:checked ~ label:hover,
   .form-group .rating input:checked ~ label:hover ~ label { color:#ffcc00; }
 
+  /* Rate Button Styling */
+.rate-btn {
+  background-color: #7a3cff;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.rate-btn:hover {
+  background-color: #5d2fcf;
+  transform: scale(1.05);
+}
+
+/* Disabled (Completed) State */
+.rate-btn.completed {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
   /* Messages */
   .messages {
     display:none;
@@ -202,22 +226,26 @@
               <td>{{ booking.event_date }}</td>
               <td>{{ booking.total }}</td>
               <td>
-                {% if booking.status == "Completed" %}
-                  {% if booking.review_exists %}
-                    <span style="color: gray; cursor: default; pointer-events: none;">
-                      {{ booking.rating }} ⭐
-                    </span>
-                  {% else %}
-                    <a href="javascript:void(0);" 
-                       onclick="openModal('{{ booking.id }}', '{{ booking.customer_name }}', '{{ booking.date_booked }}', '{{ booking.package }}', '{{ booking.event_date }}', '{{ booking.rating|default:"" }}')"
-                       style="color: #7a3cff; cursor: pointer;">
-                       ⭐ Rate
-                    </a>
-                  {% endif %}
+              {% if booking.status == "Completed" %}
+                {% if booking.review_exists %}
+                  <!-- Already rated -->
+                  <button 
+                    class="rate-btn completed" 
+                    disabled>
+                    Completed
+                  </button>
                 {% else %}
-                  N/A
+                  <!-- Not yet rated -->
+                  <button 
+                    class="rate-btn" 
+                    onclick="openModal('{{ booking.id }}', '{{ booking.customer_name }}', '{{ booking.date_booked }}', '{{ booking.package }}', '{{ booking.event_date }}', '{{ booking.rating|default:'' }}')">
+                    ⭐ Rate
+                  </button>
                 {% endif %}
-              </td>
+              {% else %}
+                N/A
+              {% endif %}
+            </td>
             </tr>
           {% empty %}
             <tr><td colspan="6">No history found.</td></tr>

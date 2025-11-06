@@ -206,7 +206,7 @@
             <div class="package-content">
                 <h3>{{ package.title }}</h3>
                 <p>{{ package.description|truncatewords:25 }}</p>
-                <p class="price">₱{{ package.price }}</p>
+                <p class="price">{{ package.price }}</p>
                 <div class="package-buttons">
                     <a href="{% url 'package_edit' package.id %}" class="edit-btn">Edit</a>
                     <a href="{% url 'package_delete' package.id %}" class="delete-btn">Delete</a>

@@ -80,6 +80,14 @@
     overflow: hidden;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   }
+  
+  .map-container p {
+      text-align: center;
+      padding-top: 50px;
+      color: #777;
+      font-size: 14px;
+      font-style: italic;
+  }
 
   /* 🌙 DARK MODE */
   body.dark-mode .tracking {
@@ -123,80 +131,145 @@
 <section class="tracking">
   <h1>Tracking Bookings</h1>
   {% if bookings %}
-    <table>
-      <thead>
-        <tr>
-          <th>Package</th>
-          <th>Event Date</th>
-          <th>Event Type</th>
-          <th>Address</th>
-          <th>Status</th>
-          <th>Equipment</th>
-          <th>Map</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for booking in bookings %}
-        <tr>
-          <td>{{ booking.package.title }}</td>
-          <td>{{ booking.event_date }}</td>
-          <td>{{ booking.event_type }}</td>
-          <td>{{ booking.fulladdress }}</td>
-          <td><span style="color: #16a34a; font-weight: 600;">Approved</span></td>
-          <td>
-            {% if booking.package.equipment.all %}
-              <ul>
-                {% for package_equipment in booking.package.packageequipment_set.all %}
-                  <li>{{ package_equipment.equipment.name }} (x{{ package_equipment.quantity_required }})</li>
-                {% endfor %}
-              </ul>
-            {% else %}
-              <p>No equipment assigned</p>
-            {% endif %}
-          </td>
-          <td>
-            <div id="map-{{ booking.id }}" class="map-container"></div>
+<table>
+  <thead>
+    <tr>
+      <th>Package</th>
+      <th>Event Date</th>
+      <th>Event Type</th>
+      <th>Barangay</th> <!-- 🟢 Added -->
+      <th>Address</th>
+      <th>Status</th>
+      <th>Equipment</th>
+      <th>Map</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for booking in bookings %}
+    <tr>
+      <td>{{ booking.package.title }}</td>
+      <td>{{ booking.event_date }}</td>
+      <td>{{ booking.event_type }}</td>
+
+      <!-- 🟢 Barangay value -->
+      <td>{{ booking.barangay }}</td>
+
+      <td>{{ booking.fulladdress }}</td>
+      <td>
+        <span style="color: #16a34a; font-weight: 600;">Approved</span>
+      </td>
+
+      <td>
+        {% if booking.package.equipment.all %}
+          <ul>
+            {% for package_equipment in booking.package.packageequipment_set.all %}
+              <li>{{ package_equipment.equipment.name }} (x{{ package_equipment.quantity_required }})</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No equipment assigned</p>
+        {% endif %}
+      </td>
+
+      <td>
+        <div id="map-{{ booking.id }}" class="map-container">
+            <p>Loading map...</p>
+        </div>
 <script>
-  function initMap(location, barangay, city, bookingId) {
-    geocode(location, function(success, lat, lon, label) {
+  /*
+  LOGIC: Barangay-based Geocoding with Fallbacks
+  Level 1: Barangay + City (Main)
+  Level 2: Cleaned Barangay + City (Removes 'Brgy/Purok/etc')
+  Level 3: Barangay Guess (from backup address) + City
+  Level 4: City Only (Last Resort)
+  */
+
+  function initMapFallback(bookingId, barangay, location, fullAddress = '') {
+    
+    // 1️⃣ Main: Try Barangay + City
+    const query1 = `${barangay}, ${location}`;
+    
+    geocode(query1, function(success, lat, lon, label) {
       if (success) {
         renderMap(lat, lon, label, bookingId);
-      } else {
-        // ⚠️ fallback to barangay (cleaned) + city
-        if (barangay) {
-          var cleanedBarangay = barangay.replace(/Brgy\.?/gi, "").trim(); 
-          var barangayQuery = cleanedBarangay + ", " + city;
+        return;
+      }
 
-          geocode(barangayQuery, function(success2, lat2, lon2, label2) {
-            if (success2) {
-              renderMap(lat2, lon2, label2, bookingId);
+      // 2️⃣ Fallback: Cleaned Barangay + City
+      let cleanedBarangay = barangay.replace(/purok|street|st\.|area|zone|brgy\.|brgy/gi, '').trim();
+
+      if (!cleanedBarangay || cleanedBarangay.length < 3) {
+        cleanedBarangay = barangay;
+      }
+      
+      const query2 = `${cleanedBarangay}, ${location}`;
+      
+      geocode(query2, function(success2, lat2, lon2, label2) {
+        if (success2) {
+          renderMap(lat2, lon2, label2, bookingId);
+          return;
+        }
+
+        // 3️⃣ Barangay Guess (from full address, if given)
+        let barangayGuess = '';
+        if (fullAddress && fullAddress.length > 0) {
+          const parts = fullAddress.split(',').map(p => p.trim()).filter(p => p.length > 0);
+          if (parts.length > 0) {
+              barangayGuess = parts[parts.length - 1];
+              barangayGuess = barangayGuess.replace(/purok|street|st\.|area|zone|brgy\.|brgy/gi, '').trim();
+          }
+        }
+
+        if (barangayGuess) {
+          const query3 = `${barangayGuess}, ${location}`;
+          geocode(query3, function(success3, lat3, lon3, label3) {
+            if (success3) {
+              renderMap(lat3, lon3, label3, bookingId);
+              return;
+            }
+
+            // 4️⃣ Last Resort: City Only
+            geocode(location, function(success4, lat4, lon4, label4) {
+              if (success4) {
+                renderMap(lat4, lon4, label4, bookingId);
+              } else {
+                document.getElementById('map-' + bookingId).innerHTML = "<p>Map not available.</p>";
+              }
+            });
+          });
+        } else {
+          // fallback to city only
+          geocode(location, function(success4, lat4, lon4, label4) {
+            if (success4) {
+              renderMap(lat4, lon4, label4, bookingId);
             } else {
-              // last fallback → city only
-              geocode(city, function(success3, lat3, lon3, label3) {
-                if (success3) {
-                  renderMap(lat3, lon3, label3, bookingId);
-                } else {
-                  document.getElementById('map-' + bookingId).innerHTML = "<p>No map found</p>";
-                }
-              });
+              document.getElementById('map-' + bookingId).innerHTML = "<p>Map not available.</p>";
             }
           });
         }
-      }
+      });
     });
   }
 
   function geocode(query, callback) {
-    var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+    if (!query || query.trim() === '') {
+        callback(false);
+        return;
+    }
+    var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.onreadystatechange = function() {
-      if (xhr.readyState == 4 && xhr.status == 200) {
-        var data = JSON.parse(xhr.responseText);
-        if (data.length > 0) {
-          callback(true, data[0].lat, data[0].lon, query);
+      if (xhr.readyState == 4) {
+        if (xhr.status == 200) {
+            var data = JSON.parse(xhr.responseText);
+            if (data.length > 0) {
+              callback(true, data[0].lat, data[0].lon, query);
+            } else {
+              callback(false);
+            }
         } else {
-          callback(false);
+            callback(false);
         }
       }
     };
@@ -204,20 +277,35 @@
   }
 
   function renderMap(lat, lon, label, bookingId) {
-    var map = L.map('map-' + bookingId).setView([lat, lon], 16);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-    L.marker([lat, lon]).addTo(map).bindPopup(label).openPopup();
-  }
+    const mapElement = document.getElementById('map-' + bookingId);
+    if (!mapElement) return;
+    
+    mapElement.innerHTML = ''; 
 
-  // 👇 Example usage
-  initMap(
-    '{{ booking.fulladdress|escapejs }} {{ booking.location|escapejs }}',  // full address
-    '{{ booking.fulladdress|escapejs }}',                                 // barangay fallback (cleaned)
-    '{{ booking.location|escapejs }}',                                    // city fallback
-    '{{ booking.id }}'
+    setTimeout(() => {
+        var map = L.map('map-' + bookingId).setView([lat, lon], 16);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        L.marker([lat, lon]).addTo(map)
+          .bindPopup(`<b>Barangay:</b><br>${label}`)
+          .openPopup();
+        
+        map.invalidateSize(); 
+    }, 100); 
+  }
+  
+  // ✅ Dynamic initialization per booking (now barangay-based)
+  initMapFallback(
+    '{{ booking.id }}',
+    '{{ booking.barangay|escapejs }}',  // barangay
+    '{{ booking.location|escapejs }}',  // city
+    '{{ booking.fulladdress|escapejs }}' // optional backup
   );
+
+  
 </script>
           </td>
         </tr>

@@ -22,7 +22,7 @@ from django.db.models.functions import TruncMonth
 from django.utils.dateformat import DateFormat
 from django.core.mail import send_mail
 from django.conf import settings
-from django.utils import timezone
+from django.utils import timezone, dateformat
 from django.views.decorators.csrf import csrf_exempt
 import json
 import re
@@ -35,6 +35,9 @@ from .models import Booking, Notification
 from .models import BookingChecklist, ChecklistItem
 from .models import ContactMessage
 from .forms import ServicePackageForm
+from collections import defaultdict
+from datetime import timezone as dt_timezone
+import calendar
 
 def register_view(request):
     if request.method == "POST":
@@ -48,6 +51,7 @@ def register_view(request):
         address = request.POST.get("address")
         province = request.POST.get("province")
         city = request.POST.get("city")
+        barangay = request.POST.get("barangay")  # ➕ Added
 
         # Validation
         if not username:
@@ -78,7 +82,8 @@ def register_view(request):
                 contact_number=phone,
                 address=address,
                 province=province,
-                city=city
+                city=city,
+                barangay=barangay  # ➕ Added
             )
 
             messages.success(request, "Registration successful. You can now log in.")
@@ -201,6 +206,7 @@ def profile(request):
         profile.province = request.POST.get('province', profile.province)
         profile.city = request.POST.get('city', profile.city)
         profile.address = request.POST.get('address', profile.address)
+        profile.barangay = request.POST.get("barangay")
 
         if request.FILES.get('profile_picture'):
             profile.profile_picture = request.FILES['profile_picture']
@@ -272,6 +278,7 @@ def create_booking(request):
         location = request.POST.get("location")
         fulladdress = request.POST.get("fulladdress")
         audience_size = request.POST.get("audience_size")
+        barangay = request.POST.get("barangay")
 
         try:
             package = ServicePackage.objects.get(title=selected_package)
@@ -304,6 +311,7 @@ def create_booking(request):
             event_type=event_type,
             location=location,
             fulladdress=fulladdress,
+            barangay=barangay,
             audience_size=audience_size,
             price=package.price,
             status='Processing'
@@ -324,14 +332,16 @@ def admin_only(view_func):
         return view_func(request, *args, **kwargs)
     return wrapper
 
+
 @login_required
 @admin_only
 def dashboard(request):
+
     bookings = Booking.objects.all()
     booking_count = bookings.count()
     pending_count = bookings.filter(status="Processing").count()
 
-    # ---------- Revenue & Profit ----------
+    # --- Revenue & Profit ---
     def parse_price(price):
         try:
             return float(str(price).replace('₱', '').replace(',', '').strip())
@@ -339,67 +349,144 @@ def dashboard(request):
             return 0.0
 
     revenue = sum(parse_price(b.price) for b in bookings)
-    profit = revenue * 0.5  # Adjust if needed
+    profit = revenue * 0.5
 
-    # ---------- Monthly Data (Chart.js) ----------
-    raw_monthly = bookings.annotate(
-        month=TruncMonth('event_date')
-    ).values('month').annotate(count=Count('id')).order_by('month')
+    # --- Bookings Per Month (Base Data) ---
+    raw_monthly = (
+        bookings.annotate(month=TruncMonth('event_date'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
 
     bookings_per_month = [
-        {
-            "month": DateFormat(entry["month"]).format("Y-m"),
-            "count": entry["count"]
-        }
-        for entry in raw_monthly
+        {"month": dateformat.DateFormat(entry["month"]).format("Y-m"), "count": entry["count"]}
+        for entry in raw_monthly if entry["month"]
     ]
 
-    # ---------- Notifications ----------
+    # --- Package Popularity Per Month ---
+    package_popularity_by_month = defaultdict(list)
+
+    for entry in raw_monthly:
+        month_start = entry["month"]
+        if not month_start:
+            continue
+
+        month_end = month_start.replace(
+            year=month_start.year + (1 if month_start.month == 12 else 0),
+            month=1 if month_start.month == 12 else month_start.month + 1,
+            day=1,
+        )
+
+        monthly_packages = (
+            bookings.filter(event_date__gte=month_start, event_date__lt=month_end)
+            .values('package__title')
+            .annotate(count=Count('id'))
+            .order_by('-count')
+        )
+
+        key = dateformat.DateFormat(month_start).format("Y-m")
+        package_popularity_by_month[key] = list(monthly_packages)
+
+    # --- Booking Status Per Month ---
+    status_data_by_month = defaultdict(list)
+
+    for entry in raw_monthly:
+        month_start = entry["month"]
+        if not month_start:
+            continue
+
+        month_end = month_start.replace(
+            year=month_start.year + (1 if month_start.month == 12 else 0),
+            month=1 if month_start.month == 12 else month_start.month + 1,
+            day=1,
+        )
+
+        monthly_status = (
+            bookings.filter(event_date__gte=month_start, event_date__lt=month_end)
+            .values('status')
+            .annotate(count=Count('id'))
+            .order_by('-count')
+        )
+
+        key = dateformat.DateFormat(month_start).format("Y-m")
+        status_data_by_month[key] = list(monthly_status)
+
+    # --- Status Overall ---
+    status_data = (
+        bookings.values("status")
+        .annotate(count=Count("id"))
+        .order_by('-count')
+    )
+
+    # --- Notifications ---
     notifications_qs = bookings.filter(status="Processing").order_by('-created_at')[:5]
     notifications = [
-        f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
+        f"📌 New booking from {b.full_name} on {dateformat.DateFormat(b.event_date).format('M d, Y')}"
         for b in notifications_qs
     ]
 
-    # ---------- Chart Data ----------
-    event_type_data = bookings.values('event_type').annotate(count=Count('id'))
-    package_popularity = bookings.values('package__title').annotate(count=Count('id')).order_by('-count')
-    status_data = bookings.values('status').annotate(count=Count('id'))
-
-    # ---------- Feedback Aggregation ----------
+    # --- Feedback Overall ---
     reviews = Review.objects.all()
     avg_quality = reviews.aggregate(avg=Avg('quality'))['avg'] or 0
     avg_timeliness = reviews.aggregate(avg=Avg('timeliness'))['avg'] or 0
     avg_professionalism = reviews.aggregate(avg=Avg('professionalism'))['avg'] or 0
     avg_value_for_money = reviews.aggregate(avg=Avg('value_for_money'))['avg'] or 0
     average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
-
-    # ---------- Latest Feedback ----------
     latest_feedback = reviews.order_by('-created_at').first()
 
-    # ---------- Upcoming Events ----------
-    upcoming_events = bookings.filter(
-        event_date__gte=timezone.now()
-    ).order_by('event_date')[:5]
+    # --- ✅ Feedback Per Month (Corrected using review dates) ---
+    feedback_by_month = {}
 
-    # ---------- Context ----------
+    raw_review_months = (
+        reviews.annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+
+    for entry in raw_review_months:
+        month_start = entry["month"]
+        if not month_start:
+            continue
+
+        month_end = month_start.replace(
+            year=month_start.year + (1 if month_start.month == 12 else 0),
+            month=1 if month_start.month == 12 else month_start.month + 1,
+            day=1,
+        )
+
+        monthly_reviews = reviews.filter(created_at__gte=month_start, created_at__lt=month_end)
+
+        key = dateformat.DateFormat(month_start).format("Y-m")
+        feedback_by_month[key] = {
+            "avg_quality": round(monthly_reviews.aggregate(avg=Avg('quality'))['avg'] or 0, 1),
+            "avg_timeliness": round(monthly_reviews.aggregate(avg=Avg('timeliness'))['avg'] or 0, 1),
+            "avg_professionalism": round(monthly_reviews.aggregate(avg=Avg('professionalism'))['avg'] or 0, 1),
+            "avg_value_for_money": round(monthly_reviews.aggregate(avg=Avg('value_for_money'))['avg'] or 0, 1),
+        }
+
+    # --- Upcoming Events ---
+    upcoming_events = (
+        bookings.filter(event_date__gte=timezone.now())
+        .exclude(status__in=["Completed", "Cancelled", "Rejected"])
+        .order_by('event_date')[:5]
+    )
+
+    # --- Final Context ---
     context = {
-        # Core Dashboard Stats
         'booking_count': booking_count,
         'pending_count': pending_count,
         'revenue': revenue,
         'profit': profit,
 
-        # Chart Data
         'bookings_per_month': bookings_per_month,
-        'event_type_data': list(event_type_data),
-        'package_popularity': list(package_popularity),
         'status_data': list(status_data),
+        'package_popularity_by_month': dict(package_popularity_by_month),
+        'status_data_by_month': dict(status_data_by_month),
+        'feedback_by_month': feedback_by_month,
 
-        # Notifications
         'notifications': notifications,
-
-        # Feedback Data
         'reviews': reviews,
         'avg_quality': round(avg_quality, 1),
         'avg_timeliness': round(avg_timeliness, 1),
@@ -407,8 +494,6 @@ def dashboard(request):
         'avg_value_for_money': round(avg_value_for_money, 1),
         'average_rating': round(average_rating, 1),
         'latest_feedback': latest_feedback,
-
-        # Upcoming Events
         'upcoming_events': upcoming_events,
     }
 
@@ -1164,10 +1249,15 @@ def checklist_detail(request, booking_id):
         checklist.save()
 
         messages.success(request, "Checklist updated successfully!")
+
+        # ✅ Kung confirmed na lahat, diretso sa dashboard
+        if all_confirmed:
+            return redirect("dashboard")
+
+        # ❌ Kung hindi pa kumpleto, balik sa checklist page
         return redirect("checklist_detail", booking_id=booking.id)
 
     return render(request, "client/checklist_detail.html", {"booking": booking, "checklist": checklist})
-
 import csv
 def download_employees(request):
     # Create the HttpResponse object with CSV header

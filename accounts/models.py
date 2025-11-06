@@ -9,6 +9,7 @@ class Profile(models.Model):
     contact_number = models.CharField(max_length=20)
     province = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
+    barangay = models.CharField(max_length=100, blank=True, null=True)  # ➕ Added field
     address = models.CharField(max_length=255, blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
     requested_admin = models.BooleanField(default=False)
@@ -198,7 +199,9 @@ class Booking(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     cancel_reason = models.TextField(blank=True, null=True) 
     reject_reason = models.TextField(null=True, blank=True)
-
+    review_exists = models.BooleanField(null=False, default=False) 
+    barangay = models.CharField(max_length=100, blank=True, null=True)
+    
     def __str__(self):
         return f"Booking {self.id} by {self.full_name}"
 

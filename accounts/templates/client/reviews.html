@@ -13,6 +13,7 @@ h1 {
     margin-bottom: 20px;
     color: #333;
 }
+
 /* ---------- Light Mode (Default) ---------- */
 .review-summary {
     display: flex;
@@ -194,17 +195,18 @@ body.dark-mode .stars .empty {
     display: flex;
     gap: 12px;
     align-items: center;
-    position: fixed;
-    top: 10px;
-    left: 13%;
+    position: relative; /* changed from fixed */
+    margin: 20px 0;
     padding: 10px 20px;
     border-radius: 10px;
-
+    background: #ffffff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    width: fit-content;
 }
 
 .date-filter label {
     font-size: 14px;
-    font-weight: 200;
+    font-weight: 500;
     color: #444;
 }
 
@@ -284,7 +286,7 @@ body.dark-mode .date-filter button:hover {
 }
 </style>
 
-<!-- Filter Section (Fixed on Top Left) -->
+<!-- Filter Section (Top Only, Not Sticky) -->
 <div class="date-filter">
     <form method="get">
         <label for="filter_day">Day:</label>

@@ -55,13 +55,26 @@
 
     .user { text-align: center; margin-bottom: 30px; }
     .avatar img.avatar-img {
-      width: 70px;
-      height: 70px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
       object-fit: cover;
       margin: 0 auto 10px;
-      border: 2px solid #f1c40f;
-      background-color: #fff;
+      border: none;
+      background: none;
+      box-shadow: 0 0 4px rgba(0,0,0,0.2);
+    }
+
+    .owner-name {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .owner-role {
+      color: #ccc;
+      font-size: 14px;
     }
 
     .nav { margin-top: 20px; }
@@ -115,11 +128,13 @@
     }
     .user-info span { font-size: 16px; font-weight: 600; }
     .user-info img {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid #f1c40f;
+      border: none;
+      background: none;
+      box-shadow: 0 0 4px rgba(0,0,0,0.15);
     }
 
     #topbarDropdown {
@@ -265,6 +280,7 @@
     body.dark-mode .dark-toggle { color: #f1c40f; }
   </style>
 </head>
+
 <body>
   <div class="container">
     <!-- Sidebar -->
@@ -280,16 +296,14 @@
             class="avatar-img"
           />
         </div>
-        <h3>{{ request.user.first_name }} {{ request.user.last_name }}</h3>
-        <p>Owner</p>
+        <h3 class="owner-name">{{ request.user.get_full_name }}</h3>
+        <p class="owner-role">Owner</p>
       </div>
 
       <nav class="nav">
         {% if user.is_staff and not user.is_superuser %}
-          <!-- Staff: Checklist lang -->
           <a href="{% url 'checklist' %}"><i class="fas fa-list-check"></i> Checklist</a>
         {% else %}
-          <!-- Admin / Superuser: Buong navigation -->
           <a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a>
           <a href="{% url 'booking' %}"><i class="fas fa-calendar-alt"></i> Booking</a>
           <a href="{% url 'event' %}"><i class="fas fa-calendar"></i> Event</a>
@@ -310,30 +324,26 @@
     <!-- Main Content -->
     <main class="main">
       <div class="topbar">
-        <!-- Dark Mode Toggle -->
-        <div class="dark-toggle" id="darkToggle">
-          <i class="fas fa-moon"></i>
-        </div>
+        <div class="dark-toggle" id="darkToggle"><i class="fas fa-moon"></i></div>
 
-        <!-- Notification Bell -->
-<!-- Notification Bell -->
-<div class="notification" id="notifToggle">
-  <i class="fas fa-bell"></i>
-  {% if request.resolver_match.url_name in 'dashboard booking' and notifications %}
-    <span class="badge">{{ notifications|length }}</span>
-  {% endif %}
-  <div class="notif-dropdown" id="notifDropdown">
-    <ul>
-      {% if request.resolver_match.url_name in 'dashboard booking' and notifications %}
-        {% for notif in notifications %}
-          <li><a href="{% url 'booking' %}">{{ notif }}</a></li>
-        {% endfor %}
-      {% else %}
-        <li>No new notifications</li>
-      {% endif %}
-    </ul>
-  </div>
-</div>
+        <!-- Notifications -->
+        <div class="notification" id="notifToggle">
+          <i class="fas fa-bell"></i>
+          {% if request.resolver_match.url_name in 'dashboard booking' and notifications %}
+            <span class="badge">{{ notifications|length }}</span>
+          {% endif %}
+          <div class="notif-dropdown" id="notifDropdown">
+            <ul>
+              {% if request.resolver_match.url_name in 'dashboard booking' and notifications %}
+                {% for notif in notifications %}
+                  <li><a href="{% url 'booking' %}">{{ notif }}</a></li>
+                {% endfor %}
+              {% else %}
+                <li>No new notifications</li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
 
         <!-- User Info -->
         <div class="user-info" id="topbarDropdownToggle">
@@ -348,7 +358,6 @@
         </div>
       </div>
 
-      <!-- Page content -->
       {% block content %}{% endblock %}
     </main>
   </div>
@@ -357,13 +366,14 @@
   {% if messages %}
     <div class="messages" id="messageContainer">
       {% for message in messages %}
-        <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">{{ message }}</div>
+        <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+          {{ message }}
+        </div>
       {% endfor %}
     </div>
   {% endif %}
 
   <script>
-    // Dropdown toggles
     const topbarToggle = document.getElementById('topbarDropdownToggle');
     const topbarDropdown = document.getElementById('topbarDropdown');
     const notifToggle = document.getElementById('notifToggle');
@@ -388,12 +398,8 @@
 
     // Auto-hide messages
     document.addEventListener('DOMContentLoaded', function () {
-      const messageContainer = document.getElementById('messageContainer');
-      if (messageContainer) {
-        setTimeout(function () {
-          messageContainer.style.display = 'none';
-        }, 3000);
-      }
+      const msg = document.getElementById('messageContainer');
+      if (msg) setTimeout(() => msg.style.display = 'none', 3000);
     });
 
     // Dark mode toggle

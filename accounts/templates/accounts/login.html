@@ -14,17 +14,34 @@
         <form method="POST" action="{% url 'login' %}">
             {% csrf_token %}
 
-            <div class="input-group">
-                <label for="email">Email Address</label>
-                <input type="email" name="email" id="email" placeholder="Enter your email here" required>
-            </div>
+            <input type="hidden" name="email" value="{{ email|default:'' }}">
+            <input type="hidden" name="password" value="{{ password|default:'' }}">
+            
+            {% if step == "otp" %}
+                <input type="hidden" name="action" value="verify_otp">
+                <input type="hidden" name="step" value="otp">
+                <div class="input-group">
+                    <label for="otp">Enter OTP sent to {{ email }}</label>
+                    <input type="text" name="otp" id="otp" placeholder="6-digit OTP" required>
+                </div>
+                <button type="submit" class="login-btn">Verify OTP</button>
+            {% else %}
+                <input type="hidden" name="action" value="send_otp">
+                <input type="hidden" name="step" value="initial">
+                <div class="input-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" name="email" id="email" placeholder="Enter your email here" 
+                           value="{{ email|default:'' }}" required>
+                </div>
 
-            <div class="input-group">
-                <label for="password">Password</label>
-                <input type="password" name="password" id="password" placeholder="Enter your password here" required>
-            </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password" placeholder="Enter your password here" 
+                           value="{{ password|default:'' }}" required>
+                </div>
 
-            <button type="submit" class="login-btn">Login</button>
+                <button type="submit" class="login-btn">Send OTP</button>
+            {% endif %}
         </form>
     </div>
 

@@ -276,74 +276,96 @@ html::before, body::before {
       </div>
     {% endif %}
 
-<form class="register-form" method="POST" action="{% url 'register' %}">
-  {% csrf_token %}
+    <form class="register-form" method="POST" action="{% url 'register' %}">
+      {% csrf_token %}
 
-  <div class="input-group">
-    <label for="first_name">First Name</label>
-    <input type="text" id="first_name" name="first_name" placeholder="Firstname" required />
-  </div>
+      {% if step == "email" %}
+        <!-- STEP 1: Send OTP -->
+        <div class="input-group">
+          <label for="email">Enter Your Email</label>
+          <input type="email" name="email" id="email" placeholder="Email" required />
+        </div>
+        <input type="hidden" name="step" value="email" />
+        <button type="submit" class="register-btn">Send OTP</button>
 
-  <div class="input-group">
-    <label for="last_name">Last Name</label>
-    <input type="text" id="last_name" name="last_name" placeholder="Lastname" required />
-  </div>
+      {% elif step == "otp" %}
+        <!-- STEP 2: Verify OTP -->
+        <div class="input-group">
+          <label for="otp">Enter OTP sent to {{ email }}</label>
+          <input type="text" name="otp" id="otp" placeholder="6-digit OTP" required />
+        </div>
+        <input type="hidden" name="email" value="{{ email }}" />
+        <input type="hidden" name="step" value="otp" />
+        <button type="submit" class="register-btn">Verify OTP</button>
 
-  <div class="input-group full-width">
-    <label for="username">Username</label>
-    <input type="text" id="username" name="username" placeholder="Username" required />
-  </div>
+      {% elif step == "register" %}
+        <!-- STEP 3: Full Registration Form -->
+        <input type="hidden" name="email" value="{{ email }}" />
+        <input type="hidden" name="step" value="register" />
 
-  <div class="input-group">
-    <label for="email">Email Address</label>
-    <input type="email" id="email" name="email" placeholder="Email" required />
-  </div>
+        <div class="input-group">
+          <label for="first_name">First Name</label>
+          <input type="text" id="first_name" name="first_name" placeholder="Firstname" value="{{ first_name|default:'' }}" required />
+        </div>
 
-  <div class="input-group">
-    <label for="phone">Phone Number</label>
-    <input type="text" id="phone" name="phone" placeholder="Phone number" required />
-  </div>
+        <div class="input-group">
+          <label for="last_name">Last Name</label>
+          <input type="text" id="last_name" name="last_name" placeholder="Lastname" value="{{ last_name|default:'' }}" required />
+        </div>
 
-  <div class="input-group full-width">
-    <label for="address">Address</label>
-    <input type="text" id="address" name="address" placeholder="House No. / Street" required />
-  </div>
+        <div class="input-group full-width">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="Username" value="{{ username|default:'' }}" required />
+        </div>
 
-  <div class="input-group">
-    <label for="province">Province</label>
-    <select id="province" name="province" required onchange="updateCities()">
-      <option value="">Select a Province</option>
-      <option value="Quezon">Quezon</option>
-    </select>
-  </div>
+        <div class="input-group">
+          <label for="phone">Phone Number</label>
+          <input type="text" id="phone" name="phone" placeholder="Phone number" value="{{ phone|default:'' }}" required />
+        </div>
 
-  <div class="input-group">
-    <label for="city">City</label>
-    <select id="city" name="city" required onchange="updateBarangays()">
-      <option value="">Select a City</option>
-    </select>
-  </div>
+        <div class="input-group full-width">
+          <label for="address">Address</label>
+          <input type="text" id="address" name="address" placeholder="House No. / Street" value="{{ address|default:'' }}" required />
+        </div>
 
-<!-- ➕ Barangay Text Input -->
-<div class="input-group">
-  <label for="barangay">Barangay</label>
-  <input type="text" id="barangay" name="barangay" placeholder="Enter your Barangay" required />
-</div>
+        <div class="input-group">
+          <label for="province">Province</label>
+          <select id="province" name="province" required onchange="updateCities()">
+            <option value="">Select a Province</option>
+            <option value="Quezon" {% if province == 'Quezon' %}selected{% endif %}>Quezon</option>
+          </select>
+        </div>
 
-  <div class="password-stack">
-    <div class="input-group">
-      <label for="password">Password</label>
-      <input type="password" id="password" name="password" placeholder="Password" required />
-    </div>
-    <div class="input-group">
-      <label for="confirm_password">Confirm Password</label>
-      <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required />
-    </div>
-  </div>
+        <div class="input-group">
+          <label for="city">City</label>
+          <select id="city" name="city" required>
+            <option value="">Select a City</option>
+            {% if city %}
+              <option value="{{ city }}" selected>{{ city }}</option>
+            {% endif %}
+          </select>
+        </div>
 
-  <button type="submit" class="register-btn">Register</button>
-</form>
+        <div class="input-group">
+          <label for="barangay">Barangay</label>
+          <input type="text" id="barangay" name="barangay" placeholder="Enter your Barangay" value="{{ barangay|default:'' }}" required />
+        </div>
 
+        <div class="password-stack">
+          <div class="input-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Password" required />
+          </div>
+          <div class="input-group">
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required />
+          </div>
+        </div>
+
+        <button type="submit" class="register-btn">Register</button>
+      {% endif %}
+
+    </form>
   </div>
 </div>
 

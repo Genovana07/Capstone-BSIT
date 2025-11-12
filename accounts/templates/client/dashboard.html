@@ -4,33 +4,66 @@
 
 {% block content %}
     
-    <section class="dashboard-header">
-        <h1>📊 Dashboard Overview</h1>
-        <p>Welcome back, <strong>Owner!</strong> Here’s your business summary at a glance.</p>
-        
-        <div class="cards">
-            <div class="card card-booking">
-                <i class="fas fa-calendar-check"></i>
-                <h3>Total Bookings</h3>
-                <span>{{ booking_count }}</span>
-            </div>
-            <div class="card card-revenue">
-                <i class="fas fa-hand-holding-usd"></i>
-                <h3>Total Revenue</h3>
-                <span>₱{{ revenue|floatformat:2 }}</span>
-            </div>
-            <div class="card card-profit">
-                <i class="fas fa-chart-line"></i>
-                <h3>Total Profit</h3>
-                <span>₱{{ profit|floatformat:2 }}</span>
-            </div>
-            <div class="card card-pending">
-                <i class="fas fa-hourglass-half"></i>
-                <h3>Pending Bookings</h3>
-                <span>{{ pending_count }}</span>
-            </div>
+<section class="dashboard-header">
+    <div class="header-top">
+        <div>
+            <h1>📊 Dashboard Overview</h1>
+            <p>Welcome back, <strong>Owner!</strong> Here’s your business summary at a glance.</p>
         </div>
-    </section>
+
+        <!-- Year & Month Filter -->
+        <form method="get" id="cardFilterForm" class="filter-form">
+            <label><strong>Filter by:</strong></label>
+
+            <select name="year" onchange="document.getElementById('cardFilterForm').submit()">
+                <option value="">All Years</option>
+                {% for y in years %}
+                    <option value="{{ y }}" {% if selected_year == y|stringformat:"s" %}selected{% endif %}>
+                        {{ y }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <select name="month" onchange="document.getElementById('cardFilterForm').submit()">
+                <option value="">All Months</option>
+                {% for m in months %}
+                    <option value="{{ m.value }}" {% if selected_month == m.value %}selected{% endif %}>
+                        {{ m.label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <div class="cards">
+        <div class="card card-booking">
+            <i class="fas fa-calendar-check"></i>
+            <h3>Total Bookings</h3>
+            <span>{{ booking_count }}</span>
+        </div>
+        <div class="card card-revenue">
+            <i class="fas fa-hand-holding-usd"></i>
+            <h3>Total Revenue</h3>
+            <span>₱{{ revenue|floatformat:2 }}</span>
+        </div>
+        <div class="card card-profit">
+            <i class="fas fa-chart-line"></i>
+            <h3>Total Profit</h3>
+            <span>₱{{ profit|floatformat:2 }}</span>
+        </div>
+        <div class="card card-pending">
+            <i class="fas fa-hourglass-half"></i>
+            <h3>Pending Bookings</h3>
+            <span>{{ pending_count }}</span>
+        </div>
+        <div class="card card-rating">
+            <i class="fas fa-star"></i>
+            <h3>Average Review</h3>
+            <span>{{ average_rating|floatformat:1 }}</span>
+        </div>
+    </div>
+</section>
+
 
     <section class="quick-actions">
         <h2>⚡ Quick Actions</h2>
@@ -601,6 +634,23 @@
         });
     }
 
+    // ✅ Update Booking Status Legend (Completed/Rejected) under chart
+    function updateBookingStatusLegend(monthKey) {
+        const legendList = document.querySelector(".chart-box ul.legend");
+        if (!legendList) return;
+
+        const newStatus = status_data_by_month[monthKey] || [];
+        legendList.innerHTML = '';
+
+        newStatus.forEach((item, index) => {
+            const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#a855f7'];
+            const color = colors[index] || '#a855f7';
+            const li = document.createElement('li');
+            li.innerHTML = `<span class="dot" style="background:${color}"></span> ${item.status} - ${item.count}`;
+            legendList.appendChild(li);
+        });
+    }
+
     function gotoMonth(idx) {
         if (monthlyData.length === 0) return;
         if (idx < 0) idx = 0;
@@ -621,14 +671,17 @@
         // Determine Month Key for filtered data
         const monthKey = getMonthKey(monthlyData[idx].iso);
 
-        // Update Popular Package Chart
+        // Update other charts
         updatePackageChart(monthKey);
 
-        // Update Booking Status Chart
+        // ✅ Update Booking Status Chart
         const newStatus = status_data_by_month[monthKey] || [];
         statusChart.data.labels = newStatus.map(s => s.status);
         statusChart.data.datasets[0].data = newStatus.map(s => s.count);
         statusChart.update();
+
+        // ✅ Update Booking Status Legend (Completed/Rejected)
+        updateBookingStatusLegend(monthKey);
 
         // Update Feedback Summary Chart
         const fb = feedback_by_month[monthKey] || {};
@@ -646,7 +699,6 @@
     if (nextBtn) nextBtn.addEventListener('click', () => gotoMonth(currentMonthIndex + 1));
     if (monthSelect) monthSelect.addEventListener('change', e => gotoMonth(parseInt(e.target.value, 10)));
 
-    
     /* -------------------- 6. Chart: Customer Feedback (Radar) -------------------- */
 
     const feedbackCtx = document.getElementById('feedbackChart').getContext('2d');
@@ -693,6 +745,8 @@
     populateMonthSelect();
     if (currentMonthIndex === -1 && monthlyData.length) currentMonthIndex = monthlyData.length - 1;
     gotoMonth(currentMonthIndex);
+</script>
+
 
 
     

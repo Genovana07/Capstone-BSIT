@@ -38,83 +38,198 @@ from .forms import ServicePackageForm
 from collections import defaultdict
 from datetime import timezone as dt_timezone
 import calendar
+import random
+# Temporary storage for OTP (use session)
+OTP_EXPIRY = 300  # 5 minutes
+
+
+def send_otp_email(request, email):
+    otp = random.randint(100000, 999999)
+    request.session['otp'] = str(otp)
+    request.session['otp_email'] = email
+    request.session['otp_time'] = request.timestamp if hasattr(request, 'timestamp') else None
+
+    send_mail(
+        subject="Your OTP Code",
+        message=f"Your OTP code is: {otp}",
+        from_email=None,  # uses DEFAULT_FROM_EMAIL from settings
+        recipient_list=[email],
+        fail_silently=False,
+    )
+
 
 def register_view(request):
     if request.method == "POST":
-        username = request.POST.get("username")
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-        confirm_password = request.POST.get("confirm_password")
-        first_name = request.POST.get("first_name")
-        last_name = request.POST.get("last_name")
-        phone = request.POST.get("phone")
-        address = request.POST.get("address")
-        province = request.POST.get("province")
-        city = request.POST.get("city")
-        barangay = request.POST.get("barangay")  # ➕ Added
+        step = request.POST.get("step", "email")  # default first step: enter email
 
-        # Validation
-        if not username:
-            messages.error(request, "Username is required.")
-        elif not email:
-            messages.error(request, "Email is required.")
-        elif not password or not confirm_password:
-            messages.error(request, "Password and confirmation are required.")
-        elif password != confirm_password:
-            messages.error(request, "Passwords do not match.")
-        elif User.objects.filter(username=username).exists():
-            messages.error(request, "Username already taken.")
-        elif User.objects.filter(email=email).exists():
-            messages.error(request, "Email already in use.")
-        else:
-            # Create user
-            user = User.objects.create_user(
-                username=username,
-                email=email,
-                password=password,
-                first_name=first_name,
-                last_name=last_name
-            )
-
-            # Create profile
-            Profile.objects.create(
-                user=user,
-                contact_number=phone,
-                address=address,
-                province=province,
-                city=city,
-                barangay=barangay  # ➕ Added
-            )
-
-            messages.success(request, "Registration successful. You can now log in.")
-            return redirect("login")
-
-    return render(request, "accounts/register.html", {"hide_footer": True})
-# Login View
-def login_view(request):
-    if request.method == "POST":
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-
-        try:
-            user = User.objects.get(email=email)
-            user = authenticate(request, username=user.username, password=password)
-        except User.DoesNotExist:
-            user = None
-
-        if user is not None:
-            login(request, user)
-            messages.success(request, "Login successful.")
-            # Redirect admin users to dashboard
-            if user.is_superuser or user.is_staff:
-                return redirect("dashboard")
+        if step == "email":
+            email = request.POST.get("email")
+            if not email:
+                messages.error(request, "Please enter your email to receive OTP.")
+            elif User.objects.filter(email=email).exists():
+                messages.error(request, "Email already in use.")
             else:
-                return redirect("home")
-        else:
-            messages.error(request, "Invalid email or password.")
+                send_otp_email(request, email)
+                messages.success(request, f"OTP sent to {email}. Please check your inbox.")
+                request.session["otp_email"] = email
+                return render(request, "accounts/register.html", {
+                    "step": "otp",
+                    "email": email,
+                    "hide_footer": True
+                })
 
-    return render(request, "accounts/login.html", {"hide_footer": True})
+        elif step == "otp":
+            email = request.POST.get("email")
+            entered_otp = request.POST.get("otp")
+            session_otp = request.session.get("otp")
+            session_email = request.session.get("otp_email")
 
+            if entered_otp == session_otp and email == session_email:
+                messages.success(request, "OTP verified! Continue registration.")
+                return render(request, "accounts/register.html", {
+                    "step": "register",
+                    "email": email,
+                    "hide_footer": True
+                })
+            else:
+                messages.error(request, "Invalid OTP. Try again.")
+                return render(request, "accounts/register.html", {
+                    "step": "otp",
+                    "email": email,
+                    "hide_footer": True
+                })
+
+        elif step == "register":
+            # Proceed with full registration
+            username = request.POST.get("username")
+            email = request.POST.get("email")
+            password = request.POST.get("password")
+            confirm_password = request.POST.get("confirm_password")
+            first_name = request.POST.get("first_name")
+            last_name = request.POST.get("last_name")
+            phone = request.POST.get("phone")
+            address = request.POST.get("address")
+            province = request.POST.get("province")
+            city = request.POST.get("city")
+            barangay = request.POST.get("barangay")
+
+            # Validation
+            if not username:
+                messages.error(request, "Username is required.")
+            elif not password or not confirm_password:
+                messages.error(request, "Password and confirmation are required.")
+            elif password != confirm_password:
+                messages.error(request, "Passwords do not match.")
+            elif User.objects.filter(username=username).exists():
+                messages.error(request, "Username already taken.")
+            else:
+                # Create user
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                    first_name=first_name,
+                    last_name=last_name
+                )
+
+                # Create profile
+                Profile.objects.create(
+                    user=user,
+                    contact_number=phone,
+                    address=address,
+                    province=province,
+                    city=city,
+                    barangay=barangay
+                )
+
+                # Clear OTP from session
+                request.session.pop("otp", None)
+                request.session.pop("otp_email", None)
+
+                messages.success(request, "Registration successful. You can now log in.")
+                return redirect("login")
+
+    else:
+        step = "email"
+
+    return render(request, "accounts/register.html", {
+        "step": step,
+        "hide_footer": True
+    })
+
+
+# Temporary storage for OTPs (use database or cache for production)
+otp_storage = {}
+
+def login_view(request):
+    step = request.POST.get("step", "initial")
+    email = request.POST.get("email", "")
+    password = request.POST.get("password", "")
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "send_otp":
+            try:
+                user_obj = User.objects.get(email=email)
+                user = authenticate(request, username=user_obj.username, password=password)
+            except User.DoesNotExist:
+                user = None
+
+            if user:
+                if user.is_superuser or user.is_staff:
+                    # Admin login directly
+                    login(request, user)
+                    return redirect("dashboard")  # admin dashboard
+                else:
+                    # Normal user: send OTP
+                    otp = str(random.randint(100000, 999999))
+                    otp_storage[email] = otp
+                    send_mail(
+                        subject="Your Login OTP",
+                        message=f"Your OTP is: {otp}",
+                        from_email=settings.EMAIL_HOST_USER,
+                        recipient_list=[email],
+                        fail_silently=False
+                    )
+                    messages.success(request, f"OTP sent to {email}")
+                    return render(request, "accounts/login.html", {
+                        "step": "otp",
+                        "email": email,
+                        "password": password,
+                        "hide_footer": True  # hide footer
+                    })
+            else:
+                messages.error(request, "Invalid email or password.")
+
+        elif action == "verify_otp":
+            otp_input = request.POST.get("otp")
+            if otp_input == otp_storage.get(email):
+                # OTP correct, login user
+                try:
+                    user_obj = User.objects.get(email=email)
+                    user = authenticate(request, username=user_obj.username, password=password)
+                    if user:
+                        login(request, user)
+                        otp_storage.pop(email, None)
+                        return redirect("home")  # normal user dashboard
+                except User.DoesNotExist:
+                    messages.error(request, "User not found.")
+            else:
+                messages.error(request, "Invalid OTP.")
+                return render(request, "accounts/login.html", {
+                    "step": "otp",
+                    "email": email,
+                    "password": password,
+                    "hide_footer": True  # hide footer
+                })
+
+    return render(request, "accounts/login.html", {
+        "step": "initial",
+        "email": email,
+        "password": password,
+        "hide_footer": True  # hide footer
+    })
 
 # Logout View
 def logout_view(request):
@@ -155,39 +270,37 @@ def aboutus(request):
     ]
     return render(request, "accounts/aboutus.html", {'team_members': team_members})
 
-# Contact Us Page
-
+from django.shortcuts import render, redirect
+from django.core.mail import send_mail
+from django.contrib import messages
 
 def contactus(request):
-    if request.method == "POST":
-        name = request.POST.get("name")
-        email = request.POST.get("email")
-        subject = request.POST.get("subject")
-        message = request.POST.get("message")
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
 
-        # Save to DB
-        ContactMessage.objects.create(
-            name=name,
-            email=email,
-            subject=subject,
-            message=message
-        )
+        # Combine info for email body
+        full_message = f"Message from {name} <{email}>:\n\n{message}"
 
-        # Send email to admin
-        send_mail(
-            subject=f"New Inquiry: {subject}",
-            message=f"From: {name} <{email}>\n\nMessage:\n{message}",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[settings.DEFAULT_FROM_EMAIL],  # admin email
-            fail_silently=False,
-        )
+        try:
+            send_mail(
+                subject,
+                full_message,
+                'christiangeno0107@gmail.com',  # Your Gmail (App Password) sender
+                ['christiangeno0107@gmail.com'],  # Receiver email (can be same)
+                fail_silently=False,
+            )
+            messages.success(request, 'Your message has been sent successfully!')
+        except Exception as e:
+            messages.error(request, f'Error sending message: {e}')
 
-        # Flash message
-        messages.success(request, "✅ Your message has been sent successfully!")
-        return redirect("contactus")  # dapat tugma ito sa urls.py name="contactus"
+        # Redirect to prevent re-submitting the form on refresh
+        return redirect('contactus')
 
-    # GET request → render template
-    return render(request, "accounts/contactus.html")
+    return render(request, 'accounts/contactus.html')
+
 @login_required
 def profile(request):
     user = request.user
@@ -333,15 +446,48 @@ def admin_only(view_func):
     return wrapper
 
 
+
 @login_required
 @admin_only
 def dashboard(request):
+    # ====== FILTERS FOR THE 5 CARDS ======
+    selected_month = request.GET.get("month")  # e.g. "01"
+    selected_year = request.GET.get("year")    # e.g. "2025"
 
+    # Month and Year dropdowns
+    months = [
+        {"value": "01", "label": "January"},
+        {"value": "02", "label": "February"},
+        {"value": "03", "label": "March"},
+        {"value": "04", "label": "April"},
+        {"value": "05", "label": "May"},
+        {"value": "06", "label": "June"},
+        {"value": "07", "label": "July"},
+        {"value": "08", "label": "August"},
+        {"value": "09", "label": "September"},
+        {"value": "10", "label": "October"},
+        {"value": "11", "label": "November"},
+        {"value": "12", "label": "December"},
+    ]
+    current_year = datetime.now().year
+    years = list(range(current_year - 5, current_year + 1))  # Last 5 years + current
+
+    # ====== BASE QUERIES ======
     bookings = Booking.objects.all()
+    reviews = Review.objects.all()
+
+    # Apply filters (affect ONLY the 5 cards)
+    if selected_year:
+        bookings = bookings.filter(event_date__year=int(selected_year))
+        reviews = reviews.filter(created_at__year=int(selected_year))
+    if selected_month:
+        bookings = bookings.filter(event_date__month=int(selected_month))
+        reviews = reviews.filter(created_at__month=int(selected_month))
+
+    # ====== 5 SUMMARY CARDS ======
     booking_count = bookings.count()
     pending_count = bookings.filter(status="Processing").count()
 
-    # --- Revenue & Profit ---
     def parse_price(price):
         try:
             return float(str(price).replace('₱', '').replace(',', '').strip())
@@ -349,11 +495,16 @@ def dashboard(request):
             return 0.0
 
     revenue = sum(parse_price(b.price) for b in bookings)
-    profit = revenue * 0.5
+    profit = revenue * 0.5  # 50% profit assumption
+    average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
 
-    # --- Bookings Per Month (Base Data) ---
+    # ====== STATIC (Unfiltered) DASHBOARD DATA ======
+    all_bookings = Booking.objects.all()
+    all_reviews = Review.objects.all()
+
+    # --- Bookings Per Month ---
     raw_monthly = (
-        bookings.annotate(month=TruncMonth('event_date'))
+        all_bookings.annotate(month=TruncMonth('event_date'))
         .values('month')
         .annotate(count=Count('id'))
         .order_by('month')
@@ -366,98 +517,83 @@ def dashboard(request):
 
     # --- Package Popularity Per Month ---
     package_popularity_by_month = defaultdict(list)
-
     for entry in raw_monthly:
         month_start = entry["month"]
         if not month_start:
             continue
-
         month_end = month_start.replace(
             year=month_start.year + (1 if month_start.month == 12 else 0),
             month=1 if month_start.month == 12 else month_start.month + 1,
             day=1,
         )
-
         monthly_packages = (
-            bookings.filter(event_date__gte=month_start, event_date__lt=month_end)
+            all_bookings.filter(event_date__gte=month_start, event_date__lt=month_end)
             .values('package__title')
             .annotate(count=Count('id'))
             .order_by('-count')
         )
-
         key = dateformat.DateFormat(month_start).format("Y-m")
         package_popularity_by_month[key] = list(monthly_packages)
 
     # --- Booking Status Per Month ---
     status_data_by_month = defaultdict(list)
-
     for entry in raw_monthly:
         month_start = entry["month"]
         if not month_start:
             continue
-
         month_end = month_start.replace(
             year=month_start.year + (1 if month_start.month == 12 else 0),
             month=1 if month_start.month == 12 else month_start.month + 1,
             day=1,
         )
-
         monthly_status = (
-            bookings.filter(event_date__gte=month_start, event_date__lt=month_end)
+            all_bookings.filter(event_date__gte=month_start, event_date__lt=month_end)
             .values('status')
             .annotate(count=Count('id'))
             .order_by('-count')
         )
-
         key = dateformat.DateFormat(month_start).format("Y-m")
         status_data_by_month[key] = list(monthly_status)
 
-    # --- Status Overall ---
+    # --- Overall Booking Status ---
     status_data = (
-        bookings.values("status")
+        all_bookings.values("status")
         .annotate(count=Count("id"))
         .order_by('-count')
     )
 
     # --- Notifications ---
-    notifications_qs = bookings.filter(status="Processing").order_by('-created_at')[:5]
+    notifications_qs = all_bookings.filter(status="Processing").order_by('-created_at')[:5]
     notifications = [
         f"📌 New booking from {b.full_name} on {dateformat.DateFormat(b.event_date).format('M d, Y')}"
         for b in notifications_qs
     ]
 
-    # --- Feedback Overall ---
-    reviews = Review.objects.all()
-    avg_quality = reviews.aggregate(avg=Avg('quality'))['avg'] or 0
-    avg_timeliness = reviews.aggregate(avg=Avg('timeliness'))['avg'] or 0
-    avg_professionalism = reviews.aggregate(avg=Avg('professionalism'))['avg'] or 0
-    avg_value_for_money = reviews.aggregate(avg=Avg('value_for_money'))['avg'] or 0
-    average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
-    latest_feedback = reviews.order_by('-created_at').first()
+    # --- Reviews (unfiltered for charts) ---
+    avg_quality = all_reviews.aggregate(avg=Avg('quality'))['avg'] or 0
+    avg_timeliness = all_reviews.aggregate(avg=Avg('timeliness'))['avg'] or 0
+    avg_professionalism = all_reviews.aggregate(avg=Avg('professionalism'))['avg'] or 0
+    avg_value_for_money = all_reviews.aggregate(avg=Avg('value_for_money'))['avg'] or 0
+    latest_feedback = all_reviews.order_by('-created_at').first()
 
-    # --- ✅ Feedback Per Month (Corrected using review dates) ---
+    # --- Feedback Per Month ---
     feedback_by_month = {}
-
     raw_review_months = (
-        reviews.annotate(month=TruncMonth('created_at'))
+        all_reviews.annotate(month=TruncMonth('created_at'))
         .values('month')
         .annotate(count=Count('id'))
         .order_by('month')
     )
-
     for entry in raw_review_months:
         month_start = entry["month"]
         if not month_start:
             continue
-
         month_end = month_start.replace(
             year=month_start.year + (1 if month_start.month == 12 else 0),
             month=1 if month_start.month == 12 else month_start.month + 1,
             day=1,
         )
-
-        monthly_reviews = reviews.filter(created_at__gte=month_start, created_at__lt=month_end)
-
+        monthly_reviews = all_reviews.filter(created_at__gte=month_start, created_at__lt=month_end)
         key = dateformat.DateFormat(month_start).format("Y-m")
         feedback_by_month[key] = {
             "avg_quality": round(monthly_reviews.aggregate(avg=Avg('quality'))['avg'] or 0, 1),
@@ -468,36 +604,63 @@ def dashboard(request):
 
     # --- Upcoming Events ---
     upcoming_events = (
-        bookings.filter(event_date__gte=timezone.now())
+        all_bookings.filter(event_date__gte=timezone.now())
         .exclude(status__in=["Completed", "Cancelled", "Rejected"])
         .order_by('event_date')[:5]
     )
 
-    # --- Final Context ---
+    # ====== CONTEXT ======
     context = {
         'booking_count': booking_count,
         'pending_count': pending_count,
         'revenue': revenue,
         'profit': profit,
-
+        'average_rating': round(average_rating, 1),
         'bookings_per_month': bookings_per_month,
         'status_data': list(status_data),
         'package_popularity_by_month': dict(package_popularity_by_month),
         'status_data_by_month': dict(status_data_by_month),
         'feedback_by_month': feedback_by_month,
-
         'notifications': notifications,
-        'reviews': reviews,
         'avg_quality': round(avg_quality, 1),
         'avg_timeliness': round(avg_timeliness, 1),
         'avg_professionalism': round(avg_professionalism, 1),
         'avg_value_for_money': round(avg_value_for_money, 1),
-        'average_rating': round(average_rating, 1),
         'latest_feedback': latest_feedback,
         'upcoming_events': upcoming_events,
+        'months': months,
+        'years': years,
+        'selected_month': selected_month,
+        'selected_year': selected_year,
     }
 
     return render(request, 'client/dashboard.html', context)
+
+
+# ============================================================
+# ✅ NEW ENDPOINT: fetch Booking Status per Month (for JS filter)
+# ============================================================
+
+@login_required
+@admin_only
+def booking_status_data(request):
+    """Return booking status counts filtered by month/year (for JS chart updates)."""
+    month = request.GET.get("month")
+    year = request.GET.get("year")
+
+    queryset = Booking.objects.all()
+    if year:
+        queryset = queryset.filter(event_date__year=int(year))
+    if month:
+        queryset = queryset.filter(event_date__month=int(month))
+
+    data = list(
+        queryset.values("status")
+        .annotate(count=Count("id"))
+        .order_by("-count")
+    )
+
+    return JsonResponse({"status_data": data})
 @login_required
 @admin_only
 def booking(request):

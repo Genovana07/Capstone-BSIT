@@ -1,221 +1,125 @@
 {% extends "client-base.html" %}
 {% block content %}
 <style>
-    /* ---------- GLOBAL LAYOUT ---------- */
-    .packages-container {
-        max-width: 1300px;
-        margin: 3rem auto;
-        padding: 0 1.5rem;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    /* ---------- HEADER SECTION ---------- */
-    .packages-header {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 1.5rem;
-        margin-bottom: 2.5rem;
-    }
-
-    @media (min-width: 768px) {
-        .packages-header {
-            flex-direction: row;
-            align-items: center;
-        }
-    }
-
-    .packages-header h2 {
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: #000; /* 🖤 Black title */
-        text-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    }
-
-    .packages-header a {
-        background: linear-gradient(90deg, #2563eb, #3b82f6); /* 💎 Modern Blue */
-        color: #fff;
-        font-weight: 600;
-        padding: 0.75rem 1.6rem;
-        border-radius: 12px;
-        text-decoration: none;
-        box-shadow: 0 4px 12px rgba(37,99,235,0.3);
-        transition: all 0.3s ease;
-    }
-
-    .packages-header a:hover {
-        background: linear-gradient(90deg, #1e40af, #2563eb);
-        box-shadow: 0 6px 20px rgba(37,99,235,0.5);
-        transform: translateY(-2px);
-    }
-
-    /* ---------- GRID LAYOUT ---------- */
-    .packages-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
-
-    @media (min-width: 640px) {
-        .packages-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (min-width: 1024px) {
-        .packages-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-    }
-
-    /* ---------- PACKAGE CARD ---------- */
-    .package-card {
-        background-color: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 18px;
-        overflow: hidden;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-        transition: all 0.35s ease;
-        position: relative;
-    }
-
-    .package-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 10px 28px rgba(37,99,235,0.2);
-    }
-
-    .package-image {
-        width: 100%;
-        height: 230px;
-        object-fit: cover;
-        transition: transform 0.4s ease;
-    }
-
-    .package-card:hover .package-image {
-        transform: scale(1.08);
-    }
-
-    /* ---------- PACKAGE CONTENT ---------- */
-    .package-content {
-        padding: 1.6rem;
-    }
-
-    .package-content h3 {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #111827;
-        margin-bottom: 0.6rem;
-    }
-
-    .package-content p {
-        color: #6b7280;
-        font-size: 0.95rem;
-        line-height: 1.5;
-        margin-bottom: 1rem;
-    }
-
-    .package-content .price {
-        font-weight: 700;
-        font-size: 1.15rem;
-        color: #000; /* 💰 Black price */
-        margin-bottom: 1rem;
-        display: inline-block;
-    }
-
-    /* ---------- BUTTON GROUP ---------- */
-    .package-buttons {
-        display: flex;
-        gap: 0.75rem;
-    }
-
-    .package-buttons a {
-        flex: 1;
-        padding: 0.6rem 1rem;
-        text-align: center;
-        border-radius: 8px;
-        font-weight: 600;
-        text-decoration: none;
-        color: #fff;
-        transition: all 0.25s ease;
-    }
-
-    /* ✏️ EDIT BUTTON */
-    .package-buttons .edit-btn {
-        background: linear-gradient(90deg, #0ea5e9, #3b82f6); /* Sky to Blue */
-        box-shadow: 0 4px 10px rgba(59,130,246,0.3);
-    }
-
-    .package-buttons .edit-btn:hover {
-        background: linear-gradient(90deg, #0284c7, #2563eb);
-        transform: scale(1.05);
-        box-shadow: 0 6px 15px rgba(37,99,235,0.4);
-    }
-
-    /* 🗑️ DELETE BUTTON */
-    .package-buttons .delete-btn {
-        background: linear-gradient(90deg, #ef4444, #dc2626); /* Red shades */
-        box-shadow: 0 4px 10px rgba(220,38,38,0.3);
-    }
-
-    .package-buttons .delete-btn:hover {
-        background: linear-gradient(90deg, #b91c1c, #991b1b);
-        transform: scale(1.05);
-        box-shadow: 0 6px 15px rgba(220,38,38,0.5);
-    }
-
-    /* ---------- EMPTY STATE ---------- */
-    .empty-message {
-        text-align: center;
-        color: #6b7280;
-        font-size: 1.1rem;
-        font-weight: 500;
-        grid-column: 1 / -1;
-        padding: 3rem 0;
-    }
-
-    /* ---------- NO IMAGE PLACEHOLDER ---------- */
-    .no-image {
-        background: linear-gradient(135deg, #e5e7eb, #f3f4f6);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #9ca3af;
-        font-weight: 600;
-        height: 230px;
-        font-size: 1rem;
-    }
+.packages-container {
+  max-width: 1300px;
+  margin: 3rem auto;
+  padding: 0 1.5rem;
+  font-family: 'Poppins', sans-serif;
+}
+.packages-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.packages-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #000;
+}
+.packages-header a {
+  background: #2563eb;
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+}
+.packages-header a:hover {
+  background: #1e40af;
+}
+.table-packages {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+.table-packages th, .table-packages td {
+  padding: 14px 18px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.95rem;
+}
+.table-packages th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #111827;
+}
+.package-image-thumb {
+  width: 70px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+.action-btn {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  margin-right: 0;
+}
+.edit-btn { background: #0284c7; }
+.edit-btn:hover { background: #0369a1; }
+.delete-btn { background: #dc2626; }
+.delete-btn:hover { background: #b91c1c; }
+.empty-message {
+  text-align: center;
+  color: #6b7280;
+  font-size: 1.1rem;
+  padding: 2rem 0;
+}
+td:last-child {
+  display: flex;
+  gap: 6px;
+}
 </style>
-
 <div class="packages-container">
-    <!-- Header -->
-    <div class="packages-header">
-        <h2>Our Service Packages</h2>
-        <a href="{% url 'package_add' %}">+ Add New Package</a>
-    </div>
-
-    <!-- Packages Grid -->
-    <div class="packages-grid">
-        {% for package in packages %}
-        <div class="package-card">
-            {% if package.image %}
-            <img src="{{ package.image.url }}" alt="{{ package.title }}" class="package-image">
-            {% else %}
-            <div class="no-image">No Image</div>
-            {% endif %}
-            <div class="package-content">
-                <h3>{{ package.title }}</h3>
-                <p>{{ package.description|truncatewords:25 }}</p>
-                <p class="price">{{ package.price }}</p>
-                <div class="package-buttons">
-                    <a href="{% url 'package_edit' package.id %}" class="edit-btn">Edit</a>
-                    <a href="{% url 'package_delete' package.id %}" class="delete-btn">Delete</a>
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <p class="empty-message">No packages available at the moment.</p>
-        {% endfor %}
-    </div>
+  <div class="packages-header">
+    <h2>Our Service Packages</h2>
+    <a href="{% url 'package_add' %}">+ Add New Package</a>
+  </div>
+  {% if packages %}
+  <table class="table-packages">
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Price</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for package in packages %}
+      <tr>
+        <td>
+          {% if package.image %}
+          <img src="{{ package.image.url }}" class="package-image-thumb" alt="{{ package.title }}">
+          {% else %}No Image{% endif %}
+        </td>
+        <td>{{ package.title }}</td>
+        <td>{{ package.description|truncatewords:15 }}</td>
+        <td>{{ package.price }}</td>
+        <td>
+          <a href="{% url 'package_edit' package.id %}" class="action-btn edit-btn">Edit</a>
+          <a href="{% url 'package_delete' package.id %}" class="action-btn delete-btn">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="empty-message">No packages available at the moment.</p>
+  {% endif %}
 </div>
 {% endblock %}

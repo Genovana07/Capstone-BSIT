@@ -62,6 +62,7 @@ urlpatterns = [
     path('dashboard/packages/add/', views.package_add_view, name='package_add'),
     path('dashboard/packages/<int:package_id>/edit/', views.package_edit_view, name='package_edit'),
     path('dashboard/packages/<int:package_id>/delete/', views.package_delete_view, name='package_delete'),
+    path("api/booking-status-data/", views.booking_status_data, name="booking_status_data"),
     
 ]
 

@@ -19,6 +19,7 @@ urlpatterns = [
     path('accounts/contactus/', lambda request: redirect('contactus')),  # Redirect to contact page
     path('accounts/aboutus/', lambda request: redirect('aboutus')),  # Redirect to about us page
     
+    
     # Any other custom redirects or paths can be added here as needed
 ]
 # Add this to serve media files during development

@@ -4,7 +4,6 @@
 {% block title %}Contact Us{% endblock %}
 
 {% block content %}
-
 <div class="contact-container">
     <!-- Left Section -->
     <div class="contact-left">
@@ -30,7 +29,7 @@
             </div>
             <div class="contact-item">
                 <img src="{% static 'images/mail.png' %}" alt="Email" class="contact-icon" />
-                <p>studioflow@gmail.com</p>
+                <p>christiangeno0107@gmail.com</p>
             </div>
         </div>
 
@@ -54,6 +53,15 @@
     <div class="contact-right">
         <h2 class="contact-form-title">Your Details</h2>
         <p>Let us know how to get back to you.</p>
+
+        <!-- Display Django messages -->
+        {% if messages %}
+            <div id="message-box">
+                {% for message in messages %}
+                    <p class="{{ message.tags }}">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
 
         <form class="contact-form" method="POST">
             {% csrf_token %}
@@ -84,30 +92,4 @@
 </div>
 
 <link rel="stylesheet" href="{% static 'css/contactus.css' %}">
-
-<!-- ✅ Inline Notification Script -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const messageBox = document.getElementById('message-box');
-    const msg = messageBox.getAttribute('data-message');
-    const tag = messageBox.getAttribute('data-tags');
-
-    if (msg) {
-        messageBox.textContent = msg;
-        if (tag === 'success') {
-            messageBox.classList.add('alert-success');
-        } else {
-            messageBox.classList.add('alert-error');
-        }
-        messageBox.style.display = 'block';
-
-        // Auto hide after 3.5 seconds
-        setTimeout(function() {
-            messageBox.style.opacity = '0';
-            setTimeout(() => messageBox.style.display = 'none', 500);
-        }, 3500);
-    }
-});
-</script>
-
 {% endblock %}

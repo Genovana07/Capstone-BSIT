@@ -348,41 +348,44 @@ body.dark-mode .date-filter button:hover {
 <!-- Reviews List -->
 <div class="reviews-list">
     {% for review in reviews %}
-    <div class="review-card">
-        <img src="{% if review.booking.customer.profile_picture %}{{ review.booking.customer.profile_picture.url }}{% else %}{% static 'images/profile-icon.png' %}{% endif %}" 
-             alt="Reviewer" class="reviewer-avatar">
-        <div class="review-details">
-            <div class="review-header">
-                <strong>{{ review.customer_name }}</strong>
-                <span>{{ review.event_type }}</span>
-                
-                <!-- ⭐ Star Rating -->
-                <span class="stars">
-                    {% for i in "12345" %}
-                        {% if forloop.counter <= review.rating %}
-                            <i class="fa-solid fa-star filled"></i>
-                        {% else %}
-                            <i class="fa-solid fa-star empty"></i>
-                        {% endif %}
-                    {% endfor %}
-                </span>
+<div class="review-card">
+    {% with review.booking.user.profile as user_profile %}
+    <img src="{% if user_profile and user_profile.profile_picture %}{{ user_profile.profile_picture.url }}{% else %}{% static 'images/profile-user.png' %}{% endif %}"
+         alt="Reviewer" class="reviewer-avatar">
+    {% endwith %}
 
-                <span class="date">Booked on {{ review.booking_date|date:"M d, Y" }}</span>
-            </div>
+    <div class="review-details">
+        <div class="review-header">
+            <strong>{{ review.customer_name }}</strong>
+            <span>{{ review.event_type }}</span>
+            
+            <!-- ⭐ Star Rating -->
+            <span class="stars">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= review.rating %}
+                        <i class="fa-solid fa-star filled"></i>
+                    {% else %}
+                        <i class="fa-solid fa-star empty"></i>
+                    {% endif %}
+                {% endfor %}
+            </span>
 
-            <ul class="metrics">
-                <li>Quality: <span>{{ review.quality }} ★</span></li>
-                <li>Timeliness: <span>{{ review.timeliness }} ★</span></li>
-                <li>Professionalism: <span>{{ review.professionalism }} ★</span></li>
-                <li>Value for Money: <span>{{ review.value_for_money }} ★</span></li>
-            </ul>
-
-            <p>{{ review.comment }}</p>
+            <span class="date">Booked on {{ review.booking_date|date:"M d, Y" }}</span>
         </div>
+
+        <ul class="metrics">
+            <li>Quality: <span>{{ review.quality }} ★</span></li>
+            <li>Timeliness: <span>{{ review.timeliness }} ★</span></li>
+            <li>Professionalism: <span>{{ review.professionalism }} ★</span></li>
+            <li>Value for Money: <span>{{ review.value_for_money }} ★</span></li>
+        </ul>
+
+        <p>{{ review.comment }}</p>
     </div>
-    {% empty %}
-    <p>No reviews yet.</p>
-    {% endfor %}
+</div>
+{% empty %}
+<p>No reviews yet.</p>
+{% endfor %}
 </div>
 
 {% endblock %}

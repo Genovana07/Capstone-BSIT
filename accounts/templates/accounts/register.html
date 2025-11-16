@@ -198,7 +198,29 @@ html::before, body::before {
   width: 26px;
   height: 26px;
 }
+.toast {
+  background-color: #333;
+  color: #fff;
+  padding: 12px 20px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  opacity: 0.9;
+  min-width: 250px;
+  animation: fadein 0.5s, fadeout 0.5s 3s; /* show 3s then fade out */
+}
 
+.toast-success { background-color: #4CAF50; }
+.toast-error { background-color: #f44336; }
+
+@keyframes fadein {
+  from { top: 0; opacity: 0; }
+  to { top: 20px; opacity: 0.9; }
+}
+
+@keyframes fadeout {
+  from { opacity: 0.9; }
+  to { opacity: 0; }
+}
 /* === RESPONSIVE FIXES === */
 @media (max-width: 900px) {
   .register-left {
@@ -265,17 +287,7 @@ html::before, body::before {
 <div class="register-page">
   <div class="register-left">
     <h2 class="register-title">Create an Account</h2>
-
-    {% if messages %}
-      <div class="messages">
-        {% for message in messages %}
-          <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-
+    
     <form class="register-form" method="POST" action="{% url 'register' %}">
       {% csrf_token %}
 
@@ -348,7 +360,10 @@ html::before, body::before {
 
         <div class="input-group">
           <label for="barangay">Barangay</label>
-          <input type="text" id="barangay" name="barangay" placeholder="Enter your Barangay" value="{{ barangay|default:'' }}" required />
+          <select id="barangay" name="barangay" required>
+            <option value="">Select Barangay</option>
+            <!-- Dito lalabas yung barangays depende sa city -->
+          </select>
         </div>
 
         <div class="password-stack">
@@ -370,21 +385,73 @@ html::before, body::before {
 </div>
 
 <script>
+// Province -> Cities
 const provinceOptions = {
   "Quezon": [
     "Agdangan", "Alabat", "Atimonan", "Buenavista", "Burdeos", "Calauag", "Candelaria", "Catanauan",
     "Dolores", "General Luna", "General Nakar", "Guinayangan", "Gumaca", "Infanta", "Jomalig",
-    "Lopez", "Lucban", "Lucena", "Macalelon", "Mauban", "Mulanay", "Padre Burgos", "Pagbilao",
+    "Lopez", "Lucban", "Lucena City", "Macalelon", "Mauban", "Mulanay", "Padre Burgos", "Pagbilao",
     "Panukulan", "Patnanungan", "Perez", "Pitogo", "Plaridel", "Polillo", "Quezon", "Real",
     "Sampaloc", "San Andres", "San Antonio", "San Francisco", "San Narciso", "Sariaya", "Tagkawayan",
-    "Tayabas", "Tiaong", "Unisan"
+    "Tayabas City", "Tiaong", "Unisan"
   ]
+};
+
+// City -> Barangays
+const barangays = {
+  "Lucena City": ["Ibabang Iyam","Ibabang Dupay","Gulang-gulang","Ibabang Talim","Ilayang Iyam","Ilayang Dupay","Ilayang Talim","Domoit","Dalahican","Bocohan","Cotta","Barra","Isabang","Market View","Mayao Castillo","Mayao Crossing","Mayao Kanluran","Mayao Parada","Mayao Silangan","Ransohan","Salinas","Talao-Talao","Barangay 1 (Poblacion)","Barangay 2 (Poblacion)","Barangay 3 (Poblacion)","Barangay 4 (Poblacion)","Barangay 5 (Poblacion)","Barangay 6 (Poblacion)","Barangay 7 (Poblacion)","Barangay 8 (Poblacion)","Barangay 9 (Poblacion)","Barangay 10 (Poblacion)","Barangay 11 (Poblacion)"],
+  "Tayabas City": ["Alitao","Alsam Ibaba","Alsam Ilaya","Alupay","Angeles Zone I","Angeles Zone II","Angeles Zone III","Angeles Zone IV","Angustias Zone I","Angustias Zone II","Angustias Zone III","Angustias Zone IV","Anos","Ayaas","Baguio","Banilad","Ibabang Bukal","Ilayang Bukal","Calantas","Calumpang","Camaysa","Dapdap","Kanlurang Domoit","Silangang Domoit","Gibanga","Ibas","Ilasan Ibaba","Ilasan Ilaya","Ipilan","Isabang","Katigan Kanluran","Katigan Silangan","Lakawan","Lalo","Lawigue","Lita","Malaoa","Masin","Mate","Mateuna","Mayowe","Ibabang Nangka","Ilayang Nangka","Opias","Ibabang Palale","Ilayang Palale","Kanlurang Palale","Silangang Palale","Pandakaki","Pook","Potol","San Diego Zone I","San Diego Zone II","San Diego Zone III","San Diego Zone IV","San Isidro Zone I","San Isidro Zone II","San Isidro Zone III","San Isidro Zone IV","San Roque Zone I","San Roque Zone II","Talolong","Tamlong","Tongko","Valencia","Wakas"],
+  "Candelaria": ["Malabanban Norte","Malabanban Sur","Buenavista East","Buenavista West","Bukal Norte","Bukal Sur","Kinatihan I","Kinatihan II","Mangilag Norte","Mangilag Sur","Masalukot I","Masalukot II","Masalukot III","Masalukot IV","Masalukot V","Masin Norte","Masin Sur","Mayabobo","Pahinga Norte","Pahinga Sur","San Andres","San Isidro","Santa Catalina Norte","Santa Catalina Sur","Poblacion"],
+  "Sariaya": ["Antipolo","Balubal","Bignay 1","Bignay 2","Bucal","Canda","Castañas","Concepcion No. 1","Concepcion Banahaw","Concepcion Palasan","Concepcion Pinagbakuran","Gibanga","Guisguis San Roque","Guisguis Talon","Janagdong 1","Janagdong 2","Limbon","Lutucan 1","Lutucan Bata","Lutucan Malabag","Mamala I","Mamala II","Manggalang 1","Manggalang Tulo‑Tulo","Manggalang‑Bantilan","Manggalang‑Kiling","Montecillo","Morong","Pili","Poblacion 1","Poblacion 2","Poblacion 3","Poblacion 4","Poblacion 5","Poblacion 6","Sampaloc 1","Sampaloc 2","Sampaloc Bogon","Sampaloc Santo Cristo","Talaan Aplaya","Talaan Pantoc","Tumbaga 1","Tumbaga 2"],
+  "Pagbilao": ["Alupaye","Añato","Antipolo","Bantigue","Bigo","Binahaan","Bukal","Ibabang Bagumbungan","Ibabang Palsabangon","Ibabang Polo","Ikirin","Ilayang Bagumbungan","Ilayang Palsabangon","Ilayang Polo","Kanluran Malicboy","Silangan Malicboy","Mapagong","Mayhay","Pinagbayanan","Castillo (Poblacion)","Daungan (Poblacion)","Del Carmen (Poblacion)","Parang (Poblacion)","Santa Catalina (Poblacion)","Tambak (Poblacion)","Talipan","Tukalan"],
+  "Burdeos": ["Aluyon","Amot","Anibawan","Bonifacio","Cabugao","Cabungalunan","Calutcot","Caniwan","Carlagan","Mabini","Palasan","Poblacion","San Rafael"],
+  "General Nakar": ["Anoling","Banglos","Batangan","Catablingan","Canaway","Lumutan","Mahabang Lalim","Maigang","Maligaya","Magsikap","Minahan Norte","Minahan Sur","Pagsangahan","Pamplona","Pisa","Poblacion","Sablang","San Marcelino","Umiray"],
+  "Infanta": ["Abiawin","Agos‑agos","Alitas","Amolongin","Anibong","Antikin","Bacong","Balobo","Bantilan","Banugao","Batican","Binonoan","Binulasan","Boboin","Catambungan","Cawaynin","Comon","Dinahican","Gumian","Ilog","Ingas","Langgas","Libjo","Lual","Magsaysay","Maypulot","Miswa","Pilaway","Pinaglapatan","Poblacion 1","Poblacion 38","Poblacion 39","Pulo","Silangan","Tongohin","Tudturan"],
+  "Jomalig": ["Apad", "Bukal", "Casuguran", "Gango", "Talisoy (Poblacion)"],
+  "Lucban": ["Abang","Aliliw","Atulinao","Ayuti (Poblacion)","Barangay 1 (Poblacion)","Barangay 2 (Poblacion)","Barangay 3 (Poblacion)","Barangay 4 (Poblacion)","Barangay 5 (Poblacion)","Barangay 6 (Poblacion)","Barangay 7 (Poblacion)","Barangay 8 (Poblacion)","Barangay 9 (Poblacion)","Barangay 10 (Poblacion)","Igang","Kabatete","Kakawit","Kalangay","Kalyaat","Kilib","Kulapi","Mahabang Parang","Malupak","Manasa","May‑It","Nagsinamo","Nalunao","Palola","Piis","Samil","Tiawe","Tinamnan"],
+  "Mauban": ["Abo‑abo","Alitap","Baao","Balaybalay","Bato","Cagbalete I","Cagbalete II","Cagsiay I","Cagsiay II","Cagsiay III","Concepcion","Liwayway","Lucutan","Luya-luya","Macasin","Lual (Poblacion)","Mabato (Poblacion)","Daungan (Poblacion)","Bagong Bayan (Poblacion)","Sadsaran (Poblacion)","Rizaliana (Poblacion)","Polo","Remedios I","Remedios II","Rosario","San Gabriel","San Isidro","San Jose","San Lorenzo","San Miguel","San Rafael","San Roque","San Vicente","Santa Lucia","Santo Angel","Santo Niño","Santol","Soledad","Tapucan","Lual Rural"],
+  "Panukulan": ["Balungay","Bato","Bonbon","Calasumanga","Kinalagti","Libo","Lipata","Matangkap","Milawid","Pagitan","Pandan","Rizal","San Juan"], 
+  "Patnanungan": ["Amaga","Busdak","Kilogan","Luod","Patnanungan Norte","Patnanungan Sur"],
+  "Polillo": ["Anawan","Atulayan","Balesin","Bañadero","Binibitinan","Bislian","Bucao","Canicanian","Kalubakis","Languyin","Libjo","Pamatdan","Pilion","Pinaglubayan","Poblacion","Sabang","Salipsip","Sibulan","Taluong","Tamulaya-Anitong"], 
+  "Real": ["Bagong Silang","Capalong","Cawayan","Kiloloron","Llavac","Lubayat","Malapad","Maragondon","Masikap","Maunlad","Pandan","Poblacion 1","Poblacion 61","Tagumpay","Tanauan","Tignoan","Ungos"],
+  "Sampaloc": ["Alupay","Apasan","Banot","Bataan","Bayongon","Bilucao","Caldong","Ibabang Owain","Ilayang Owain","Mamala","San Bueno","San Isidro (Poblacion)","San Roque (Poblacion)","Taquico"],  
+  "Dolores": ["Antonino","Bagong Anyo","Bayanihan","Bulakin I","Bulakin II","Bungoy","Cabatang","Dagatan","Kinabuhayan","Maligaya","Manggahan","Pinagdanlayan","Putol","San Mateo","Santa Lucia","Silanganan"], 
+  "San Antonio": ["Arawan","Bagong Niing","Balat Atis","Briones","Bulihan","Buliran","Callejon","Corazon","Manuel del Valle, Sr.","Loob","Magsaysay","Matipunso","Niing","Poblacion","Pulo","Pury","Sampaga","Sampaguita","San Jose","Sinturisan"],  
+  "Tiaong": ["Anastacia","Aquino","Ayusan I","Ayusan II","Barangay I (Poblacion)","Barangay II (Poblacion)","Barangay III (Poblacion)","Barangay IV (Poblacion)","Behia","Bukal","Bula","Bulakin","Cabatang","Cabay","Del Rosario","Lagalag","Lalig","Lumingon","Lusacan","Paiisa","Palagaran","Quipot","San Agustin","San Isidro","San Jose","San Juan","San Pedro","Tagbakin","Talisay","Tamisian","San Francisco"],
+  "Agdangan": ["Binagbag","Dayap","Ibabang Kinagunan","Ilayang Kinagunan","Kanlurang Calutan","Kanlurang Maligaya","Silangang Calutan","Silangang Maligaya","Sildora","Poblacion I","Poblacion II","Salvacion"],
+  "Buenavista": ["Bagong Silang","Batabat Norte","Batabat Sur","Buenavista","Bukal","Bulo","Cabong","Cadlit","Catulin","Cawa","De La Paz","Del Rosario","Hagonghong","Ibabang Wasay","Ilayang Wasay","Lilukin","Mabini","Mabutag","Magallanes","Maligaya (Esperanza)","Manlana","Masaya","Poblacion","Rizal","Sabang Pinamasagan","Sabang Piris","San Diego","San Isidro Ibaba","San Isidro Ilaya","San Pablo","San Pedro (Villa Rodrigo)","San Vicente","Siain","Villa Aurora","Villa Batabat","Villa Magsaysay","Villa Veronica"],
+  "Catanauan": ["Ajos","Anusan","Barangay 1 (Pob.)","Barangay 2 (Pob.)","Barangay 3 (Pob.)","Barangay 4 (Pob.)","Barangay 5 (Pob.)","Barangay 6 (Pob.)","Barangay 7 (Pob.)","Barangay 8 (Pob.)","Barangay 9 (Pob.)","Barangay 10 (Pob.)","Bolo","Bulagsong","Camandiison","Canculajao","Catumbo","Cawayanin Ibaba","Cawayanin Ilaya","Cutcutan","Dahican","Doongan Ibaba","Doongan Ilaya","Gatasan","Macpac","Madulao","Matandang Sabang Kanluran","Matandang Sabang Silangan","Milagrosa","Navitas","Pacabit","San Antonio Magkupa","San Antonio Pala","San Isidro","San Jose (Anyao)","San Pablo (Suha)","San Roque (Doyon)","San Vicente Kanluran","San Vicente Silangan","Santa Maria (Dao)","Tagabas Ibaba","Tagabas Ilaya","Tagbacan Ibaba","Tagbacan Ilaya","Tagbacan Silangan","Tuhian"],  
+  "General Luna": ["Bacong Ibaba","Bacong Ilaya","Barangay 1 (Pob.)","Barangay 2 (Pob.)","Barangay 3 (Pob.)","Barangay 4 (Pob.)","Barangay 5 (Pob.)","Barangay 6 (Pob.)","Barangay 7 (Pob.)","Barangay 8 (Pob.)","Barangay 9 (Pob.)","Lavides","Magsaysay","Malaya","Nieva","Recto","San Ignacio Ibaba","San Ignacio Ilaya","San Isidro Ibaba","San Isidro Ilaya","San Jose","San Nicolas","San Vicente","Santa Maria Ibaba","Santa Maria Ilaya","Sumilang","Villarica"],
+  "Macalelon": ["Amontay","Anos","Buyao","Candangal","Calantas","Lahing","Luctob","Mabini Ibaba","Mabini Ilaya","Malabahay","Mambog","Olongtao Ibaba","Olongtao Ilaya","Padre Herrera","Pajarillo","Pinagbayanan","Rodriquez (Pob.)","Rizal (Pob.)","Castillo (Pob.)","Pag-Asa (Pob.)","Masipag (Pob.)","Damayan (Pob.)","San Isidro","San Jose","San Nicolas","San Vicente","Taguin","Tubigan Ibaba","Tubigan Ilaya","Vista Hermosa"],
+  "Mulanay": ["Ajos (Sto. Niño)","Amuguis","Bagong Silang","Bolo","Butanyog","Canuyep","Latangan","Latingan","Lunsad","Magsaysay","Magtilang","Maligaya","Manapa","Matataja","Nueva Visaya","Poblacion I","Poblacion II","Poblacion III","Poblacion IV","Pogon (Tulay)","San Gabriel","San Gregory","San Isidro","San Pedro","San Roque","Santa Rosa","Sibucao","Sumundol"],
+  "Padre Burgos": ["Cabuyao Norte","Cabuyao Sur","Danlagan","Duhat","Hinguiwin","Kinagunan Ibaba","Kinagunan Ilaya","Lipata","Marao","Marquez","Burgos (Poblacion)","Campo (Poblacion)","Basiao (Poblacion)","Punta (Poblacion)","Rizal","San Isidro","San Vicente","Sipa","Tulay Buhangin","Villapaz","Walay","Yawe"], 
+  "Pitogo": ["Amontay","Cometa","Biga","Bilucao","Cabulihan","Cawayanin","Gangahin","Ibabang Burgos","Ibabang Pacatin","Ibabang Piña","Ibabang Soliyao","Ilayang Burgos","Ilayang Pacatin","Ilayang Piña","Ilayang Soliyao","Nag‑Cruz","Osmeña","Payte","Pinagbayanan","Masaya (Poblacion)","Manggahan (Poblacion)","Dulong Bayan (Poblacion)","Pag-Asa (Poblacion)","Castillo (Poblacion)","Maaliw (Poblacion)","Mayubok (Poblacion)","Pamilihan (Poblacion)","Dalampasigan (Poblacion)","Poctol","Quezon","Quinagasan","Rizalino","Saguinsinan","Sampaloc","San Roque","Sisirin","Sumag Este","Sumag Norte","Sumag Weste"],
+  "San Andres": ["Alibihaban","Camflora","Mangero","Pansoy","Tala","Talisay","Poblacion"],   
+  "San Francisco": ["Butanguiad","Casay","Cawayan I","Cawayan II","Don Juan Vercelos","Huyon‑Uyon","Ibabang Tayuman","Ilayang Tayuman","Inabuan","Mabuñga","Nasalaan","Pagsangahan","Poblacion","Pugon","Santo Niño","Silongin"],
+  "San Narciso": ["Abuyon","Andres Bonifacio","Bani","Binay","Buenavista","Busokbusokan","Calwit","Guinhalinan","Lakdayan","Maguiting","Manlampong","Pagkakaisa (Poblacion)","Maligaya (Poblacion)","Bayanihan (Poblacion)","Pagdadamayan (Poblacion)","Punta","Rizal","San Isidro","San Juan","San Vicente","Vigo Central","Villa Aurin (Pinagsama)","Villa Reyes","White Cliff"],
+  "Unisan": ["Almacén","Balagtás","Balanacan","Bonifacio","Bulo Ibabâ","Bulo Ilaya","Burgos","Cabulihan Ibabâ","Cabulihan Ilaya","Caigdál","F. De Jesús (Poblacion)","General Luna","Kalilayan Ibabâ","Kalilayan Ilaya","Mabini","Mairok Ibaba","Mairok Ilaya","Malvar","Maputat","Muliguin","Pagaguasan","Panaon Ibabâ","Panaon Ilaya","Pláridel","R. Lapu‑Lapu (Poblacion)","R. Magsaysay (Poblacion)","Raja Solimán (Poblacion)","Poctol","Punta","Rizal Ibabâ","Rizal Ilaya","San Roque","Socorro","Tagumpay","Tubas","Tubigan"], 
+  "Alabat": ["Angeles","Bacong","Balungay","Buenavista","Caglate","Camagong","Gordon","Pambilan Norte","Pambilan Sur","Barangay 1 (Pob.)","Barangay 2 (Pob.)","Barangay 3 (Pob.)","Barangay 4 (Pob.)","Barangay 5 (Pob.)","Villa Esperanza","Villa Jesus Este","Villa Jesus Weste","Villa Norte","Villa Victoria"], 
+  "Atimonan": ["Angeles","Balubad","Balugohin","Barangay Zone 1 (Pob.)","Barangay Zone 2 (Pob.)","Barangay Zone 3 (Pob.)","Barangay Zone 4 (Pob.)","Buhangin","Caridad Ibaba","Caridad Ilaya","Habingan","Inaclagan","Inalig","Kilait","Kulawit","Lakip","Lubi","Lumutan","Magsaysay","Malinao Ibaba","Malinao Ilaya","Malusak","Manggalayan Bundok","Manggalayan Labak","Matanag","Montes Balaon","Montes Kallagan","Ponon","Rizal","San Andres Bundok","San Andres Labak","San Isidro","San Jose Balatok","San Rafael","Santa Catalina","Sapaan","Sokol","Tagbakin","Talaba","Tinandog","Villa Ibaba","Villa Ilaya"], 
+  "Calauag": ["Agoho","Anahawan","Anas","Apad Lutao","Apad Quezon","Apad Taisan","Atulayan","Baclaran (Poblacion)","Bagong Silang","Balibago","Bangkuruhan","Bantolinao","Barangay I (Poblacion)","Barangay II (Poblacion)","Barangay III (Poblacion)","Barangay IV (Poblacion)","Barangay V (Poblacion)","Bigaan","Binutas (Santa Brigida)","Biyan","Bukal","Buli","Dapdap","Dominlog","Doña Aurora","Guinosayan","Ipil","Kalibo (Santa Cruz)","Kapaluhan","Katangtang","Kigtan","Kinamaligan","Kinalin Ibaba","Kinalin Ilaya","Kumaludkud","Kunalum","Kuyaoyao","Lagay","Lainglaingan","Lungib","Mabini","Madlangdungan","Maglipad (Rosario)","Maligaya","Mambaling","Manhulugin","Marilag (Punaya)","Mulay","Pandanan","Pansol","Patihan","Pinagbayanan (Poblacion)","Pinagkamaligan (Poblacion)","Pinagsakayan","Pinagtalleran (Poblacion)","Rizal Ibaba","Rizal Ilaya","Sabang Uno (Poblacion)","Sabang Dos (Poblacion)","Salvacion","San Quintin","San Roque Ibaba","San Roque Ilaya","Santa Cecilia","Santa Maria (Poblacion)","Santa Milagrosa","Santa Rosa","Santo Angel (Pangahoy)","Santo Domingo","Sinag","Sumilang","Sumulong","Tabansak","Talingting","Tamis","Tikiwan","Tiniguiban","Villa Magsino","Villa San Isidro","Viñas","Yaganak"],
+  "Guinayangan": ["A. Mabini","Aloneros","Arbismen","Bagong Silang","Balinarin","Bukal Maligaya","Cabibihan","Cabong Norte","Cabong Sur","Calimpak","Capuluan Central","Capuluan Tulon","Dancalan Caimawan","Dancalan Central","Danlagan Batis","Danlagan Cabayao","Danlagan Central","Danlagan Reserva","Del Rosario","Dungawan Central","Dungawan Paalyunan","Dungawan Pantay","Ermita","Gapas","Himbubulo Este","Himbubulo Weste","Hinabaan","Ligpit Bantayan","Lubigan","Magallanes","Magsaysay","Manggagawa","Manggalang","Manlayo","Poblacion","Salakan","San Antonio","San Isidro","San Jose","San Lorenzo","San Luis I","San Luis II","San Miguel","San Pedro I","San Pedro II","San Roque","Santa Cruz","Santa Maria","Santa Teresita","Sintones","Sisi","Tikay","Triumpo","Villa Hiwasayan"],
+  "Gumaca": ["Adia Bitaog","Anonangin","Bagong Buhay (Poblacion)","Bamban","Bantad","Batong Dalig","Biga","Binambang","Buensuceso","Bungahan","Butaguin","Calumangin","Camohaguin","Casasahan Ibaba","Casasahan Ilaya","Cawayan","Gayagayaan","Gitnang Barrio","Hardinan","Inaclagan","Inagbuhan Ilaya","Hagakhakin","Labnig","Laguna","Lagyo","Mabini (Poblacion)","Mabunga","Malabtog","Manlayaan","Marcelo H. del Pilar","Mataas na Bundok","Maunlad (Poblacion)","Pagsabangan","Panikihan","Peñafrancia (Poblacion)","Pipisik (Poblacion)","Progreso","Rizal (Poblacion)","Rosario","San Agustin","San Diego (Poblacion)","San Diego Bukid","San Isidro Kanluran","San Isidro Silangan","San Juan de Jesus","San Vicente","Sastre","Tabing Dagat (Poblacion)","Tumayan","Villa Arcaya","Villa Bota","Villa Fuerte","Villa Mendoza","Villa Nava","Villa Padua","Villa Perez","Villa Principe","Villa Tañada","Villa Victoria"],
+  "Lopez": ["Bacungan","Bagacay","Banabahin Ibaba","Banabahin Ilaya","Burgos","Gomez","Magsaysay","Talolong","Bayabas","Bebito","Bigajo","Binahian A","Binahian B","Binahian C","Bocboc","Buenavista","Buyacanin","Cagacag","Calantipayan","Canda Ibaba","Canda Ilaya","Cawayan","Cawayanin","Cogorin Ibaba","Cogorin Ilaya","Concepcion","Danlagan","De La Paz","Del Pilar","Del Rosario","Esperanza Ibaba","Esperanza Ilaya","Guihay","Guinuangan","Guites","Hondagua","Ilayang Ilog A","Ilayang Ilog B","Inalusan","Inalusan Ilaya","Loguilan","Lubigan","Lumutan","Mabini","Maligaya","Manapat","Masikapan","Mayunos","Miramantes","Montes Balaon","Montes Kallagan","Poblacion Zone I","Poblacion Zone II","Poblacion Zone III","Poblacion Zone IV","Poblacion Zone V","Quipot","San Andres Bundok","San Isidro","San Jose Balatok","San Rafael","Santa Catalina","Tagbakin","Talumpok","Tinandog","Toclong","Tubigan","Tuko","Tumuloy","Villa Ibaba","Villa Ilaya","Villa Victoria","Villa Jesus","Villa Magsaysay","Villa Monte Verde","Villa Puting Buhangin","Villa Rosalinda","Villa San Miguel","Villardeña","Wakas"],
+ "Perez": ["Maabot","Mainit Norte","Mainit Sur","Pambuhan","Pinagtubigan Este","Pinagtubigan Weste","Pagkakaisa Pob.","Mapagmahal Pob.","Bagong Pag‑Asa Pob.","Bagong Silang Pob.","Rizal","Sangirin","Villamanzano Norte","Villamanzano Sur"], 
+  "Plaridel": ["Central","Concepcion","Duhat","Ilaya","Ilosong","M. L. Tumagay","Paang Bundok","Pampaaralan","Tanauan"], 
+ "Quezon": ["Apad","Argosino","Cagbalogo","Caridad","Cometa","Del Pilar","Guinhawa","Gumubat","Magsino","Mascariña","Montaña","Barangay I (Poblacion)","Barangay II (Poblacion)","Barangay III (Poblacion)","Barangay IV (Poblacion)","Barangay V (Poblacion)","Barangay VI (Poblacion)","Sabang","Silangan","Tagkawa (Tagkawa)","Villa Belen","Villa Francia","Villa Gomez","Villa Mercedes"],
+  "Tagkawayan": ["Aldavoc","Aliji","Bagong Silang","Bamban","Bosigon","Bukal","Cabugwang","Cagascas","Casispalan","Colong‑colong","Del Rosario","Cabibihan","Candalapdap","Katimo","Kinatakutan","Landing","Laurel","Magsaysay","Maguibuay","Mahinta","Malbog","Manato Central","Manato Station","Mangayao","Mansilay","Mapulot","Munting Parang","Payapa","Poblacion","Rizal","Sabang","San Diego","San Francisco","San Isidro","San Jose","San Roque","San Vicente","Santa Cecilia","Santa Monica","Santo Niño I","Santo Niño II","Santo Tomas","Seguiwan","Tabason","Tunton","Victoria"]
 };
 
 function updateCities() {
   const province = document.getElementById("province").value;
   const citySelect = document.getElementById("city");
+  const barangaySelect = document.getElementById("barangay");
+
+  // Reset City & Barangay
   citySelect.innerHTML = '<option value="">Select a City</option>';
+  barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+
+  // Populate Cities
   if (provinceOptions[province]) {
     provinceOptions[province].forEach(city => {
       const option = document.createElement("option");
@@ -394,5 +461,30 @@ function updateCities() {
     });
   }
 }
+
+// Update Barangays when City changes
+document.getElementById("city").addEventListener("change", function() {
+  const selectedCity = this.value;
+  const barangaySelect = document.getElementById("barangay");
+  barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+
+  if (selectedCity && barangays[selectedCity]) {
+    barangays[selectedCity].forEach(brgy => {
+      const option = document.createElement("option");
+      option.value = brgy;
+      option.textContent = brgy;
+      barangaySelect.appendChild(option);
+    });
+  }
+});
+
+// Toast auto-hide
+document.addEventListener("DOMContentLoaded", function() {
+  const toasts = document.querySelectorAll(".toast");
+  toasts.forEach((toast) => {
+    setTimeout(() => { toast.remove(); }, 4000);
+  });
+});
 </script>
+
 {% endblock %}

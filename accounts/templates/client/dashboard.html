@@ -6,9 +6,10 @@
     
 <section class="dashboard-header">
     <div class="header-top">
-        <div>
+ <div class="dashboard-header">
+        <div class="dashboard-title">
             <h1>📊 Dashboard Overview</h1>
-            <p>Welcome back, <strong>Owner!</strong> Here’s your business summary at a glance.</p>
+            <p>Welcome back, <strong>{{ request.user.get_full_name }}</strong>. Here’s your business summary at a glance.</p>
         </div>
 
         <!-- Year & Month Filter -->
@@ -178,24 +179,65 @@
         color: #1e293b; 
     } 
     
-    h1, h2, h3 { 
-        font-weight: 600; 
-        color: #111827; 
-    } 
-    
-    /* HEADER */ 
-    .dashboard-header { 
-        background: linear-gradient(135deg, #2563eb, #10b981); 
-        color: white; 
-        padding: 30px 24px; 
-        border-radius: 14px; 
-        box-shadow: 0 10px 25px rgba(0,0,0,0.12); 
-    } 
-    
-    .dashboard-header h1 { 
-        font-size: 28px; 
-        margin-bottom: 6px; 
-    } 
+        .dashboard-header {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 2rem;
+            background-color: #1f2937; /* dark gray */
+            border-radius: 12px;
+            color: white;
+        }
+
+        .dashboard-title h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .dashboard-title p {
+            font-size: 1.125rem;
+            font-weight: 500;
+            margin-top: 0.25rem;
+            color: #e5e7eb; /* light gray */
+        }
+
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1rem;
+            background-color: #374151; /* slightly lighter gray */
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+        }
+
+        .filter-form label {
+            margin-right: 0.5rem;
+            font-weight: 600;
+            color: #f3f4f6;
+        }
+
+        .filter-form select {
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            border: none;
+            font-size: 1rem;
+            background-color: #f3f4f6;
+            color: #111827;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .filter-form select:hover {
+            background-color: #e5e7eb;
+        }
+
+        .filter-form select:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
     
     .cards { 
         display: grid; 

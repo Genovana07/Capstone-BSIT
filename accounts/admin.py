@@ -1,43 +1,75 @@
 from django.contrib import admin
 from .models import Booking, ServicePackage, Equipment, PackageEquipment, Review
 
-# Register the Booking model with the admin interface
+# --------------------
+# BOOKING ADMIN
+# --------------------
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     list_display = (
         'full_name', 'event_type', 'event_date',
         'event_time', 'location', 'status', 'package_title'
     )
-    list_filter = ('event_type', 'event_date', 'status', 'package__title')  # Added filter by package title
-    search_fields = ('full_name', 'email', 'location', 'package__title')  # Search by full_name, email, location, and package title
+    list_filter = ('event_type', 'event_date', 'status', 'package__title')
+    search_fields = ('full_name', 'email', 'location', 'package__title')
     ordering = ('-event_date', 'event_time')
 
-    # Display the package title in the list view
     def package_title(self, obj):
-        return obj.package.title
+        return obj.package.title if obj.package else "-"
     package_title.short_description = "Package"
 
-# Register the ServicePackage model with the admin interface
+
+# --------------------
+# PACKAGE EQUIPMENT INLINE
+# --------------------
+class PackageEquipmentInline(admin.TabularInline):
+    model = PackageEquipment
+    extra = 0
+    fields = ("equipment", "quantity_required")
+    show_change_link = True
+
+
+# --------------------
+# SERVICE PACKAGE ADMIN
+# --------------------
 @admin.register(ServicePackage)
 class ServicePackageAdmin(admin.ModelAdmin):
-    list_display = ('title', 'price', 'equipment_list')  # Added equipment list display
-    search_fields = ('title',)
-    
-    # Display the equipment associated with the service package
+    list_display = ('title', 'price', 'category', 'equipment_list')
+    search_fields = ('title', 'category')
+    inlines = [PackageEquipmentInline]  # ✅ show equipment inline per package
+
     def equipment_list(self, obj):
-        return ", ".join([equipment.name for equipment in obj.equipment.all()])
+        return ", ".join(
+            [f"{pe.equipment.name} (x{pe.quantity_required})"
+             for pe in PackageEquipment.objects.filter(package=obj)]
+        )
     equipment_list.short_description = "Equipment"
 
-# Register Equipment model with the admin interface for visibility
+
+# --------------------
+# EQUIPMENT ADMIN
+# --------------------
 @admin.register(Equipment)
 class EquipmentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'quantity_available', 'quantity_rented')  # Show equipment details
+    list_display = ('name', 'quantity_available', 'quantity_rented')
     search_fields = ('name',)
 
-# Register PackageEquipment model to manage the relation between ServicePackage and Equipment
+
+# --------------------
+# PACKAGE EQUIPMENT ADMIN
+# --------------------
 @admin.register(PackageEquipment)
 class PackageEquipmentAdmin(admin.ModelAdmin):
     list_display = ('package', 'equipment', 'quantity_required')
     search_fields = ('package__title', 'equipment__name')
+    list_filter = ('package', 'equipment')
 
-admin.site.register(Review)
+
+# --------------------
+# REVIEW ADMIN
+# --------------------
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ('booking', 'rating', 'comment', 'created_at')
+    search_fields = ('booking__full_name', 'comment')
+    list_filter = ('rating', 'created_at')

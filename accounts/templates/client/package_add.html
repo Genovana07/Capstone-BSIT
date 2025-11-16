@@ -139,30 +139,41 @@
     <h2>
         {% if package %}Edit Package{% else %}Add New Package{% endif %}
     </h2>
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
 
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {% for field in form %}
-        <div class="form-group">
-            <label for="{{ field.id_for_label }}">
-                {{ field.label }}
-                {% if field.field.required %}
-                <span class="required">*</span>
-                {% endif %}
-            </label>
-            {{ field }}
-            {% if field.help_text %}
-            <p class="help-text">{{ field.help_text }}</p>
+    {% for field in form %}
+    <div class="form-group">
+        <label for="{{ field.id_for_label }}">
+            {{ field.label }}
+            {% if field.field.required %}
+            <span class="required">*</span>
             {% endif %}
-            {% for error in field.errors %}
-            <p class="error-text">{{ error }}</p>
-            {% endfor %}
-        </div>
+        </label>
+        {{ field }}
+        {% if field.help_text %}
+        <p class="help-text">{{ field.help_text }}</p>
+        {% endif %}
+        {% for error in field.errors %}
+        <p class="error-text">{{ error }}</p>
         {% endfor %}
+    </div>
+    {% endfor %}
 
-        <button type="submit" class="submit-btn">
-            {% if package %}Update{% else %}Save{% endif %}
-        </button>
-    </form>
+    <h3>Equipment & Quantity</h3>
+    {% for equipment, bound_field in equipment_fields %}
+    <div class="form-group">
+        <label for="{{ bound_field.id_for_label }}">{{ equipment.name }}</label>
+        {{ bound_field }}
+        {% if bound_field.errors %}
+            <div class="error-text">{{ bound_field.errors }}</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <button type="submit" class="submit-btn">
+        {% if package %}Update{% else %}Save{% endif %}
+    </button>
+</form>
 </div>
 {% endblock %}

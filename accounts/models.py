@@ -130,7 +130,7 @@ class Equipment(models.Model):
         """Check if equipment can be rented."""
         return self.quantity_available > 0
 
-
+from django.db import models
 class ServicePackage(models.Model):
     EVENT_CHOICES = [
         ("Wedding", "Wedding"),
@@ -153,7 +153,7 @@ class ServicePackage(models.Model):
     price = models.CharField(max_length=50)
     image = models.ImageField(upload_to="packages/", blank=True, null=True)
     equipment = models.ManyToManyField(
-        Equipment,
+        "Equipment",
         through="PackageEquipment",
         related_name="service_packages"
     )
@@ -166,13 +166,16 @@ class ServicePackage(models.Model):
     def __str__(self):
         return f"{self.title} ({self.category})"
 
+
 class PackageEquipment(models.Model):
     package = models.ForeignKey(ServicePackage, on_delete=models.CASCADE)
-    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
-    quantity_required = models.IntegerField(null=True, blank=True, default=0)
+    equipment = models.ForeignKey("Equipment", on_delete=models.CASCADE)
+    # ✅ Required quantity per equipment in the package
+    quantity_required = models.PositiveIntegerField(default=1)
 
     def __str__(self):
-        return f'{self.package.title} - {self.equipment.name}'
+        return f"{self.package.title} - {self.equipment.name} (x{self.quantity_required})"
+
 
 class Booking(models.Model):
     STATUS_CHOICES = [

@@ -64,6 +64,9 @@ urlpatterns = [
     path('dashboard/packages/<int:package_id>/delete/', views.package_delete_view, name='package_delete'),
     path("api/booking-status-data/", views.booking_status_data, name="booking_status_data"),
     
+
+    
+    
 ]
 
 # ✅ Serve media files (if in DEBUG mode)

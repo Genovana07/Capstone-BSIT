@@ -54,30 +54,30 @@
                 <a href="{% url 'contactus' %}">Contact Us</a>
             </li>
 
-            {% if user.is_authenticated %}
-                <!-- Notification Bell -->
-                <li class="notification-item">
-                    <a href="#" class="notification-link" id="notificationBell">
-                        <i class="fas fa-bell"></i>
-                        {% if notifications_unread_count > 0 %}
-                            <span class="notification-badge">{{ notifications_unread_count }}</span>
-                        {% endif %}
-                    </a>
-                    <div class="notification-dropdown" id="notificationDropdown">
-                        {% if notifications %}
-                            <ul>
-                                {% for notif in notifications %}
-                                    <li class="{% if not notif.is_read %}unread{% endif %}">
-                                        {{ notif.message }} <br>
-                                        <small>{{ notif.created_at|date:"M d, Y" }}</small>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p class="no-notifications">No notifications</p>
-                        {% endif %}
-                    </div>
-                </li>
+                            {% if user.is_authenticated %}
+<li class="notification-item">
+    <a href="#" class="notification-link" id="notificationBell">
+        <i class="fas fa-bell"></i>
+        {% if notifications_unread_count > 0 %}
+            <span class="notification-badge">{{ notifications_unread_count }}</span>
+        {% endif %}
+    </a>
+    <div class="notification-dropdown" id="notificationDropdown">
+        {% if notifications %}
+            <ul>
+                {% for notif in notifications %}
+                    <li class="{% if not notif.is_read %}unread{% endif %}">
+                        {{ notif.message }} <br>
+                        <small>{{ notif.created_at|date:"M d, Y" }}</small>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="no-notifications">No notifications</p>
+        {% endif %}
+    </div>
+</li>
+                
 
                 <!-- Profile -->
                 <li class="profile-item">
@@ -297,7 +297,7 @@ nav ul li.active a {
         padding: 10px 15px;
     }
     .notification-dropdown { right: 10px; }
-}
+
 
 /* PROFILE & DASHBOARD */
 .profile-item { display: flex; align-items: center; gap: 8px; }

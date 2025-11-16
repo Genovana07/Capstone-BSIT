@@ -8,197 +8,271 @@
 {% block content %}
 <section class="services">
     <h2 class="section-title">Our Services</h2>
-    
 
-    <div class="services-grid">
-        {% for package in packages %}
-        <div class="service-item flex flex-col h-full">
-            <!-- Image -->
-            {% if package.image %}
-                <img src="{{ package.image.url }}" alt="{{ package.title }}">
-            {% else %}
-                <img src="{% static 'images/package' %}{{ forloop.counter }}.png" alt="{{ package.title }}">
+<!-- EVENT FILTER -->
+<form method="get" class="event-filter-form mb-5">
+    <label for="event_type">Filter by Event:</label>
+    <select id="event_type" name="event_type" onchange="this.form.submit()">
+        <option value="">All</option>
+        {% for event in event_choices %}
+            <option value="{{ event }}" {% if selected_event == event %}selected{% endif %}>
+                {{ event }}
+            </option>
+        {% endfor %}
+    </select>
+</form>
+<div class="services-grid">
+    {% for package in packages %}
+    <div class="service-item flex flex-col h-full border rounded p-4 shadow-sm">
+        
+        <!-- Package Image -->
+        {% if package.image %}
+            <img src="{{ package.image.url }}" alt="{{ package.title }}" class="w-full h-48 object-cover rounded">
+        {% else %}
+            <img src="{% static 'images/package' %}{{ forloop.counter }}.png" alt="{{ package.title }}" class="w-full h-48 object-cover rounded">
+        {% endif %}
+
+        <!-- Package Title -->
+        <h3 class="package-title text-lg font-semibold mt-2">{{ package.title }}</h3>
+
+        <!-- Package Description + Included Equipment -->
+        <div class="package-desc text-sm text-gray-700 whitespace-pre-line flex-1 mt-2">
+            {{ package.description|linebreaksbr }}
+
+            {% if package.packageequipment_set.exists %}
+                <p class="mt-2 font-bold" style="font-weight: bold;">Included Equipment:</p>
+                <div class="text-sm text-gray-700">
+                    {% for pe in package.packageequipment_set.all %}
+                        {% if pe.quantity_required and pe.quantity_required > 0 %}
+                            <p>{{ pe.quantity_required }} × {{ pe.equipment.name }}</p>
+                        {% endif %}
+                    {% endfor %}
+                </div>
             {% endif %}
 
-            <!-- Title -->
-            <h3 class="package-title">{{ package.title }}</h3>
-
-            <!-- Price -->
-            <p class="package-price">Price: 
+            <!-- Package Price -->
+            <p class="package-price mt-1 font-bold" style="font-weight: bold;">
+                Price: 
                 {% if package.formatted_price %}
                     {{ package.formatted_price }}
                 {% else %}
                     {{ package.price }}
                 {% endif %}
             </p>
+        </div>
 
-            <!-- Description -->
-            <div class="package-desc text-sm text-gray-700 whitespace-pre-line flex-1">
-                {{ package.description|linebreaksbr }}
-            </div>
-
-            <!-- Bolden Included Equipment -->
-            <script>
-                document.addEventListener("DOMContentLoaded", () => {
-                    document.querySelectorAll(".package-desc").forEach(desc => {
-                        desc.innerHTML = desc.innerHTML.replace("Included Equipment:", "<strong>Included Equipment:</strong>");
-                    });
-                });
-            </script>
-
-            <!-- ⭐ Rating -->
-            <div class="package-rating" style="margin-bottom: 8px;">
-                {% if package.avg_rating %}
-                    {% with package.avg_rating|star_counts as stars %}
-                        {% for i in stars.full %}
-                            <span style="color: gold; font-size: 18px;">★</span>
-                        {% endfor %}
-                        {% for i in stars.half %}
-                            <span style="color: gold; font-size: 18px;">⯨</span>
-                        {% endfor %}
-                        {% for i in stars.empty %}
-                            <span style="color: lightgray; font-size: 18px;">★</span>
-                        {% endfor %}
-                        <span style="font-size: 14px; margin-left: 6px;">
-                            ({{ package.avg_rating|floatformat:1 }}/5 from {{ package.review_count }} reviews)
-                        </span>
-                    {% endwith %}
-                {% else %}
-                    {% for i in "12345" %}
+        <!-- Package Rating -->
+        <div class="package-rating mb-2">
+            {% if package.avg_rating %}
+                {% with package.avg_rating|star_counts as stars %}
+                    {% for i in stars.full %}
+                        <span style="color: gold; font-size: 18px;">★</span>
+                    {% endfor %}
+                    {% for i in stars.half %}
+                        <span style="color: gold; font-size: 18px;">⯨</span>
+                    {% endfor %}
+                    {% for i in stars.empty %}
                         <span style="color: lightgray; font-size: 18px;">★</span>
                     {% endfor %}
                     <span style="font-size: 14px; margin-left: 6px;">
-                        (0/5 from 0 reviews)
+                        ({{ package.avg_rating|floatformat:1 }}/5 from {{ package.review_count }} reviews)
                     </span>
-                {% endif %}
-            </div>
-
-            <!-- Button -->
-            <div class="card-buttons mt-auto">
-                {% if user.is_authenticated %}
-                    <button class="book-now w-full" onclick="confirmOpenBookingForm('{{ package.title }}')">Book Now</button>
-                {% else %}
-                    <button class="login-first w-full" onclick="window.location.href='{% url 'login' %}'">Book Now</button>
-                {% endif %}
-            </div>
+                {% endwith %}
+            {% else %}
+                {% for i in "12345" %}
+                    <span style="color: lightgray; font-size: 18px;">★</span>
+                {% endfor %}
+                <span style="font-size: 14px; margin-left: 6px;">
+                    (0/5 from 0 reviews)
+                </span>
+            {% endif %}
         </div>
+
+        <!-- Card Buttons -->
+        <div class="card-buttons mt-auto">
+            {% if user.is_authenticated %}
+                <button class="book-now w-full" onclick="confirmOpenBookingForm('{{ package.title }}')">Book Now</button>
+            {% else %}
+                <button class="login-first w-full" onclick="window.location.href='{% url 'login' %}'">Book Now</button>
+            {% endif %}
+        </div>
+    </div>
+        {% empty %}
+            <p class="text-center w-full text-gray-600 mt-6">No packages found for this event.</p>
         {% endfor %}
     </div>
 </section>
 
 <!-- Booking Form Modal -->
 <div id="booking-modal" class="booking-modal">
-    <div class="booking-content">
-        <span class="close-btn" onclick="closeBookingForm()">&times;</span>
-        <h2>Book a Service</h2>
-        <form method="POST" action="{% url 'create_booking' %}" id="bookingForm">
-  {% csrf_token %}
+  <div class="booking-content">
+    <span class="close-btn" onclick="closeBookingForm()">&times;</span>
+    <h2>Book a Service</h2>
+    <form method="POST" action="{% url 'create_booking' %}" id="bookingForm">
+      {% csrf_token %}
 
-  <div class="booking-form-grid">
-    <div class="full-width">
-      <label for="selected_package">Package Selected</label>
-      <input type="text" id="selected_package" name="selected_package" readonly>
-    </div>
+      <div class="booking-form-grid">
+        <!-- Full width -->
+        <div class="full-width">
+          <label for="selected_package">Package Selected</label>
+          <input type="text" id="selected_package" name="selected_package" readonly>
+        </div>
 
-    <div>
-      <label for="full_name">Full Name</label>
-      <input type="text" id="full_name" name="full_name" value="{{ user.first_name }} {{ user.last_name }}" required>
-    </div>
+        <!-- Two-column inputs -->
+        <div>
+          <label for="full_name">Full Name</label>
+          <input type="text" id="full_name" name="full_name" value="{{ user.first_name }} {{ user.last_name }}" required>
+        </div>
 
-    <div>
-      <label for="email">Email Address</label>
-      <input type="email" id="email" name="email" value="{{ user.email }}" required>
-    </div>
+        <div>
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" value="{{ user.email }}" required>
+        </div>
 
-    <div>
-      <label for="contact_number">Contact Number</label>
-      <input type="tel" id="contact_number" name="contact_number" value="{{ profile.contact_number }}" required>
-    </div>
+        <div>
+          <label for="contact_number">Contact Number</label>
+          <input type="tel" id="contact_number" name="contact_number" value="{{ profile.contact_number }}" required>
+        </div>
 
-    <div>
-      <label for="event_date">Event Date</label>
-      <input type="date" id="event_date" name="event_date" required>
-    </div>
+        <div>
+          <label for="event_date">Event Date</label>
+          <input type="date" id="event_date" name="event_date" required>
+        </div>
 
-    <div>
-      <label for="event_time">Start Time</label>
-      <select id="event_time" name="event_time" required>
-        <option value="">Select Start Time</option>
-      </select>
-    </div>
+        <div>
+          <label for="event_time">Start Time</label>
+          <select id="event_time" name="event_time" required>
+            <option value="">Select Start Time</option>
+          </select>
+        </div>
 
-    <div>
-      <label for="end_time">End Time</label>
-      <select id="end_time" name="end_time" required>
-        <option value="">Select End Time</option>
-      </select>
-    </div>
+        <div>
+          <label for="end_time">End Time</label>
+          <select id="end_time" name="end_time" required>
+            <option value="">Select End Time</option>
+          </select>
+        </div>
 
-    <div>
-      <label for="event_type">Type of Event</label>
-      <select id="event_type" name="event_type" required>
-        <option value="">Select</option>
-        <option value="Wedding">Wedding</option>
-        <option value="Birthday">Birthday</option>
-        <option value="Corporate">Corporate</option>
-        <option value="Concert">Concert</option>
-        <option value="Seminar">Seminar</option>
-        <option value="Graduation">Graduation</option>
-        <option value="Awarding Ceremony">Awarding Ceremony</option>
-        <option value="Fundraising">Fundraising</option>
-        <option value="Fashion Show">Fashion Show</option>
-        <option value="Church">Church</option>
-        <option value="Conference">Conference</option>
-        <option value="School Event">School Event</option>
-        <option value="Charity Event">Charity Event</option>
-      </select>
-    </div>
+        <div>
+          <label for="event_type">Type of Event</label>
+          <select id="event_type" name="event_type" required>
+            <option value="">Select</option>
+            <option value="Wedding">Wedding</option>
+            <option value="Birthday">Birthday</option>
+            <option value="Corporate">Corporate</option>
+            <option value="Concert">Concert</option>
+            <option value="Seminar">Seminar</option>
+            <option value="Graduation">Graduation</option>
+            <option value="Awarding Ceremony">Awarding Ceremony</option>
+            <option value="Fundraising">Fundraising</option>
+            <option value="Fashion Show">Fashion Show</option>
+            <option value="Church">Church</option>
+            <option value="Conference">Conference</option>
+            <option value="School Event">School Event</option>
+            <option value="Charity Event">Charity Event</option>
+          </select>
+        </div>
 
-    <div>
-      <label for="location">Event Location City</label>
-      <input
-        type="text"
-        id="location"
-        name="location"
-        value="{{ profile.city }}"
-        required
-        list="city-suggestions"
-      >
-      <datalist id="city-suggestions"></datalist>
-    </div>
+        <!-- City and Barangay now separated -->
+        <div>
+          <label for="location">Event Location City</label>
+          <input type="text" id="location" name="location" list="city-suggestions" required>
+          <datalist id="city-suggestions">
+            <option value="Lucena City">
+            <option value="Candelaria">
+            <option value="Sariaya">
+            <option value="Pagbilao">
+            <!-- add all cities/municipalities -->
+          </datalist>
+        </div>
 
-    <!-- ➕ New Barangay Field -->
-    <div>
-      <label for="barangay">Barangay</label>
-      <input
-        type="text"
-        id="barangay"
-        name="barangay"
-        placeholder="Enter Barangay"
-        value="{{ profile.barangay }}"
-        required
-      >
-    </div>
+        <div>
+          <label for="barangay">Barangay</label>
+          <select id="barangay" name="barangay" required>
+            <option value="">Select Barangay</option>
+          </select>
+        </div>
 
-    <div class="full-width">
-      <label for="fulladdress">Specific Address</label>
-      <input
-        type="text"
-        id="fulladdress"
-        name="fulladdress"
-        placeholder="Ex: Purok 3 Sitio Dapdap"
-        value="{{ profile.address }}"
-        required
-      >
-    </div>
+        <!-- Full width -->
+        <div class="full-width">
+          <label for="fulladdress">Specific Address</label>
+          <input type="text" id="fulladdress" name="fulladdress" placeholder="Ex: Purok 3 Sitio Dapdap" value="{{ profile.address }}" required>
+        </div>
 
-    <div class="full-width">
-      <label for="audience_size">Expected Number of Guests</label>
-      <input type="number" id="audience_size" name="audience_size" min="1" required>
-    </div>
+        <div class="full-width">
+          <label for="audience_size">Expected Number of Guests</label>
+          <input type="number" id="audience_size" name="audience_size" min="1" required>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-booking">Submit Booking Request</button>
+    </form>
   </div>
+</div>
 
-  <button type="submit" class="submit-booking">Submit Booking Request</button>
+<script>
+const barangays = {
+  "Lucena City": ["Ibabang Iyam","Ibabang Dupay","Gulang-gulang","Ibabang Talim","Ilayang Iyam","Ilayang Dupay","Ilayang Talim","Domoit","Dalahican","Bocohan","Cotta","Barra","Isabang","Market View","Mayao Castillo","Mayao Crossing","Mayao Kanluran","Mayao Parada","Mayao Silangan","Ransohan","Salinas","Talao-Talao","Barangay 1 (Poblacion)","Barangay 2 (Poblacion)","Barangay 3 (Poblacion)","Barangay 4 (Poblacion)","Barangay 5 (Poblacion)","Barangay 6 (Poblacion)","Barangay 7 (Poblacion)","Barangay 8 (Poblacion)","Barangay 9 (Poblacion)","Barangay 10 (Poblacion)","Barangay 11 (Poblacion)"],
+  "Tayabas City": ["Alitao","Alsam Ibaba","Alsam Ilaya","Alupay","Angeles Zone I","Angeles Zone II","Angeles Zone III","Angeles Zone IV","Angustias Zone I","Angustias Zone II","Angustias Zone III","Angustias Zone IV","Anos","Ayaas","Baguio","Banilad","Ibabang Bukal","Ilayang Bukal","Calantas","Calumpang","Camaysa","Dapdap","Kanlurang Domoit","Silangang Domoit","Gibanga","Ibas","Ilasan Ibaba","Ilasan Ilaya","Ipilan","Isabang","Katigan Kanluran","Katigan Silangan","Lakawan","Lalo","Lawigue","Lita","Malaoa","Masin","Mate","Mateuna","Mayowe","Ibabang Nangka","Ilayang Nangka","Opias","Ibabang Palale","Ilayang Palale","Kanlurang Palale","Silangang Palale","Pandakaki","Pook","Potol","San Diego Zone I","San Diego Zone II","San Diego Zone III","San Diego Zone IV","San Isidro Zone I","San Isidro Zone II","San Isidro Zone III","San Isidro Zone IV","San Roque Zone I","San Roque Zone II","Talolong","Tamlong","Tongko","Valencia","Wakas"],
+  "Candelaria": ["Malabanban Norte","Malabanban Sur","Buenavista East","Buenavista West","Bukal Norte","Bukal Sur","Kinatihan I","Kinatihan II","Mangilag Norte","Mangilag Sur","Masalukot I","Masalukot II","Masalukot III","Masalukot IV","Masalukot V","Masin Norte","Masin Sur","Mayabobo","Pahinga Norte","Pahinga Sur","San Andres","San Isidro","Santa Catalina Norte","Santa Catalina Sur","Poblacion"],
+  "Sariaya": ["Antipolo","Balubal","Bignay 1","Bignay 2","Bucal","Canda","Castañas","Concepcion No. 1","Concepcion Banahaw","Concepcion Palasan","Concepcion Pinagbakuran","Gibanga","Guisguis San Roque","Guisguis Talon","Janagdong 1","Janagdong 2","Limbon","Lutucan 1","Lutucan Bata","Lutucan Malabag","Mamala I","Mamala II","Manggalang 1","Manggalang Tulo‑Tulo","Manggalang‑Bantilan","Manggalang‑Kiling","Montecillo","Morong","Pili","Poblacion 1","Poblacion 2","Poblacion 3","Poblacion 4","Poblacion 5","Poblacion 6","Sampaloc 1","Sampaloc 2","Sampaloc Bogon","Sampaloc Santo Cristo","Talaan Aplaya","Talaan Pantoc","Tumbaga 1","Tumbaga 2"],
+  "Pagbilao": ["Alupaye","Añato","Antipolo","Bantigue","Bigo","Binahaan","Bukal","Ibabang Bagumbungan","Ibabang Palsabangon","Ibabang Polo","Ikirin","Ilayang Bagumbungan","Ilayang Palsabangon","Ilayang Polo","Kanluran Malicboy","Silangan Malicboy","Mapagong","Mayhay","Pinagbayanan","Castillo (Poblacion)","Daungan (Poblacion)","Del Carmen (Poblacion)","Parang (Poblacion)","Santa Catalina (Poblacion)","Tambak (Poblacion)","Talipan","Tukalan"],
+  "Burdeos": ["Aluyon","Amot","Anibawan","Bonifacio","Cabugao","Cabungalunan","Calutcot","Caniwan","Carlagan","Mabini","Palasan","Poblacion","San Rafael"],
+  "General Nakar": ["Anoling","Banglos","Batangan","Catablingan","Canaway","Lumutan","Mahabang Lalim","Maigang","Maligaya","Magsikap","Minahan Norte","Minahan Sur","Pagsangahan","Pamplona","Pisa","Poblacion","Sablang","San Marcelino","Umiray"],
+  "Infanta": ["Abiawin","Agos‑agos","Alitas","Amolongin","Anibong","Antikin","Bacong","Balobo","Bantilan","Banugao","Batican","Binonoan","Binulasan","Boboin","Catambungan","Cawaynin","Comon","Dinahican","Gumian","Ilog","Ingas","Langgas","Libjo","Lual","Magsaysay","Maypulot","Miswa","Pilaway","Pinaglapatan","Poblacion 1","Poblacion 38","Poblacion 39","Pulo","Silangan","Tongohin","Tudturan"],
+  "Jomalig": ["Apad", "Bukal", "Casuguran", "Gango", "Talisoy (Poblacion)"],
+  "Lucban": ["Abang","Aliliw","Atulinao","Ayuti (Poblacion)","Barangay 1 (Poblacion)","Barangay 2 (Poblacion)","Barangay 3 (Poblacion)","Barangay 4 (Poblacion)","Barangay 5 (Poblacion)","Barangay 6 (Poblacion)","Barangay 7 (Poblacion)","Barangay 8 (Poblacion)","Barangay 9 (Poblacion)","Barangay 10 (Poblacion)","Igang","Kabatete","Kakawit","Kalangay","Kalyaat","Kilib","Kulapi","Mahabang Parang","Malupak","Manasa","May‑It","Nagsinamo","Nalunao","Palola","Piis","Samil","Tiawe","Tinamnan"],
+  "Mauban": ["Abo‑abo","Alitap","Baao","Balaybalay","Bato","Cagbalete I","Cagbalete II","Cagsiay I","Cagsiay II","Cagsiay III","Concepcion","Liwayway","Lucutan","Luya-luya","Macasin","Lual (Poblacion)","Mabato (Poblacion)","Daungan (Poblacion)","Bagong Bayan (Poblacion)","Sadsaran (Poblacion)","Rizaliana (Poblacion)","Polo","Remedios I","Remedios II","Rosario","San Gabriel","San Isidro","San Jose","San Lorenzo","San Miguel","San Rafael","San Roque","San Vicente","Santa Lucia","Santo Angel","Santo Niño","Santol","Soledad","Tapucan","Lual Rural"],
+  "Panukulan": ["Balungay","Bato","Bonbon","Calasumanga","Kinalagti","Libo","Lipata","Matangkap","Milawid","Pagitan","Pandan","Rizal","San Juan"], 
+  "Patnanungan": ["Amaga","Busdak","Kilogan","Luod","Patnanungan Norte","Patnanungan Sur"],
+  "Polillo": ["Anawan","Atulayan","Balesin","Bañadero","Binibitinan","Bislian","Bucao","Canicanian","Kalubakis","Languyin","Libjo","Pamatdan","Pilion","Pinaglubayan","Poblacion","Sabang","Salipsip","Sibulan","Taluong","Tamulaya-Anitong"], 
+  "Real": ["Bagong Silang","Capalong","Cawayan","Kiloloron","Llavac","Lubayat","Malapad","Maragondon","Masikap","Maunlad","Pandan","Poblacion 1","Poblacion 61","Tagumpay","Tanauan","Tignoan","Ungos"],
+  "Sampaloc": ["Alupay","Apasan","Banot","Bataan","Bayongon","Bilucao","Caldong","Ibabang Owain","Ilayang Owain","Mamala","San Bueno","San Isidro (Poblacion)","San Roque (Poblacion)","Taquico"],  
+  "Dolores": ["Antonino","Bagong Anyo","Bayanihan","Bulakin I","Bulakin II","Bungoy","Cabatang","Dagatan","Kinabuhayan","Maligaya","Manggahan","Pinagdanlayan","Putol","San Mateo","Santa Lucia","Silanganan"], 
+  "San Antonio": ["Arawan","Bagong Niing","Balat Atis","Briones","Bulihan","Buliran","Callejon","Corazon","Manuel del Valle, Sr.","Loob","Magsaysay","Matipunso","Niing","Poblacion","Pulo","Pury","Sampaga","Sampaguita","San Jose","Sinturisan"],  
+  "Tiaong": ["Anastacia","Aquino","Ayusan I","Ayusan II","Barangay I (Poblacion)","Barangay II (Poblacion)","Barangay III (Poblacion)","Barangay IV (Poblacion)","Behia","Bukal","Bula","Bulakin","Cabatang","Cabay","Del Rosario","Lagalag","Lalig","Lumingon","Lusacan","Paiisa","Palagaran","Quipot","San Agustin","San Isidro","San Jose","San Juan","San Pedro","Tagbakin","Talisay","Tamisian","San Francisco"],
+  "Agdangan": ["Binagbag","Dayap","Ibabang Kinagunan","Ilayang Kinagunan","Kanlurang Calutan","Kanlurang Maligaya","Silangang Calutan","Silangang Maligaya","Sildora","Poblacion I","Poblacion II","Salvacion"],
+  "Buenavista": ["Bagong Silang","Batabat Norte","Batabat Sur","Buenavista","Bukal","Bulo","Cabong","Cadlit","Catulin","Cawa","De La Paz","Del Rosario","Hagonghong","Ibabang Wasay","Ilayang Wasay","Lilukin","Mabini","Mabutag","Magallanes","Maligaya (Esperanza)","Manlana","Masaya","Poblacion","Rizal","Sabang Pinamasagan","Sabang Piris","San Diego","San Isidro Ibaba","San Isidro Ilaya","San Pablo","San Pedro (Villa Rodrigo)","San Vicente","Siain","Villa Aurora","Villa Batabat","Villa Magsaysay","Villa Veronica"],
+  "Catanauan": ["Ajos","Anusan","Barangay 1 (Pob.)","Barangay 2 (Pob.)","Barangay 3 (Pob.)","Barangay 4 (Pob.)","Barangay 5 (Pob.)","Barangay 6 (Pob.)","Barangay 7 (Pob.)","Barangay 8 (Pob.)","Barangay 9 (Pob.)","Barangay 10 (Pob.)","Bolo","Bulagsong","Camandiison","Canculajao","Catumbo","Cawayanin Ibaba","Cawayanin Ilaya","Cutcutan","Dahican","Doongan Ibaba","Doongan Ilaya","Gatasan","Macpac","Madulao","Matandang Sabang Kanluran","Matandang Sabang Silangan","Milagrosa","Navitas","Pacabit","San Antonio Magkupa","San Antonio Pala","San Isidro","San Jose (Anyao)","San Pablo (Suha)","San Roque (Doyon)","San Vicente Kanluran","San Vicente Silangan","Santa Maria (Dao)","Tagabas Ibaba","Tagabas Ilaya","Tagbacan Ibaba","Tagbacan Ilaya","Tagbacan Silangan","Tuhian"],  
+  "General Luna": ["Bacong Ibaba","Bacong Ilaya","Barangay 1 (Pob.)","Barangay 2 (Pob.)","Barangay 3 (Pob.)","Barangay 4 (Pob.)","Barangay 5 (Pob.)","Barangay 6 (Pob.)","Barangay 7 (Pob.)","Barangay 8 (Pob.)","Barangay 9 (Pob.)","Lavides","Magsaysay","Malaya","Nieva","Recto","San Ignacio Ibaba","San Ignacio Ilaya","San Isidro Ibaba","San Isidro Ilaya","San Jose","San Nicolas","San Vicente","Santa Maria Ibaba","Santa Maria Ilaya","Sumilang","Villarica"],
+  "Macalelon": ["Amontay","Anos","Buyao","Candangal","Calantas","Lahing","Luctob","Mabini Ibaba","Mabini Ilaya","Malabahay","Mambog","Olongtao Ibaba","Olongtao Ilaya","Padre Herrera","Pajarillo","Pinagbayanan","Rodriquez (Pob.)","Rizal (Pob.)","Castillo (Pob.)","Pag-Asa (Pob.)","Masipag (Pob.)","Damayan (Pob.)","San Isidro","San Jose","San Nicolas","San Vicente","Taguin","Tubigan Ibaba","Tubigan Ilaya","Vista Hermosa"],
+  "Mulanay": ["Ajos (Sto. Niño)","Amuguis","Bagong Silang","Bolo","Butanyog","Canuyep","Latangan","Latingan","Lunsad","Magsaysay","Magtilang","Maligaya","Manapa","Matataja","Nueva Visaya","Poblacion I","Poblacion II","Poblacion III","Poblacion IV","Pogon (Tulay)","San Gabriel","San Gregory","San Isidro","San Pedro","San Roque","Santa Rosa","Sibucao","Sumundol"],
+  "Padre Burgos": ["Cabuyao Norte","Cabuyao Sur","Danlagan","Duhat","Hinguiwin","Kinagunan Ibaba","Kinagunan Ilaya","Lipata","Marao","Marquez","Burgos (Poblacion)","Campo (Poblacion)","Basiao (Poblacion)","Punta (Poblacion)","Rizal","San Isidro","San Vicente","Sipa","Tulay Buhangin","Villapaz","Walay","Yawe"], 
+  "Pitogo": ["Amontay","Cometa","Biga","Bilucao","Cabulihan","Cawayanin","Gangahin","Ibabang Burgos","Ibabang Pacatin","Ibabang Piña","Ibabang Soliyao","Ilayang Burgos","Ilayang Pacatin","Ilayang Piña","Ilayang Soliyao","Nag‑Cruz","Osmeña","Payte","Pinagbayanan","Masaya (Poblacion)","Manggahan (Poblacion)","Dulong Bayan (Poblacion)","Pag-Asa (Poblacion)","Castillo (Poblacion)","Maaliw (Poblacion)","Mayubok (Poblacion)","Pamilihan (Poblacion)","Dalampasigan (Poblacion)","Poctol","Quezon","Quinagasan","Rizalino","Saguinsinan","Sampaloc","San Roque","Sisirin","Sumag Este","Sumag Norte","Sumag Weste"],
+  "San Andres": ["Alibihaban","Camflora","Mangero","Pansoy","Tala","Talisay","Poblacion"],   
+  "San Francisco": ["Butanguiad","Casay","Cawayan I","Cawayan II","Don Juan Vercelos","Huyon‑Uyon","Ibabang Tayuman","Ilayang Tayuman","Inabuan","Mabuñga","Nasalaan","Pagsangahan","Poblacion","Pugon","Santo Niño","Silongin"],
+  "San Narciso": ["Abuyon","Andres Bonifacio","Bani","Binay","Buenavista","Busokbusokan","Calwit","Guinhalinan","Lakdayan","Maguiting","Manlampong","Pagkakaisa (Poblacion)","Maligaya (Poblacion)","Bayanihan (Poblacion)","Pagdadamayan (Poblacion)","Punta","Rizal","San Isidro","San Juan","San Vicente","Vigo Central","Villa Aurin (Pinagsama)","Villa Reyes","White Cliff"],
+  "Unisan": ["Almacén","Balagtás","Balanacan","Bonifacio","Bulo Ibabâ","Bulo Ilaya","Burgos","Cabulihan Ibabâ","Cabulihan Ilaya","Caigdál","F. De Jesús (Poblacion)","General Luna","Kalilayan Ibabâ","Kalilayan Ilaya","Mabini","Mairok Ibaba","Mairok Ilaya","Malvar","Maputat","Muliguin","Pagaguasan","Panaon Ibabâ","Panaon Ilaya","Pláridel","R. Lapu‑Lapu (Poblacion)","R. Magsaysay (Poblacion)","Raja Solimán (Poblacion)","Poctol","Punta","Rizal Ibabâ","Rizal Ilaya","San Roque","Socorro","Tagumpay","Tubas","Tubigan"], 
+  "Alabat": ["Angeles","Bacong","Balungay","Buenavista","Caglate","Camagong","Gordon","Pambilan Norte","Pambilan Sur","Barangay 1 (Pob.)","Barangay 2 (Pob.)","Barangay 3 (Pob.)","Barangay 4 (Pob.)","Barangay 5 (Pob.)","Villa Esperanza","Villa Jesus Este","Villa Jesus Weste","Villa Norte","Villa Victoria"], 
+  "Atimonan": ["Angeles","Balubad","Balugohin","Barangay Zone 1 (Pob.)","Barangay Zone 2 (Pob.)","Barangay Zone 3 (Pob.)","Barangay Zone 4 (Pob.)","Buhangin","Caridad Ibaba","Caridad Ilaya","Habingan","Inaclagan","Inalig","Kilait","Kulawit","Lakip","Lubi","Lumutan","Magsaysay","Malinao Ibaba","Malinao Ilaya","Malusak","Manggalayan Bundok","Manggalayan Labak","Matanag","Montes Balaon","Montes Kallagan","Ponon","Rizal","San Andres Bundok","San Andres Labak","San Isidro","San Jose Balatok","San Rafael","Santa Catalina","Sapaan","Sokol","Tagbakin","Talaba","Tinandog","Villa Ibaba","Villa Ilaya"], 
+  "Calauag": ["Agoho","Anahawan","Anas","Apad Lutao","Apad Quezon","Apad Taisan","Atulayan","Baclaran (Poblacion)","Bagong Silang","Balibago","Bangkuruhan","Bantolinao","Barangay I (Poblacion)","Barangay II (Poblacion)","Barangay III (Poblacion)","Barangay IV (Poblacion)","Barangay V (Poblacion)","Bigaan","Binutas (Santa Brigida)","Biyan","Bukal","Buli","Dapdap","Dominlog","Doña Aurora","Guinosayan","Ipil","Kalibo (Santa Cruz)","Kapaluhan","Katangtang","Kigtan","Kinamaligan","Kinalin Ibaba","Kinalin Ilaya","Kumaludkud","Kunalum","Kuyaoyao","Lagay","Lainglaingan","Lungib","Mabini","Madlangdungan","Maglipad (Rosario)","Maligaya","Mambaling","Manhulugin","Marilag (Punaya)","Mulay","Pandanan","Pansol","Patihan","Pinagbayanan (Poblacion)","Pinagkamaligan (Poblacion)","Pinagsakayan","Pinagtalleran (Poblacion)","Rizal Ibaba","Rizal Ilaya","Sabang Uno (Poblacion)","Sabang Dos (Poblacion)","Salvacion","San Quintin","San Roque Ibaba","San Roque Ilaya","Santa Cecilia","Santa Maria (Poblacion)","Santa Milagrosa","Santa Rosa","Santo Angel (Pangahoy)","Santo Domingo","Sinag","Sumilang","Sumulong","Tabansak","Talingting","Tamis","Tikiwan","Tiniguiban","Villa Magsino","Villa San Isidro","Viñas","Yaganak"],
+  "Guinayangan": ["A. Mabini","Aloneros","Arbismen","Bagong Silang","Balinarin","Bukal Maligaya","Cabibihan","Cabong Norte","Cabong Sur","Calimpak","Capuluan Central","Capuluan Tulon","Dancalan Caimawan","Dancalan Central","Danlagan Batis","Danlagan Cabayao","Danlagan Central","Danlagan Reserva","Del Rosario","Dungawan Central","Dungawan Paalyunan","Dungawan Pantay","Ermita","Gapas","Himbubulo Este","Himbubulo Weste","Hinabaan","Ligpit Bantayan","Lubigan","Magallanes","Magsaysay","Manggagawa","Manggalang","Manlayo","Poblacion","Salakan","San Antonio","San Isidro","San Jose","San Lorenzo","San Luis I","San Luis II","San Miguel","San Pedro I","San Pedro II","San Roque","Santa Cruz","Santa Maria","Santa Teresita","Sintones","Sisi","Tikay","Triumpo","Villa Hiwasayan"],
+  "Gumaca": ["Adia Bitaog","Anonangin","Bagong Buhay (Poblacion)","Bamban","Bantad","Batong Dalig","Biga","Binambang","Buensuceso","Bungahan","Butaguin","Calumangin","Camohaguin","Casasahan Ibaba","Casasahan Ilaya","Cawayan","Gayagayaan","Gitnang Barrio","Hardinan","Inaclagan","Inagbuhan Ilaya","Hagakhakin","Labnig","Laguna","Lagyo","Mabini (Poblacion)","Mabunga","Malabtog","Manlayaan","Marcelo H. del Pilar","Mataas na Bundok","Maunlad (Poblacion)","Pagsabangan","Panikihan","Peñafrancia (Poblacion)","Pipisik (Poblacion)","Progreso","Rizal (Poblacion)","Rosario","San Agustin","San Diego (Poblacion)","San Diego Bukid","San Isidro Kanluran","San Isidro Silangan","San Juan de Jesus","San Vicente","Sastre","Tabing Dagat (Poblacion)","Tumayan","Villa Arcaya","Villa Bota","Villa Fuerte","Villa Mendoza","Villa Nava","Villa Padua","Villa Perez","Villa Principe","Villa Tañada","Villa Victoria"],
+  "Lopez": ["Bacungan","Bagacay","Banabahin Ibaba","Banabahin Ilaya","Burgos","Gomez","Magsaysay","Talolong","Bayabas","Bebito","Bigajo","Binahian A","Binahian B","Binahian C","Bocboc","Buenavista","Buyacanin","Cagacag","Calantipayan","Canda Ibaba","Canda Ilaya","Cawayan","Cawayanin","Cogorin Ibaba","Cogorin Ilaya","Concepcion","Danlagan","De La Paz","Del Pilar","Del Rosario","Esperanza Ibaba","Esperanza Ilaya","Guihay","Guinuangan","Guites","Hondagua","Ilayang Ilog A","Ilayang Ilog B","Inalusan","Inalusan Ilaya","Loguilan","Lubigan","Lumutan","Mabini","Maligaya","Manapat","Masikapan","Mayunos","Miramantes","Montes Balaon","Montes Kallagan","Poblacion Zone I","Poblacion Zone II","Poblacion Zone III","Poblacion Zone IV","Poblacion Zone V","Quipot","San Andres Bundok","San Isidro","San Jose Balatok","San Rafael","Santa Catalina","Tagbakin","Talumpok","Tinandog","Toclong","Tubigan","Tuko","Tumuloy","Villa Ibaba","Villa Ilaya","Villa Victoria","Villa Jesus","Villa Magsaysay","Villa Monte Verde","Villa Puting Buhangin","Villa Rosalinda","Villa San Miguel","Villardeña","Wakas"],
+ "Perez": ["Maabot","Mainit Norte","Mainit Sur","Pambuhan","Pinagtubigan Este","Pinagtubigan Weste","Pagkakaisa Pob.","Mapagmahal Pob.","Bagong Pag‑Asa Pob.","Bagong Silang Pob.","Rizal","Sangirin","Villamanzano Norte","Villamanzano Sur"], 
+  "Plaridel": ["Central","Concepcion","Duhat","Ilaya","Ilosong","M. L. Tumagay","Paang Bundok","Pampaaralan","Tanauan"], 
+ "Quezon": ["Apad","Argosino","Cagbalogo","Caridad","Cometa","Del Pilar","Guinhawa","Gumubat","Magsino","Mascariña","Montaña","Barangay I (Poblacion)","Barangay II (Poblacion)","Barangay III (Poblacion)","Barangay IV (Poblacion)","Barangay V (Poblacion)","Barangay VI (Poblacion)","Sabang","Silangan","Tagkawa (Tagkawa)","Villa Belen","Villa Francia","Villa Gomez","Villa Mercedes"],
+  "Tagkawayan": ["Aldavoc","Aliji","Bagong Silang","Bamban","Bosigon","Bukal","Cabugwang","Cagascas","Casispalan","Colong‑colong","Del Rosario","Cabibihan","Candalapdap","Katimo","Kinatakutan","Landing","Laurel","Magsaysay","Maguibuay","Mahinta","Malbog","Manato Central","Manato Station","Mangayao","Mansilay","Mapulot","Munting Parang","Payapa","Poblacion","Rizal","Sabang","San Diego","San Francisco","San Isidro","San Jose","San Roque","San Vicente","Santa Cecilia","Santa Monica","Santo Niño I","Santo Niño II","Santo Tomas","Seguiwan","Tabason","Tunton","Victoria"]
+};
+
+document.getElementById("location").addEventListener("input", function() {
+  const city = this.value;
+  const barangaySelect = document.getElementById("barangay");
+  barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+  if(barangays[city]) {
+    barangays[city].forEach(b => {
+      const opt = document.createElement("option");
+      opt.value = b;
+      opt.textContent = b;
+      barangaySelect.appendChild(opt);
+    });
+  }
+});
+</script>
+    </form>
+  </div>
+</div>
+
 </form>
     </div>
 </div>
@@ -266,7 +340,7 @@ const quezonCities = [
   "Agdangan", "Buenavista", "Catanauan", "General Luna", "Macalelon", "Mulanay", "Padre Burgos", "Pitogo", "San Andres", "San Francisco", "San Narciso", "Unisan",
 
   // District 4
-  "Alabat", "Atimonan", "Calauag", "Guinayangan", "Gumaca", "Lopez", "Perez", "Plaridel", "Quezon", "Tagkawayan"
+  "Alabat", "Atimonan", "Calauag", "Guinayangan", "Gumaca", "Lopez", "Perez", "Plaridel", "Quezon",  "Tagkawayan"
 ];
 
 
@@ -488,7 +562,40 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
 .booking-form-grid .full-width {
   grid-column: span 2; /* para sa mga field na dapat buong row */
 }
+.event-filter-form {
+    display: flex;
+    justify-content: center; /* center horizontally */
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2rem;
+}
 
+.event-filter-form label {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #1e293b;
+}
+
+.event-filter-form select {
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1; /* light gray border */
+    font-size: 1rem;
+    background-color: #f8fafc;
+    color: #111827;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.event-filter-form select:hover {
+    border-color: #2563eb; /* blue border on hover */
+}
+
+.event-filter-form select:focus {
+    outline: none;
+    border-color: #3b82f6; /* stronger blue on focus */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
 /* === BOOKING MODAL === */
 .booking-modal {
   display: none;
@@ -735,7 +842,29 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
   border-bottom: 2px solid #23194f;
   padding-bottom: 4px;
 }
+.booking-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* two columns */
+  gap: 20px; /* spacing between inputs */
+}
 
+.booking-form-grid .full-width {
+  grid-column: 1 / span 2; /* full width across both columns */
+}
+
+.booking-form-grid label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.booking-form-grid input,
+.booking-form-grid select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
 /* Pag maliit na screen, tanggalin yung line */
 @media screen and (max-width: 768px) {
   .section-title {

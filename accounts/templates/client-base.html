@@ -289,16 +289,27 @@
         <span class="text-white">AUDIO</span><span class="text-yellow">MAN</span>
       </div>
       <div class="user">
-        <div class="avatar">
-          <img
-            src="{% if request.user.profile.profile_picture %}{{ request.user.profile.profile_picture.url }}{% else %}{% static 'images/profile-icon.png' %}{% endif %}"
-            alt="Avatar Icon"
-            class="avatar-img"
-          />
-        </div>
-        <h3 class="owner-name">{{ request.user.get_full_name }}</h3>
-        <p class="owner-role">Owner</p>
-      </div>
+  <div class="avatar">
+    <img
+      src="{% if request.user.profile.profile_picture %}{{ request.user.profile.profile_picture.url }}{% else %}{% static 'images/profile-icon.png' %}{% endif %}"
+      alt="Avatar Icon"
+      class="avatar-img"
+      style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover;"
+    />
+  </div>
+  <h3 class="owner-name" style="font-size: 22px; font-weight: 700;">
+    {{ request.user.get_full_name }}
+  </h3>
+  <p class="owner-role" style="font-size: 18px; font-weight: 600; color: #ffd700;">
+    {% if request.user.is_superuser %}
+      Admin
+    {% elif request.user.is_staff %}
+      Staff
+    {% else %}
+      Owner
+    {% endif %}
+  </p>
+</div>
 
       <nav class="nav">
         {% if user.is_staff and not user.is_superuser %}
@@ -324,26 +335,33 @@
     <!-- Main Content -->
     <main class="main">
       <div class="topbar">
-        <div class="dark-toggle" id="darkToggle"><i class="fas fa-moon"></i></div>
+        
+        
+<!-- Notifications -->
+<div class="notification" id="notifToggle">
+    <i class="fas fa-bell"></i>
 
-        <!-- Notifications -->
-        <div class="notification" id="notifToggle">
-          <i class="fas fa-bell"></i>
-          {% if request.resolver_match.url_name in 'dashboard booking' and notifications %}
-            <span class="badge">{{ notifications|length }}</span>
-          {% endif %}
-          <div class="notif-dropdown" id="notifDropdown">
-            <ul>
-              {% if request.resolver_match.url_name in 'dashboard booking' and notifications %}
+    {% comment %}
+    Show badge only if there are notifications and NOT on package_add or package_edit pages
+    {% endcomment %}
+    {% if notifications and not request.resolver_match.url_name in "package_add package_edit package_delete.html checklist_detail.html" %}
+        <span class="badge">{{ notifications|length }}</span>
+    {% endif %}
+
+    <div class="notif-dropdown" id="notifDropdown">
+        <ul>
+            {% if notifications and not request.resolver_match.url_name in "package_add package_edit package_delete.html checklist_detail.html" %}
                 {% for notif in notifications %}
-                  <li><a href="{% url 'booking' %}">{{ notif }}</a></li>
+                    <li><a href="{% url 'booking' %}">{{ notif }}</a></li>
                 {% endfor %}
-              {% else %}
+            {% else %}
                 <li>No new notifications</li>
-              {% endif %}
-            </ul>
-          </div>
-        </div>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
+
 
         <!-- User Info -->
         <div class="user-info" id="topbarDropdownToggle">

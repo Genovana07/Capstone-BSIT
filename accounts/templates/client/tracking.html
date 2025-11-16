@@ -160,10 +160,12 @@
       </td>
 
       <td>
-        {% if booking.package.equipment.all %}
+        {% if booking.package.packageequipment_set.exists %}
           <ul>
             {% for package_equipment in booking.package.packageequipment_set.all %}
-              <li>{{ package_equipment.equipment.name }} (x{{ package_equipment.quantity_required }})</li>
+              {% if package_equipment.quantity_required and package_equipment.quantity_required > 0 %}
+                <li>{{ package_equipment.equipment.name }} (x{{ package_equipment.quantity_required }})</li>
+              {% endif %}
             {% endfor %}
           </ul>
         {% else %}

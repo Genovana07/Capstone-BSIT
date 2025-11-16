@@ -33,12 +33,15 @@ from django.db.models.functions import Coalesce
 from django.core.paginator import Paginator
 from .models import Booking, Notification
 from .models import BookingChecklist, ChecklistItem
-from .models import ContactMessage
+from .models import ContactMessage, PackageEquipment
 from .forms import ServicePackageForm
 from collections import defaultdict
 from datetime import timezone as dt_timezone
 import calendar
 import random
+from .forms import ServicePackageForm,EquipmentQuantityForm
+from django.forms import inlineformset_factory
+
 # Temporary storage for OTP (use session)
 OTP_EXPIRY = 300  # 5 minutes
 
@@ -178,9 +181,10 @@ def login_view(request):
 
             if user:
                 if user.is_superuser or user.is_staff:
-                    # Admin login directly
+                    # Admin/staff: login directly
                     login(request, user)
-                    return redirect("dashboard")  # admin dashboard
+                    messages.success(request, f"✅ Welcome back, {user.username}!")
+                    return redirect("dashboard")
                 else:
                     # Normal user: send OTP
                     otp = str(random.randint(100000, 999999))
@@ -192,43 +196,47 @@ def login_view(request):
                         recipient_list=[email],
                         fail_silently=False
                     )
-                    messages.success(request, f"OTP sent to {email}")
+                    messages.success(request, f"✅ OTP sent to {email}. Please enter it below.")
                     return render(request, "accounts/login.html", {
                         "step": "otp",
                         "email": email,
                         "password": password,
-                        "hide_footer": True  # hide footer
+                        "hide_footer": True
                     })
             else:
-                messages.error(request, "Invalid email or password.")
+                messages.error(request, "❌ Invalid email or password.")
 
         elif action == "verify_otp":
             otp_input = request.POST.get("otp")
             if otp_input == otp_storage.get(email):
-                # OTP correct, login user
+                # OTP correct
                 try:
                     user_obj = User.objects.get(email=email)
                     user = authenticate(request, username=user_obj.username, password=password)
                     if user:
                         login(request, user)
                         otp_storage.pop(email, None)
+                        messages.success(request, f"✅ Login successful. Welcome, {user.username}!")
                         return redirect("home")  # normal user dashboard
+                    else:
+                        messages.error(request, "❌ Authentication failed.")
                 except User.DoesNotExist:
-                    messages.error(request, "User not found.")
+                    messages.error(request, "❌ User not found.")
             else:
-                messages.error(request, "Invalid OTP.")
+                messages.error(request, "❌ Invalid OTP.")
                 return render(request, "accounts/login.html", {
                     "step": "otp",
                     "email": email,
                     "password": password,
-                    "hide_footer": True  # hide footer
+                    "hide_footer": True
                 })
 
+    # Default: show initial login form
     return render(request, "accounts/login.html", {
         "step": "initial",
         "email": email,
         "password": password,
-        "hide_footer": True  # hide footer
+        "hide_footer": True
     })
 
 # Logout View
@@ -241,15 +249,18 @@ def logout_view(request):
 def home(request):
     return render(request, "accounts/home.html")
 
-# Services View
 def services_view(request):
-    # Kunin lahat ng packages sa database at isama ang average rating at review count
-    packages = ServicePackage.objects.all().annotate(
+    selected_event = request.GET.get('event_type')
+
+    packages = ServicePackage.objects.annotate(
         avg_rating=Avg('booking__review__rating'),
         review_count=Count('booking__review')
     )
 
-    # Kunin user profile para ma-auto populate
+    # Filter based on keyword matching inside package.title
+    if selected_event and selected_event != "":
+        packages = packages.filter(title__icontains=selected_event)
+
     profile = None
     if request.user.is_authenticated:
         try:
@@ -257,10 +268,19 @@ def services_view(request):
         except Profile.DoesNotExist:
             profile = None
 
+    event_choices = [
+        "Wedding", "Birthday", "Corporate", "Concert", "Seminar",
+        "Graduation", "Awarding Ceremony", "Fundraising", "Fashion Show",
+        "Church", "Conference", "School Play", "School", "Charity Event"
+    ]
+
     return render(request, 'accounts/services.html', {
         'packages': packages,
-        'profile': profile
+        'profile': profile,
+        'selected_event': selected_event,
+        'event_choices': event_choices,
     })
+
 # About Us Page
 def aboutus(request):
     team_members = [
@@ -864,14 +884,31 @@ def equipment(request):
         'show': show,      # for active tab in template
         'counts': counts,  # for badges
     })
+
+    # Badge counts (total inventory, not affected by search)
+    counts = {
+        'all': Equipment.objects.count(),
+        'available': Equipment.objects.filter(quantity_available__gt=0).count(),
+        'rented': Equipment.objects.filter(quantity_rented__gt=0).count(),
+        'maintenance': Equipment.objects.filter(qty_maintenance__gt=0).count(),
+        'repair': Equipment.objects.filter(qty_repair__gt=0).count(),
+    }
+
+    return render(request, 'client/equipment.html', {
+        'equipment_list': qs,
+        'notifications': notifications,
+        'show': show,      # for active tab in template
+        'counts': counts,  # for badges
+    })
+
 @login_required
 @admin_only
 def tracking(request):
-    # Filter bookings with 'Approved' status, exclude 'Completed'
+    # Table data: only Accepted bookings
     bookings = Booking.objects.filter(status='Accepted')
 
-    # Notifications (show up to 5 newest "Processing" bookings)
-    notifications_qs = bookings.filter(status="Processing").order_by('-created_at')[:5]
+    # Notifications: newest 5 Processing bookings
+    notifications_qs = Booking.objects.filter(status="Processing").order_by('-created_at')[:5]
     notifications = [
         f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
         for b in notifications_qs
@@ -879,7 +916,7 @@ def tracking(request):
 
     return render(request, 'client/tracking.html', {
         'bookings': bookings,
-        'notifications': notifications,  # Pass notifications to the template
+        'notifications': notifications,
     })
 
 @login_required
@@ -1029,65 +1066,63 @@ def view_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     return render(request, 'client/view_booking.html', {'booking': booking})
 
+from django.db import transaction
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect
+from .models import Booking, Notification, BookingChecklist, ChecklistItem
+
 @login_required
 def accept_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
 
-    # Update booking status to 'Accepted'
-    booking.status = 'Accepted'
-    booking.save()
-
-    # Get the equipment associated with the booked service package
     package = booking.package
-    inventory_updated = True  # Flag to check if inventory updates are successful
+    package_items = package.packageequipment_set.all()
 
-    # Loop through all the equipment in the package
-    for package_equipment in package.packageequipment_set.all():
-        equipment = package_equipment.equipment
-        quantity_required = package_equipment.quantity_required
+    # --- PHASE 1: VALIDATE STOCK ---
+    for item in package_items:
+        if item.equipment.quantity_available < item.quantity_required:
+            messages.error(
+                request,
+                f"Not enough stock for {item.equipment.name}. Booking cannot be processed."
+            )
+            return redirect("booking")
 
-        # Check if there is enough stock available
-        if equipment.quantity_available < quantity_required:
-            messages.error(request, f"Not enough stock for {equipment.name}. Booking cannot be processed.")
-            inventory_updated = False
-            break  # Stop checking further if one equipment is unavailable
+    # --- PHASE 2: APPLY DEDUCTIONS ATOMICALLY ---
+    try:
+        with transaction.atomic():
+            booking.status = "Accepted"
+            booking.save()
 
-        # Deduct the available stock and update the rented quantity
-        equipment.update_quantity(quantity_required)  # This will update the stock
+            for item in package_items:
+                equipment = item.equipment
+                equipment.quantity_available -= item.quantity_required
+                equipment.quantity_rented += item.quantity_required
+                equipment.status = "Rented" if equipment.quantity_rented > 0 else "Available"
+                equipment.save()
 
-    if inventory_updated:
-        # ✅ Create checklist for the booking if it doesn’t exist
-        from .models import BookingChecklist, ChecklistItem  # import inside to avoid circular issues
-        checklist, created = BookingChecklist.objects.get_or_create(booking=booking)
+            # Create checklist if not exists
+            checklist, created = BookingChecklist.objects.get_or_create(booking=booking)
+            if created:
+                for item in package_items:
+                    ChecklistItem.objects.create(
+                        checklist=checklist,
+                        equipment=item.equipment,
+                        quantity_required=item.quantity_required
+                    )
 
-        if created:
-            for pkg_eq in booking.package.packageequipment_set.all():
-                ChecklistItem.objects.create(
-                    checklist=checklist,
-                    equipment=pkg_eq.equipment,
-                    quantity_required=pkg_eq.quantity_required
-                )
+            # Send Notification
+            Notification.objects.create(
+                user=booking.user,
+                message=f"Your booking #{booking.id} has been accepted!"
+            )
 
-        # Add the event to the calendar (this part updates the event in the calendar)
-        events = {
-            "date": booking.event_date.strftime("%Y-%m-%d"),
-            "type": booking.event_type,
-            "time": booking.event_time.strftime("%H:%M"),
-            "end_time": booking.end_time.strftime("%H:%M") if booking.end_time else None
-        }
+            messages.success(request, f"Booking #{booking.id} accepted and inventory updated!")
 
-        # ✅ Create notification for customer
-        Notification.objects.create(
-            user=booking.user,
-            message=f"Your booking #{booking.id} has been accepted!"
-        )
+    except Exception as e:
+        messages.error(request, f"Error processing booking: {str(e)}")
 
-        messages.success(request, f"Booking {booking.id} has been successfully accepted, inventory updated, and checklist created.")
-    else:
-        booking.status = 'Processing'
-        booking.save()
+    return redirect("booking")
 
-    return redirect('booking')
 
 
 @login_required
@@ -1120,14 +1155,19 @@ def cancel_booking(request, booking_id):
         messages.warning(request, "Only bookings with 'Processing' status can be cancelled.")
     return redirect('mybookings')
 
+
 @login_required
 def complete_booking(request, id):
+    # Kunin ang booking
     booking = get_object_or_404(Booking, id=id)
 
+    # Check kung pwede i-complete
     if booking.status in ['Accepted', 'Processing']:
+        # 1️⃣ Mark as Completed
         booking.status = 'Completed'
         booking.save()
 
+        # 2️⃣ Return equipment sa inventory
         for package_equipment in booking.package.packageequipment_set.all():
             equipment = package_equipment.equipment
             quantity_rented = package_equipment.quantity_required  
@@ -1136,9 +1176,20 @@ def complete_booking(request, id):
             equipment.quantity_rented -= quantity_rented
             equipment.save()
 
-            print(f"Returned {quantity_rented} of {equipment.name} to inventory. Available: {equipment.quantity_available}, Rented: {equipment.quantity_rented}")
-    return redirect('booking')  
+        # 3️⃣ Flash message sa page
+        messages.success(request, f"✅ Booking #{booking.id} has been completed successfully!")
 
+        # 4️⃣ Optional: Create notification sa bell
+        Notification.objects.create(
+            user=booking.user,
+            message=f"✅ Your booking #{booking.id} is done! You can now leave a review."
+        )
+
+    else:
+        messages.warning(request, f"Booking #{booking.id} cannot be completed because its status is '{booking.status}'.")
+
+    # 5️⃣ Redirect sa bookings page (palitan kung needed)
+    return redirect('booking')
 @login_required
 @csrf_protect
 def submit_review(request):
@@ -1197,7 +1248,14 @@ def submit_review(request):
             value_for_money=value_for_money,
             comment=comment
         )
-
+          # ✅ Create notification for admin
+        admins = User.objects.filter(is_superuser=True)
+        for admin in admins:
+            Notification.objects.create(
+                user=admin,
+                message=f"📌 {booking.full_name} submitted a review on booking {booking.id}."
+            )
+            
         messages.success(request, "Thank you for your detailed review!")
         return redirect('history')
 
@@ -1219,21 +1277,35 @@ def delete_booking(request, id):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def admin_requests_view(request):
-    # Lahat ng users na may "staff" sa username pero hindi pa admin
+    # Users na may "staff" sa username pero hindi pa admin
     requested_profiles = Profile.objects.filter(
         user__username__icontains="staff",
         user__is_staff=False
     )
 
-    return render(request, 'client/admin_request.html', {
-        'requested_profiles': requested_profiles
-    })
+    # 🔔 Fetch notifications
+    notif_qs = Booking.objects.filter(status="Processing").order_by("-created_at")[:5]
+    notifications = [
+        f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
+        for b in notif_qs
+    ]
 
+    return render(request, 'client/admin_request.html', {
+        'requested_profiles': requested_profiles,
+        'notifications': notifications  # 👈 Added to context
+    })
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def approve_admin(request, user_id):
     user = get_object_or_404(User, id=user_id)
+
+        # 🔔 Notifications
+    notif_qs = Booking.objects.filter(status="Processing").order_by("-created_at")[:5]
+    notifications = [
+        f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
+        for b in notif_qs
+    ]
 
     if request.method == "POST":
         # Gawing admin/staff
@@ -1245,9 +1317,16 @@ def approve_admin(request, user_id):
             user.profile.requested_admin = False
             user.profile.save()
 
+        # ✅ Create a notification for the user
+        Notification.objects.create(
+            user=user,
+            message="🎉 Congratulations! You are now an admin."
+        )
+
         messages.success(request, f"✅ {user.username} has been approved as an admin.")
 
     return redirect('admin_requests_view')
+
 @login_required
 def update_profile(request):
     user = request.user
@@ -1292,6 +1371,7 @@ def dashboard_redirect(request):
         return redirect('customer')  # Redirect to the customer dashboard
     
 
+
 @login_required
 def update_inventory(request, equipment_id):
     if request.method != 'POST':
@@ -1306,57 +1386,75 @@ def update_inventory(request, equipment_id):
     except ValueError:
         qty = 1
 
+    # Detect booking if exists
+    booking = None
+    booking_id = request.POST.get("booking_id")
+    if booking_id:
+        booking = Booking.objects.filter(id=booking_id).first()
+
     try:
-        if action == 'add_stock':
-            # simple add to available
+
+        # + STOCK
+        if action == "add_stock":
             equipment.quantity_available += qty
-            equipment.status = 'Available'
+            equipment.status = "Available"
             equipment.save()
-            messages.success(request, f"Added {qty} to {equipment.name} stock.")
+            messages.success(request, f"Added {qty} to {equipment.name}.")
+        
+        # - STOCK (NOW ALLOWED EVEN WITHOUT BOOKING)
+        elif action == "subtract_stock":
+            
+            # If booking exists, require ACCEPTED
+            if booking:
+                if booking.status != "Accepted":
+                    messages.warning(request, "Booking must be accepted before renting out stock.")
+                    return redirect("inventory_list")
+                
+                # Use reserve_stock method if rental for booking
+                equipment.reserve_stock(required_qty=qty, booking=booking)
+                messages.success(request, f"Reserved {qty} for {equipment.name} (booking linked).")
 
-        elif action == 'subtract_stock':
-            if equipment.quantity_available < qty:
-                return HttpResponse("Insufficient stock to subtract.", status=400)
-            equipment.quantity_available -= qty
-            # huwag gawing negative ang available
-            if equipment.quantity_available <= 0 and equipment.quantity_rented <= 0:
-                equipment.status = 'Under Maintenance' if equipment.qty_maintenance > 0 else 'Available'
-            equipment.save()
-            messages.success(request, f"Subtracted {qty} from {equipment.name} stock.")
-
-        elif action == 'to_maintenance':
+            else:
+                # Manual stock deduction (no rental record)
+                if equipment.quantity_available < qty:
+                    messages.error(request, "Not enough available stock.")
+                    return redirect("inventory_list")
+                
+                equipment.quantity_available -= qty
+                equipment.save()
+                messages.success(request, f"Manually subtracted {qty} from {equipment.name}.")
+        
+        # MAINT / RETURN
+        elif action == "to_maintenance":
             equipment.move_to_maintenance(qty)
-            messages.success(request, f"Moved {qty} of {equipment.name} to maintenance.")
+            messages.success(request, f"Moved {qty} {equipment.name} → maintenance.")
 
-        elif action == 'back_from_maintenance':
+        elif action == "back_from_maintenance":
             equipment.return_from_maintenance(qty)
-            messages.success(request, f"Returned {qty} of {equipment.name} from maintenance to available.")
+            messages.success(request, f"Returned {qty} {equipment.name} from maintenance.")
 
-        elif action == 'to_repair':
+        elif action == "to_repair":
             equipment.move_to_repair(qty)
-            messages.success(request, f"Moved {qty} of {equipment.name} to repair.")
+            messages.success(request, f"Moved {qty} {equipment.name} → repair.")
 
-        elif action == 'back_from_repair':
+        elif action == "back_from_repair":
             equipment.return_from_repair(qty)
-            messages.success(request, f"Returned {qty} of {equipment.name} from repair to available.")
-
-        elif action == 'rent_out':
-            # optional kung gusto mong may rent button sa table
-            equipment.update_quantity(qty)
-            messages.success(request, f"Rented out {qty} of {equipment.name}.")
-
-        elif action == 'return_rental':
-            equipment.return_stock(qty)
-            messages.success(request, f"Returned {qty} of {equipment.name} (rental).")
+            messages.success(request, f"Returned {qty} {equipment.name} from repair.")
+        
+        # RETURN RENTED STOCK
+        elif action == "return_rental":
+            equipment.release_stock(qty)
+            messages.success(request, f"Returned rented {qty} of {equipment.name}.")
 
         else:
             return HttpResponse("Unknown action.", status=400)
 
     except ValueError as e:
-        # galing sa helper methods mo kapag kulang stock
-        return HttpResponse(str(e), status=400)
+        messages.error(request, str(e))
+        return redirect("inventory_list")
 
-    return redirect('inventory_list')
+    return redirect("inventory_list")
+
 
 from django.views.decorators.http import require_POST
 from django.shortcuts import redirect, get_object_or_404
@@ -1373,11 +1471,24 @@ def cancel_booking(request, booking_id):
     messages.success(request, f"Booking #{booking.id} has been cancelled successfully.")
     return redirect("mybookings")
 
+
 @login_required
 @admin_only
 def checklist_view(request):
+    # Fetch bookings for checklist
     bookings = Booking.objects.filter(status="Accepted").select_related("checklist")
-    return render(request, "client/checklist.html", {"bookings": bookings})
+
+    # 🔔 Notifications logic
+    notif_qs = Booking.objects.filter(status="Processing").order_by("-created_at")[:5]
+    notifications = [
+        f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
+        for b in notif_qs
+    ]
+
+    return render(request, "client/checklist.html", {
+        "bookings": bookings,
+        "notifications": notifications,  # ← important
+    })
 
 
 @login_required
@@ -1386,9 +1497,9 @@ def checklist_detail(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     checklist, created = BookingChecklist.objects.get_or_create(booking=booking)
 
-    # kung bagong gawa yung checklist, kailangan din natin i-populate ng equipment
+    # Populate checklist items kung bagong gawa
     if created:
-        for pkg_eq in booking.package.packageequipment_set.all():
+        for pkg_eq in booking.package.packageequipment_set.filter(quantity_required__gt=0):
             ChecklistItem.objects.create(
                 checklist=checklist,
                 equipment=pkg_eq.equipment,
@@ -1397,7 +1508,7 @@ def checklist_detail(request, booking_id):
 
     if request.method == "POST":
         all_confirmed = True
-        for item in checklist.items.all():
+        for item in checklist.items.filter(quantity_required__gt=0):
             received_qty = int(request.POST.get(f"received_{item.id}", item.quantity_received))
             confirmed = f"confirm_{item.id}" in request.POST
 
@@ -1411,16 +1522,35 @@ def checklist_detail(request, booking_id):
         checklist.is_confirmed = all_confirmed
         checklist.save()
 
-        messages.success(request, "Checklist updated successfully!")
+        # ✅ Create notification for all admins
+        admins = User.objects.filter(is_superuser=True)
+        for admin in admins:
+            Notification.objects.create(
+                user=admin,
+                message=f"✅ Checklist for booking #{booking.id} ({booking.full_name}) has been updated."
+            )
 
-        # ✅ Kung confirmed na lahat, diretso sa dashboard
         if all_confirmed:
+            messages.success(request, "Checklist confirmed successfully!")
             return redirect("dashboard")
+        else:
+            messages.info(request, "Checklist saved but not yet confirmed.")
+            return redirect("checklist_detail", booking_id=booking.id)
 
-        # ❌ Kung hindi pa kumpleto, balik sa checklist page
-        return redirect("checklist_detail", booking_id=booking.id)
+    # Pass filtered items
+    items = checklist.items.filter(quantity_required__gt=0)
 
-    return render(request, "client/checklist_detail.html", {"booking": booking, "checklist": checklist})
+    # --- Notifications for admin bell ---
+    notifications = Notification.objects.filter(user=request.user, is_read=False).order_by('-created_at')
+
+    return render(request, "client/checklist_detail.html", {
+        "booking": booking,
+        "checklist": checklist,
+        "items": items,
+        "notifications": notifications,  # only unread
+        "notifications_unread_count": notifications.count()
+    })
+
 import csv
 def download_employees(request):
     # Create the HttpResponse object with CSV header
@@ -1453,35 +1583,114 @@ def mark_notifications_as_read(request):
     return JsonResponse({"status": "unauthorized"}, status=401)
 
 # READ - List of packages in dashboard
+@login_required
+@admin_only
 def package_list_view(request):
     packages = ServicePackage.objects.all()
-    return render(request, 'client/package_list.html', {'packages': packages})
 
-# CREATE - Add new package
+    # 🔔 Notifications logic
+    notif_qs = Booking.objects.filter(status="Processing").order_by("-created_at")[:5]
+    notifications = [
+        f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
+        for b in notif_qs
+    ]
+
+    return render(request, 'client/package_list.html', {
+        'packages': packages,
+        'notifications': notifications,
+    })
+
+
+
 def package_add_view(request):
-    if request.method == 'POST':
+    equipments = Equipment.objects.all()
+
+    if request.method == "POST":
         form = ServicePackageForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "New package added successfully!")
-            return redirect('package_list')
+        qty_form = EquipmentQuantityForm(request.POST, equipments=equipments)
+
+        if form.is_valid() and qty_form.is_valid():
+            package = form.save()
+
+            for equipment in equipments:
+                field_name = f"equipment_{equipment.id}"
+                qty = int(qty_form.cleaned_data.get(field_name, 0))
+                if qty > 0:
+                    PackageEquipment.objects.create(
+                        package=package,
+                        equipment=equipment,
+                        quantity_required=qty
+                    )
+            
+            messages.success(request, "Package created successfully!")
+            return redirect("package_list")
     else:
         form = ServicePackageForm()
-    return render(request, 'client/package_add.html', {'form': form})
+        qty_form = EquipmentQuantityForm(equipments=equipments)
 
-# UPDATE - Edit package
+    equipment_fields = [(eq, qty_form[f"equipment_{eq.id}"]) for eq in equipments]
+
+    return render(request, "client/package_add.html", {
+        "form": form,
+        "qty_form": qty_form,
+        "equipment_fields": equipment_fields,
+        "package": None,
+    })
+
+
 def package_edit_view(request, package_id):
     package = get_object_or_404(ServicePackage, id=package_id)
-    if request.method == 'POST':
+    # ✅ Only get equipment linked to this package
+    equipments = package.equipment.all()
+
+    if request.method == "POST":
         form = ServicePackageForm(request.POST, request.FILES, instance=package)
-        if form.is_valid():
+        qty_form = EquipmentQuantityForm(request.POST, equipments=equipments)
+
+        if form.is_valid() and qty_form.is_valid():
             form.save()
+
+            # Update existing PackageEquipment or create new ones
+            for equipment in equipments:
+                field_name = f"equipment_{equipment.id}"
+                qty = qty_form.cleaned_data.get(field_name, 0)
+
+                pe, created = PackageEquipment.objects.get_or_create(
+                    package=package,
+                    equipment=equipment,
+                    defaults={"quantity_required": qty}
+                )
+                if not created:
+                    pe.quantity_required = qty
+                    pe.save()
+
             messages.success(request, "Package updated successfully!")
-            return redirect('package_list')
+            return redirect("package_list")
     else:
         form = ServicePackageForm(instance=package)
-    return render(request, 'client/package_edit.html', {'form': form, 'package': package})
 
+        # Pre-fill quantities from existing PackageEquipment
+        initial_data = {}
+        for equipment in equipments:
+            try:
+                pe = PackageEquipment.objects.get(package=package, equipment=equipment)
+                initial_data[f"equipment_{equipment.id}"] = pe.quantity_required
+            except PackageEquipment.DoesNotExist:
+                initial_data[f"equipment_{equipment.id}"] = 0
+
+        qty_form = EquipmentQuantityForm(initial=initial_data, equipments=equipments)
+
+    equipment_fields = [
+        (equipment, qty_form[f"equipment_{equipment.id}"])
+        for equipment in equipments
+    ]
+
+    return render(request, "client/package_add.html", {
+        "form": form,
+        "qty_form": qty_form,
+        "equipment_fields": equipment_fields,
+        "package": package,
+    })
 # DELETE - Delete package
 def package_delete_view(request, package_id):
     package = get_object_or_404(ServicePackage, id=package_id)
@@ -1490,4 +1699,3 @@ def package_delete_view(request, package_id):
         messages.success(request, "Package deleted successfully!")
         return redirect('package_list')
     return render(request, 'client/package_delete.html', {'package': package})
-

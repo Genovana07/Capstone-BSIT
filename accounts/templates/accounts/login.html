@@ -9,6 +9,7 @@
 
 <div class="login-page">
     <div class="login-left">
+
         <h2 class="login-title">Login</h2>
 
         <form method="POST" action="{% url 'login' %}">
@@ -40,7 +41,7 @@
                            value="{{ password|default:'' }}" required>
                 </div>
 
-                <button type="submit" class="login-btn">Send OTP</button>
+                <button type="submit" class="login-btn">Login</button>
             {% endif %}
         </form>
     </div>

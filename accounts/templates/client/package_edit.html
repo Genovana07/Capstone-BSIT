@@ -122,30 +122,51 @@
     </h2>
 
     <!-- Form -->
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
+   <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
 
-        {% for field in form %}
-        <div class="form-group">
-            <label for="{{ field.id_for_label }}">
-                {{ field.label }}
-                {% if field.field.required %}
-                <span class="required">*</span>
-                {% endif %}
-            </label>
-            {{ field }}
-            {% if field.help_text %}
-            <p class="help-text">{{ field.help_text }}</p>
+    <!-- Package fields -->
+    {% for field in form %}
+    <div class="form-group">
+        <label for="{{ field.id_for_label }}">
+            {{ field.label }}
+            {% if field.field.required %}
+            <span class="required">*</span>
             {% endif %}
-            {% for error in field.errors %}
-            <p class="error-text">{{ error }}</p>
-            {% endfor %}
-        </div>
+        </label>
+        {{ field }}
+        {% if field.help_text %}
+        <p class="help-text">{{ field.help_text }}</p>
+        {% endif %}
+        {% for error in field.errors %}
+        <p class="error-text">{{ error }}</p>
         {% endfor %}
+    </div>
+    {% endfor %}
 
-        <button type="submit" class="submit-btn">
-            {% if package %}Update{% else %}Save{% endif %}
-        </button>
-    </form>
+    <hr>
+    <h3>Equipment List</h3>
+
+    <!-- Formset management -->
+    {{ formset.management_form }}
+
+    <!-- Equipment + Quantity fields -->
+    {% for f in formset %}
+    <div class="form-group">
+        <label>{{ f.equipment.label }}:</label>
+        {{ f.equipment }} - Quantity: {{ f.quantity_required }}
+        {% if f.DELETE %}
+        <label>Delete: {{ f.DELETE }}</label>
+        {% endif %}
+        {% for error in f.errors.values %}
+        <p class="error-text">{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+    <button type="submit" class="submit-btn">
+        {% if package %}Update{% else %}Save{% endif %}
+    </button>
+</form>
 </div>
 {% endblock %}

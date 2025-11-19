@@ -31,7 +31,7 @@
                     <option value="{{ year }}" {% if year == request.GET.filter_year %}selected{% endif %}>{{ year }}</option>
                 {% endfor %}
             </select>
-                <button type="submit">Filter</button>
+                <button type="submit" class="btn-filter">Filter</button>
         </form>
     </div>
 </header>
@@ -231,7 +231,29 @@ function rejectBooking(url) {
         border-radius: 8px;
         overflow: hidden;
     }
+.btn-filter {
+    background: #2563eb;
+    color: #fff;
+    font-size: 0.85rem;       /* 🔽 mas maliit na font */
+    font-weight: 600;
+    padding: 8px 14px;        /* 🔽 mas maliit na padding */
+    border: none;
+    border-radius: 6px;       /* 🔽 medyo mas maliit na radius */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12); /* 🔽 mas subtle shadow */
+    margin-top: 8px;          /* 🔽 mas maliit na margin */
+}
+.btn-filter:hover {
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+}
 
+.btn-filter:active {
+  transform: scale(0.97);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
     .booking-table th,
     .booking-table td {
         padding: 15px;
@@ -394,6 +416,138 @@ function rejectBooking(url) {
 }
 .completed {
     background-color: #2a9d8f; 
+}
+/* Tablets */
+@media (max-width: 1024px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .filters select {
+    margin-left: 0;
+    margin-top: 8px;
+    width: 100%;
+  }
+
+  .booking-table th,
+  .booking-table td {
+    padding: 12px;
+    font-size: 0.95em;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .modal-dialog {
+    max-width: 90%;
+    padding: 16px;
+  }
+}
+
+/* Mobile phones */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .filters select {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 6px;
+  }
+
+  .booking-table {
+    overflow-x: auto;
+    display: block;
+  }
+
+  .booking-table th,
+  .booking-table td {
+    padding: 10px;
+    font-size: 0.9em;
+    white-space: nowrap;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .actions a {
+    width: 100%;
+    justify-content: center;
+    font-size: 0.95em;
+    padding: 10px;
+  }
+
+  .modal-dialog {
+    max-width: 95%;
+    padding: 14px;
+  }
+
+  .modal-header {
+    font-size: 1.3em;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .close-btn,
+  .delete {
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 480px) {
+  .booking-table th,
+  .booking-table td {
+    padding: 8px;
+    font-size: 0.85em;
+  }
+
+  .actions a {
+    font-size: 0.9em;
+    padding: 8px;
+  }
+
+  .badge {
+    font-size: 0.8em;
+    padding: 5px 10px;
+  }
+
+  .modal-dialog {
+    padding: 12px;
+  }
+
+  .modal-header {
+    font-size: 1.2em;
+  }
+
+  .btn-close {
+    font-size: 1.3em;
+  }
+
+  .close-btn,
+  .delete {
+    font-size: 0.95em;
+    padding: 8px 12px;
+    margin-top: 10px;
+  }
 }
 </style>
 

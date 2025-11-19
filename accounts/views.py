@@ -1248,13 +1248,6 @@ def submit_review(request):
             value_for_money=value_for_money,
             comment=comment
         )
-          # ✅ Create notification for admin
-        admins = User.objects.filter(is_superuser=True)
-        for admin in admins:
-            Notification.objects.create(
-                user=admin,
-                message=f"📌 {booking.full_name} submitted a review on booking {booking.id}."
-            )
             
         messages.success(request, "Thank you for your detailed review!")
         return redirect('history')

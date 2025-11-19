@@ -186,6 +186,7 @@
 </script>
 <style>
 /* === GENERAL LAYOUT === */
+/* === GENERAL LAYOUT === */
 .nav-header {
     display: flex;
     justify-content: space-between;
@@ -211,7 +212,10 @@
 .text-white { color: #23194f; }
 .text-yellow { color: #fbc531; }
 
-/* NAVIGATION MENU */
+/* NAVIGATION MENU (desktop default) */
+nav {
+    display: block;
+}
 nav ul {
     display: flex;
     gap: 18px;
@@ -248,8 +252,8 @@ nav ul li.active a {
 
 /* === RESPONSIVE NAV === */
 @media (max-width: 900px) {
- .nav-header {
-        justify-content: space-between; /* Ensure left and right alignment */
+    .nav-header {
+        justify-content: space-between;
         align-items: center;
         position: relative;
     }
@@ -259,7 +263,7 @@ nav ul li.active a {
         justify-content: flex-start;
     }
 
-    /* Make hamburger stay at the top-right corner */
+    /* Hamburger visible sa mobile */
     .hamburger {
         position: absolute;
         right: 20px;
@@ -270,7 +274,9 @@ nav ul li.active a {
         color: #23194f;
     }
 
+    /* Hide nav by default sa mobile */
     nav {
+        display: none; /* ✅ default hidden */
         position: absolute;
         top: 60px;
         right: 0;
@@ -281,8 +287,14 @@ nav ul li.active a {
         transition: transform 0.3s ease-in-out;
         height: calc(100vh - 60px);
         overflow-y: auto;
+        z-index: 999;
     }
-    nav.open { transform: translateX(0); }
+
+    /* Pag may .open class, show nav */
+    nav.open {
+        display: block;
+        transform: translateX(0);
+    }
 
     nav ul {
         flex-direction: column;
@@ -290,14 +302,13 @@ nav ul li.active a {
         padding: 20px;
         gap: 15px;
     }
-}
+
     nav ul li a {
         display: block;
         width: 100%;
         padding: 10px 15px;
     }
-    .notification-dropdown { right: 10px; }
-
+}
 
 /* PROFILE & DASHBOARD */
 .profile-item { display: flex; align-items: center; gap: 8px; }
@@ -323,8 +334,6 @@ nav ul li.active a {
   position: relative;
   display: inline-block;
 }
-
-/* Bell Icon */
 .notification-link {
   color: #23194f;
   font-size: 22px;
@@ -336,8 +345,6 @@ nav ul li.active a {
   transform: scale(1.1);
   color: #7a3cff;
 }
-
-/* Red Badge */
 .notification-badge {
   position: absolute;
   top: -6px;
@@ -350,8 +357,6 @@ nav ul li.active a {
   border-radius: 50%;
   box-shadow: 0 0 6px rgba(255, 0, 0, 0.4);
 }
-
-/* === Dropdown Box === */
 .notification-dropdown {
   display: none;
   position: absolute;
@@ -374,8 +379,6 @@ nav ul li.active a {
   display: flex;
   animation: fadeIn 0.25s ease;
 }
-
-/* Sticky Header */
 .notif-header {
   padding: 12px 16px;
   font-weight: 700;
@@ -390,8 +393,6 @@ nav ul li.active a {
   justify-content: space-between;
   align-items: center;
 }
-
-/* Header Button (optional) */
 .notif-header button {
   background: rgba(255, 255, 255, 0.25);
   border: none;
@@ -405,8 +406,6 @@ nav ul li.active a {
 .notif-header button:hover {
   background: rgba(255, 255, 255, 0.4);
 }
-
-/* List Items */
 .notification-dropdown ul {
   margin: 0;
   padding: 0;
@@ -433,40 +432,22 @@ nav ul li.active a {
   background: #f9f8ff;
   transform: translateX(3px);
 }
-
-.notif-message {
-  color: #333;
-  font-size: 14px;
-  line-height: 1.4;
-}
-.notif-date {
-  font-size: 12px;
-  color: #888;
-  text-align: right;
-  font-style: italic;
-}
+.notif-message { color: #333; font-size: 14px; line-height: 1.4; }
+.notif-date { font-size: 12px; color: #888; text-align: right; font-style: italic; }
 .no-notifications {
   padding: 20px;
   color: #777;
   text-align: center;
   font-size: 14px;
 }
-
-/* Scrollbar Style */
-.notification-dropdown::-webkit-scrollbar {
-  width: 6px;
+.notification-dropdown::-webkit-scrollbar { width: 6px; }
+.notification-dropdown::-webkit-scrollbar-thumb { background: #c9b8ff; border-radius: 6px; }
+.notification-dropdown::-webkit-scrollbar-thumb:hover { background: #a68cff; }
+.notification-dropdown::-webkit-scrollbar-track { background-color: #f5f5f5; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-.notification-dropdown::-webkit-scrollbar-thumb {
-  background: #c9b8ff;
-  border-radius: 6px;
-}
-.notification-dropdown::-webkit-scrollbar-thumb:hover {
-  background: #a68cff;
-}
-.notification-dropdown::-webkit-scrollbar-track {
-  background-color: #f5f5f5;
-}
-
 /* Animation */
 @keyframes fadeIn {
   from {
@@ -479,72 +460,106 @@ nav ul li.active a {
   }
 }
 
+
+
 /* === RESPONSIVE FIXES === */
 
 /* For tablets & small laptops */
 @media (max-width: 1024px) {
   .notification-dropdown {
-    right: -10px;
+    right: 10px;
     width: 280px;
     max-height: 400px;
   }
 }
 
-/* For mobile phones */
 @media (max-width: 768px) {
   .notification-item {
-    position: static; /* so dropdown can center */
+    position: static;
   }
 
   .notification-dropdown {
     position: fixed;
-    top: 65px;
-    right: 50%;
-    transform: translateX(50%); /* ✅ center horizontally */
-    width: 92vw;               /* ✅ use screen width */
-    max-height: 70vh;
-    border-radius: 14px;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30vw;                 /* ✅ Slimmer width */
+    max-height: 60vh;
+    border-radius: 10px;
     z-index: 9999;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    overflow-y: auto;
+    padding: 6px 0;
   }
 
   .notif-header {
-    font-size: 14px;
-    padding: 10px 14px;
+    font-size: 13px;
+    padding: 6px 10px;
   }
 
   .notif-header button {
-    font-size: 11px;
-    padding: 3px 7px;
+    font-size: 10px;
+    padding: 2px 5px;
   }
 
   .notification-dropdown li {
-    padding: 12px 14px;
+    padding: 6px 10px;
+    font-size: 12px;
+    line-height: 1.3;
+    gap: 3px;
   }
 
   .notif-message {
-    font-size: 13px;
+    font-size: 12px;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .notif-date {
-    font-size: 11px;
+    font-size: 10px;
+    color: #888;
+    text-align: right;
+    font-style: italic;
+  }
+
+  .no-notifications {
+    font-size: 12px;
+    padding: 14px;
   }
 }
 
-/* Extra small screens (older phones) */
 @media (max-width: 480px) {
   .notification-dropdown {
-    top: 60px;
-    width: 94vw;
-    max-height: 65vh;
-    font-size: 13px;
+    top: 55px;
+    width: 60vw;                 /* ✅ Even slimmer for small phones */
+    max-height: 55vh;
+    font-size: 11.5px;
+    padding: 5px 0;
+  }
+
+  .notification-dropdown li {
+    padding: 5px 8px;
+    font-size: 11.5px;
   }
 
   .notif-message {
-    font-size: 12.5px;
+    font-size: 11.5px;
+  }
+
+  .notif-date {
+    font-size: 9px;
   }
 
   .notif-header {
-    font-size: 13px;
+    font-size: 12px;
+    padding: 6px 9px;
+  }
+
+  .notif-header button {
+    font-size: 9px;
+    padding: 2px 5px;
   }
 }
 
@@ -554,9 +569,9 @@ nav ul li.active a {
     top: 60px;
     left: 50%;
     transform: translateX(-50%);
-    width: 30%;
+    width: 30%;              /* ✅ default desktop width */
     padding: 0;
-    background: none; /* remove any green bg */
+    background: none;
     border: none;
     z-index: 9999;
 }
@@ -566,7 +581,7 @@ nav ul li.active a {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 35px;
+    min-height: 35px;
     width: 100%;
     margin: 5px 0;
     color: white;
@@ -574,16 +589,50 @@ nav ul li.active a {
     text-align: center;
     border-radius: 6px;
     border: none;
+    padding: 8px 12px;
+    box-sizing: border-box;
 }
 
 /* SUCCESS */
-.alert-success {
-    background-color: #4CAF50;
+.alert-success { background-color: #4CAF50; }
+/* ERROR */
+.alert-error { background-color: #f44336; }
+
+/* === RESPONSIVE FIXES === */
+
+/* Tablets */
+@media (max-width: 1024px) {
+  .messages {
+    width: 50%;   /* mas malapad para readable */
+  }
+  .alert {
+    font-size: 13.5px;
+  }
 }
 
-/* ERROR */
-.alert-error {
-    background-color: #f44336;
+/* Mobile phones */
+@media (max-width: 768px) {
+  .messages {
+    width: 80%;   /* halos buong lapad ng screen */
+    top: 50px;    /* medyo mas mataas para di matakpan ng nav */
+  }
+  .alert {
+    font-size: 13px;
+    min-height: auto; /* allow multi-line kung mahaba ang message */
+    padding: 8px 10px;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 480px) {
+  .messages {
+    width: 92%;   /* halos buong screen width */
+    top: 45px;
+  }
+  .alert {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
 }
 /* ===== FOOTER (UNIFORM ACROSS ALL PAGES) ===== */
 .footer {

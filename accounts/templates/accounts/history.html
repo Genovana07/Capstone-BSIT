@@ -153,19 +153,202 @@
 .alert-success { background-color:#4CAF50; }
 .alert-error { background-color:#f44336; }
 .alert { display:flex; align-items:center; justify-content:center; height:35px; }
- @media (max-width: 768px) {
-        .container {
-            flex-direction: column;
-        }
+.btn-submit {
+  background: linear-gradient(135deg, #2563eb, #1e40af); /* blue gradient */
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;        /* align icon + text */
+  align-items: center;
+  gap: 6px;                    /* space between icon and text */
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
 
-        .sidebar {
-            width: 100%;
-            border-right: none;
-            border-bottom: 1px solid #ccc;
-        }
+.btn-submit:hover {
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0,0,0,0.2);
+}
 
-        
-    }
+.btn-submit:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.btn-submit i {
+  font-size: 0.95rem;
+}
+@media (max-width: 1024px) {
+  .main-content {
+    padding: 40px;
+  }
+
+  .table-container {
+    padding: 24px;
+    border-radius: 12px;
+  }
+
+  table {
+    font-size: 14px;
+    min-width: 800px;
+  }
+
+  th, td {
+    padding: 14px 12px;
+  }
+
+  .modal-content {
+    width: 360px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .main-content {
+    padding: 24px;
+  }
+
+  .main-content h2 {
+    font-size: 22px;
+    margin-bottom: 30px;
+    gap: 8px;
+  }
+
+  .table-container {
+    padding: 20px;
+    border-radius: 10px;
+  }
+
+  table {
+    font-size: 13px;
+    min-width: 600px;
+  }
+
+  th {
+    font-size: 12px;
+  }
+
+  th, td {
+    padding: 12px 10px;
+  }
+
+  .modal-content {
+    width: 320px;
+    padding: 24px;
+  }
+
+  .modal-header {
+    font-size: 18px;
+  }
+
+  .form-group label {
+    font-size: 13px;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  .form-group textarea {
+    height: 80px;
+  }
+
+  .form-group .rating label {
+    font-size: 26px;
+  }
+
+  .rate-btn {
+    font-size: 13px;
+    padding: 7px 16px;
+  }
+
+  .messages {
+    width: 80%;
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 16px;
+  }
+
+  .main-content h2 {
+    font-size: 20px;
+    margin-bottom: 24px;
+  }
+
+  .table-container {
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  table {
+    font-size: 12px;
+    min-width: 100%;
+  }
+
+  th, td {
+    padding: 10px 8px;
+  }
+
+  .modal-content {
+    width: 90%;
+    padding: 20px;
+  }
+
+  .modal-header {
+    font-size: 16px;
+  }
+
+  .form-group label {
+    font-size: 12.5px;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    font-size: 12.5px;
+    padding: 7px 9px;
+  }
+
+  .form-group textarea {
+    height: 70px;
+  }
+
+  .form-group .rating label {
+    font-size: 24px;
+  }
+
+  .rate-btn {
+    font-size: 12px;
+    padding: 6px 14px;
+  }
+
+  .messages {
+    width: 90%;
+    font-size: 12.5px;
+    padding: 6px 10px;
+  }
+}
 </style>
 
 <div class="container">
@@ -332,7 +515,9 @@
         <textarea id="comment" name="comment" placeholder="Leave a comment..." required></textarea>
       </div>
 
-      <button type="submit">Submit</button>
+      <button type="submit" class="btn-submit">
+  <i class="fas fa-paper-plane"></i> Submit
+</button>
     </form>
   </div>
 </div>

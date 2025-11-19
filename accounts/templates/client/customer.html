@@ -107,40 +107,83 @@
     color: #999;
     font-style: italic;
 }
+/* Tablets */
+@media (max-width: 1024px) {
+  .customer-list h2 {
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
 
-/* 🌙 Dark Mode */
-body.dark-mode .customer-list h2 {
-    color: #e0e0e0;
+  .styled-table th,
+  .styled-table td {
+    padding: 10px 14px;
+    font-size: 0.95rem;
+  }
+
+  .profile-pic {
+    width: 40px;
+    height: 40px;
+  }
 }
 
-body.dark-mode .styled-table {
-    background: #2c2f38;
-    color: #e0e0e0;
+/* Mobile phones */
+@media (max-width: 768px) {
+  .customer-list {
+    margin: 20px 0;
+  }
+
+  .customer-list h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .styled-table {
+    min-width: 600px; /* ✅ prevent squishing */
+  }
+
+  .styled-table th,
+  .styled-table td {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .profile-pic {
+    width: 36px;
+    height: 36px;
+  }
+
+  .no-pic {
+    font-size: 12.5px;
+  }
 }
 
-body.dark-mode .styled-table thead {
-    background: #333;
+/* Extra small phones */
+@media (max-width: 480px) {
+  .customer-list h2 {
+    font-size: 18px;
+  }
+
+  .styled-table th,
+  .styled-table td {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+
+  .profile-pic {
+    width: 32px;
+    height: 32px;
+  }
+
+  .no-pic {
+    font-size: 12px;
+  }
 }
 
-body.dark-mode .styled-table th {
-    border-bottom: 2px solid #444;
-    color: #f0f0f0;
-}
-
-body.dark-mode .styled-table tbody tr:nth-child(even) {
-    background-color: #3a3d46;
-}
-
-body.dark-mode .styled-table tbody tr:hover {
-    background-color: #50535c;
-}
-
-body.dark-mode .profile-pic {
-    border: 2px solid #555;
-}
-
-body.dark-mode .no-pic {
-    color: #bbb;
-}
 </style>
 {% endblock %}

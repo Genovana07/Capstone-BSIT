@@ -232,58 +232,237 @@ body.dark-mode .stars .empty {
 .date-filter button:hover {
     background-color: #1d4ed8;
 }
+/* Tablets */
+@media (max-width: 1024px) {
+  h1 {
+    font-size: 24px;
+  }
 
-/* ---------- Dark Mode ---------- */
-body.dark-mode .review-summary {
-    background: #2e2e2e;
-    color: #e0e0e0;
-    border: none;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.6);
+  .review-summary {
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .divider {
+    height: 50px;
+    margin: 0 20px;
+  }
+
+  .review-number,
+  .rating-number {
+    font-size: 28px;
+  }
+
+  .metrics-summary h2 {
+    font-size: 16px;
+  }
+
+  .metrics-summary li {
+    font-size: 13px;
+  }
+
+  .reviews-list {
+    padding: 20px;
+    max-height: 600px;
+  }
+
+  .review-card {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .reviewer-avatar {
+    width: 50px;
+    height: 50px;
+  }
+
+  .review-header strong {
+    font-size: 15px;
+  }
+
+  .review-header span {
+    font-size: 13px;
+  }
+
+  .review-header .date {
+    font-size: 11px;
+  }
+
+  .stars {
+    font-size: 15px;
+  }
+
+  .review-details p {
+    font-size: 14px;
+  }
+
+  .date-filter {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 16px;
+  }
+
+  .date-filter label,
+  .date-filter select,
+  .date-filter button {
+    font-size: 13px;
+  }
 }
-body.dark-mode .divider {
-    background-color: #555;
+
+/* Mobile phones */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+
+  .review-summary {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  .review-number,
+  .rating-number {
+    font-size: 26px;
+  }
+
+  .metrics-summary h2 {
+    font-size: 15px;
+  }
+
+  .metrics-summary li {
+    font-size: 13px;
+  }
+
+  .reviews-list {
+    padding: 16px;
+    max-height: none;
+  }
+
+  .review-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 14px;
+    gap: 14px;
+  }
+
+  .reviewer-avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .review-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .review-header strong {
+    font-size: 14px;
+  }
+
+  .review-header span {
+    font-size: 12px;
+  }
+
+  .review-header .date {
+    font-size: 11px;
+    margin-left: 0;
+  }
+
+  .stars {
+    font-size: 14px;
+  }
+
+  .review-details p {
+    font-size: 13.5px;
+  }
+
+  .date-filter {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .date-filter label,
+  .date-filter select,
+  .date-filter button {
+    width: 100%;
+    font-size: 13px;
+    margin-top: 10px;
+  }
 }
-body.dark-mode .review-number,
-body.dark-mode .rating-number {
-    color: #fff;
+
+/* Extra small phones */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 20px;
+  }
+
+  .review-number,
+  .rating-number {
+    font-size: 24px;
+  }
+
+  .metrics-summary h2 {
+    font-size: 14px;
+  }
+
+  .metrics-summary li {
+    font-size: 12.5px;
+  }
+
+  .review-card {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .reviewer-avatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .review-header strong {
+    font-size: 13px;
+  }
+
+  .review-header span {
+    font-size: 11.5px;
+  }
+
+  .review-header .date {
+    font-size: 10px;
+  }
+
+  .stars {
+    font-size: 13px;
+  }
+
+  .review-details p {
+    font-size: 13px;
+  }
+
+  .date-filter {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .date-filter label,
+  .date-filter select,
+  .date-filter button {
+    font-size: 12px;
+    margin-top: 10px;
+  }
 }
-body.dark-mode .metrics-summary li {
-    border-bottom: 1px dashed #666;
-    color: #ccc;
-}
-body.dark-mode .reviews-list {
-    background: #2c2f38;
-    color: #e0e0e0;
-}
-body.dark-mode .review-card {
-    background: #3a3d47;
-    border: 1px solid #555;
-}
-body.dark-mode .review-header strong {
-    color: #fff;
-}
-body.dark-mode .review-header span,
-body.dark-mode .review-header .date {
-    color: #aaa;
-}
-body.dark-mode .metrics li {
-    color: #ddd;
-}
-body.dark-mode .date-filter {
-    background: #3a3d47;
-    border: 1px solid #555;
-}
-body.dark-mode .date-filter select {
-    background: #2e2e2e;
-    color: #eee;
-    border: 1px solid #666;
-}
-body.dark-mode .date-filter button {
-    background-color: #2563eb;
-}
-body.dark-mode .date-filter button:hover {
-    background-color: #1d4ed8;
-}
+
 </style>
 
 <!-- Filter Section (Top Only, Not Sticky) -->

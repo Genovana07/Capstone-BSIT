@@ -79,354 +79,250 @@
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
   }
-  .map-wrapper {
-  display: flex;
-  justify-content: center;
-}
+
   .map-container p {
-      text-align: center;
-      padding-top: 50px;
-      color: #777;
-      font-size: 14px;
-      font-style: italic;
+    text-align: center;
+    padding-top: 50px;
+    color: #777;
+    font-size: 14px;
+    font-style: italic;
   }
 
-  /* 🌙 DARK MODE */
-  body.dark-mode .tracking {
-    background: #1e1f25;
-    color: #e0e0e0;
+  /* Modal styling */
+  .map-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
   }
 
-  body.dark-mode .tracking h1 {
+  .map-modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 8px;
+    max-width: 90%;
+    max-height: 90%;
+    position: relative;
+  }
+
+  .map-modal-close {
     color: #fff;
-    border-left-color: #6366f1;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 10000;
   }
 
-  body.dark-mode table {
-    background: #2a2d35;
-    color: #e0e0e0;
-  }
-
-  body.dark-mode table th {
-    background: #333642;
-    color: #f0f0f0;
-  }
-
-  body.dark-mode table td {
-    background: #2a2d35;
-    border-color: #444;
-  }
-
-  body.dark-mode table tr:hover {
-    background: #3b3f4a;
-  }
-
-  body.dark-mode td ul {
-    color: #ddd;
-  }
-
-  body.dark-mode .map-container {
-    border: 2px solid #555;
-  }
-  /* Tablets */
-@media (max-width: 1024px) {
-  .tracking {
-    padding: 16px;
-    margin: 20px auto;
-  }
-
-  .tracking h1 {
-    font-size: 24px;
-    margin-bottom: 16px;
-  }
-
-  table th,
-  table td {
-    padding: 12px;
-    font-size: 0.95rem;
-  }
-
-  .map-container {
+  .map-modal-inner {
     width: 100%;
-    max-width: 400px;
-    height: 220px;
-    margin-top: 16px;
-  }
-}
-
-/* Mobile phones */
-@media (max-width: 768px) {
-  .tracking {
-    padding: 14px;
-    margin: 16px auto;
+    height: 80vh;
+    min-height: 300px;
   }
 
-  .tracking h1 {
-    font-size: 22px;
-    padding-left: 10px;
-    border-left-width: 5px;
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .tracking { padding: 16px; margin: 20px auto; }
+    .tracking h1 { font-size: 24px; margin-bottom: 16px; }
+    table th, table td { padding: 12px; font-size: 0.95rem; }
+    .map-container { width: 100%; max-width: 400px; height: 220px; margin-top: 16px; }
   }
 
-  /* ✅ Table scrollable horizontally */
-  table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
+  @media (max-width: 768px) {
+    .tracking { padding: 14px; margin: 16px auto; }
+    .tracking h1 { font-size: 22px; padding-left: 10px; border-left-width: 5px; }
+    table { display: block; overflow-x: auto; white-space: nowrap; }
+    table th, table td { padding: 10px; font-size: 0.9rem; }
+    td ul { padding-left: 14px; font-size: 0.9rem; }
+    td p { font-size: 0.85rem; }
+    .map-container { width: 100%; height: 200px; }
   }
 
-  table th,
-  table td {
-    padding: 10px;
-    font-size: 0.9rem;
+  @media (max-width: 480px) {
+    .tracking { padding: 12px; margin: 12px auto; }
+    .tracking h1 { font-size: 20px; padding-left: 8px; border-left-width: 4px; }
+    table th, table td { padding: 8px; font-size: 0.85rem; }
+    td ul { padding-left: 12px; font-size: 0.85rem; }
+    td p { font-size: 0.8rem; }
+    .map-container { width: 100%; height: 180px; }
+    .map-container p { font-size: 12px; padding-top: 40px; }
   }
-
-  td ul {
-    padding-left: 14px;
-    font-size: 0.9rem;
-  }
-
-  td p {
-    font-size: 0.85rem;
-  }
-
-  .map-container {
-    width: 100%;
-    height: 200px;
-  }
-}
-
-/* Extra small phones */
-@media (max-width: 480px) {
-  .tracking {
-    padding: 12px;
-    margin: 12px auto;
-  }
-
-  .tracking h1 {
-    font-size: 20px;
-    padding-left: 8px;
-    border-left-width: 4px;
-  }
-
-  table th,
-  table td {
-    padding: 8px;
-    font-size: 0.85rem;
-  }
-
-  td ul {
-    padding-left: 12px;
-    font-size: 0.85rem;
-  }
-
-  td p {
-    font-size: 0.8rem;
-  }
-
-  .map-container {
-    width: 100%;
-    height: 180px;
-  }
-
-  .map-container p {
-    font-size: 12px;
-    padding-top: 40px;
-  }
-}
 </style>
 
 <section class="tracking">
   <h1>Tracking Bookings</h1>
   {% if bookings %}
-<table>
-  <thead>
-    <tr>
-      <th>Package</th>
-      <th>Event Date</th>
-      <th>Event Type</th>
-      <th>Barangay</th> <!-- 🟢 Added -->
-      <th>Address</th>
-      <th>Status</th>
-      <th>Equipment</th>
-      <th>Map</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for booking in bookings %}
-    <tr>
-      <td>{{ booking.package.title }}</td>
-      <td>{{ booking.event_date }}</td>
-      <td>{{ booking.event_type }}</td>
-
-      <!-- 🟢 Barangay value -->
-      <td>{{ booking.barangay }}</td>
-
-      <td>{{ booking.fulladdress }}</td>
-      <td>
-        <span style="color: #16a34a; font-weight: 600;">Approved</span>
-      </td>
-
-      <td>
-        {% if booking.package.packageequipment_set.exists %}
-          <ul>
-            {% for package_equipment in booking.package.packageequipment_set.all %}
-              {% if package_equipment.quantity_required and package_equipment.quantity_required > 0 %}
-                <li>{{ package_equipment.equipment.name }} (x{{ package_equipment.quantity_required }})</li>
-              {% endif %}
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p>No equipment assigned</p>
-        {% endif %}
-      </td>
-
-      <td>
-        <div id="map-{{ booking.id }}" class="map-container">
-            <p>Loading map...</p>
-        </div>
-<script>
-  /*
-  LOGIC: Barangay-based Geocoding with Fallbacks
-  Level 1: Barangay + City (Main)
-  Level 2: Cleaned Barangay + City (Removes 'Brgy/Purok/etc')
-  Level 3: Barangay Guess (from backup address) + City
-  Level 4: City Only (Last Resort)
-  */
-
-  function initMapFallback(bookingId, barangay, location, fullAddress = '') {
-    
-    // 1️⃣ Main: Try Barangay + City
-    const query1 = `${barangay}, ${location}`;
-    
-    geocode(query1, function(success, lat, lon, label) {
-      if (success) {
-        renderMap(lat, lon, label, bookingId);
-        return;
-      }
-
-      // 2️⃣ Fallback: Cleaned Barangay + City
-      let cleanedBarangay = barangay.replace(/purok|street|st\.|area|zone|brgy\.|brgy/gi, '').trim();
-
-      if (!cleanedBarangay || cleanedBarangay.length < 3) {
-        cleanedBarangay = barangay;
-      }
-      
-      const query2 = `${cleanedBarangay}, ${location}`;
-      
-      geocode(query2, function(success2, lat2, lon2, label2) {
-        if (success2) {
-          renderMap(lat2, lon2, label2, bookingId);
-          return;
-        }
-
-        // 3️⃣ Barangay Guess (from full address, if given)
-        let barangayGuess = '';
-        if (fullAddress && fullAddress.length > 0) {
-          const parts = fullAddress.split(',').map(p => p.trim()).filter(p => p.length > 0);
-          if (parts.length > 0) {
-              barangayGuess = parts[parts.length - 1];
-              barangayGuess = barangayGuess.replace(/purok|street|st\.|area|zone|brgy\.|brgy/gi, '').trim();
-          }
-        }
-
-        if (barangayGuess) {
-          const query3 = `${barangayGuess}, ${location}`;
-          geocode(query3, function(success3, lat3, lon3, label3) {
-            if (success3) {
-              renderMap(lat3, lon3, label3, bookingId);
-              return;
-            }
-
-            // 4️⃣ Last Resort: City Only
-            geocode(location, function(success4, lat4, lon4, label4) {
-              if (success4) {
-                renderMap(lat4, lon4, label4, bookingId);
-              } else {
-                document.getElementById('map-' + bookingId).innerHTML = "<p>Map not available.</p>";
-              }
-            });
-          });
-        } else {
-          // fallback to city only
-          geocode(location, function(success4, lat4, lon4, label4) {
-            if (success4) {
-              renderMap(lat4, lon4, label4, bookingId);
-            } else {
-              document.getElementById('map-' + bookingId).innerHTML = "<p>Map not available.</p>";
-            }
-          });
-        }
-      });
-    });
-  }
-
-  function geocode(query, callback) {
-    if (!query || query.trim() === '') {
-        callback(false);
-        return;
-    }
-    var url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState == 4) {
-        if (xhr.status == 200) {
-            var data = JSON.parse(xhr.responseText);
-            if (data.length > 0) {
-              callback(true, data[0].lat, data[0].lon, query);
-            } else {
-              callback(false);
-            }
-        } else {
-            callback(false);
-        }
-      }
-    };
-    xhr.send();
-  }
-
-  function renderMap(lat, lon, label, bookingId) {
-    const mapElement = document.getElementById('map-' + bookingId);
-    if (!mapElement) return;
-    
-    mapElement.innerHTML = ''; 
-
-    setTimeout(() => {
-        var map = L.map('map-' + bookingId).setView([lat, lon], 16);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-        
-        L.marker([lat, lon]).addTo(map)
-          .bindPopup(`<b>Barangay:</b><br>${label}`)
-          .openPopup();
-        
-        map.invalidateSize(); 
-    }, 100); 
-  }
-  
-  // ✅ Dynamic initialization per booking (now barangay-based)
-  initMapFallback(
-    '{{ booking.id }}',
-    '{{ booking.barangay|escapejs }}',  // barangay
-    '{{ booking.location|escapejs }}',  // city
-    '{{ booking.fulladdress|escapejs }}' // optional backup
-  );
-
-  
-</script>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <table>
+    <thead>
+      <tr>
+        <th>Package</th>
+        <th>Event Date</th>
+        <th>Event Type</th>
+        <th>Barangay</th>
+        <th>Address</th>
+        <th>Status</th>
+        <th>Equipment</th>
+        <th>Map</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for booking in bookings %}
+      <tr>
+        <td>{{ booking.package.title }}</td>
+        <td>{{ booking.event_date }}</td>
+        <td>{{ booking.event_type }}</td>
+        <td>{{ booking.barangay }}</td>
+        <td>{{ booking.fulladdress }}</td>
+        <td><span style="color: #16a34a; font-weight: 600;">Approved</span></td>
+        <td>
+          {% if booking.package.packageequipment_set.exists %}
+            <ul>
+              {% for package_equipment in booking.package.packageequipment_set.all %}
+                {% if package_equipment.quantity_required and package_equipment.quantity_required > 0 %}
+                  <li>{{ package_equipment.equipment.name }} (x{{ package_equipment.quantity_required }})</li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>No equipment assigned</p>
+          {% endif %}
+        </td>
+        <td>
+          <div id="map-{{ booking.id }}" class="map-container"><p>Loading map...</p></div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
   {% else %}
-    <p>No approved bookings available.</p>
+  <p>No approved bookings available.</p>
   {% endif %}
 </section>
 
+<!-- Modal -->
+<div id="mapModal" class="map-modal">
+  <span class="map-modal-close">&times;</span>
+  <div class="map-modal-content">
+    <div id="modalMap" class="map-modal-inner"></div>
+  </div>
+</div>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+function geocode(query, callback) {
+  if (!query || query.trim() === '') { callback(false); return; }
+  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.length > 0) callback(true, data[0].lat, data[0].lon, query);
+      else callback(false);
+    })
+    .catch(() => callback(false));
+}
+
+let modalMap;
+const modal = document.getElementById("mapModal");
+const modalMapId = "modalMap";
+
+// Open modal map
+function openModal(lat, lon, label) {
+  modal.style.display = "block";
+
+  // Clear previous map container
+  const modalInner = document.getElementById(modalMapId);
+  modalInner.innerHTML = '';
+
+  // Remove old map instance
+  if(modalMap) {
+    modalMap.remove();
+    modalMap = null;
+  }
+
+  // Initialize new map with small delay for proper sizing
+  setTimeout(() => {
+    modalMap = L.map(modalMapId).setView([lat, lon], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(modalMap);
+    L.marker([lat, lon]).addTo(modalMap)
+      .bindPopup(`<b>Barangay:</b><br>${label}`).openPopup();
+    modalMap.invalidateSize();
+  }, 200);
+}
+
+// Close modal
+document.querySelector(".map-modal-close").onclick = function() {
+  modal.style.display = "none";
+  if(modalMap) { modalMap.remove(); modalMap = null; }
+};
+window.onclick = function(event) {
+  if(event.target == modal) {
+    modal.style.display = "none";
+    if(modalMap) { modalMap.remove(); modalMap = null; }
+  }
+};
+
+function renderMap(lat, lon, label, containerId) {
+  const mapEl = document.getElementById(containerId);
+  if(!mapEl) return;
+  mapEl.innerHTML = '';
+  setTimeout(() => {
+    const map = L.map(containerId).setView([lat, lon], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    L.marker([lat, lon]).addTo(map)
+      .bindPopup(`<b>Barangay:</b><br>${label}`).openPopup();
+    map.invalidateSize();
+
+    mapEl.onclick = () => openModal(lat, lon, label);
+  }, 100);
+}
+
+// Fallback geocoding
+function initMapFallback(bookingId, barangay, location, fullAddress='') {
+  const containerId = 'map-' + bookingId;
+  const query1 = `${barangay}, ${location}`;
+  geocode(query1, function(success, lat, lon, label){
+    if(success){ renderMap(lat, lon, label, containerId); return; }
+    let cleaned = barangay.replace(/purok|street|st\.|area|zone|brgy\.|brgy/gi,'').trim();
+    if(cleaned.length < 3) cleaned = barangay;
+    const query2 = `${cleaned}, ${location}`;
+    geocode(query2,function(success2, lat2, lon2, label2){
+      if(success2){ renderMap(lat2, lon2, label2, containerId); return; }
+      let guess='';
+      if(fullAddress.length>0){ const parts = fullAddress.split(',').map(p => p.trim()); guess = parts.at(-1).replace(/purok|street|st\.|area|zone|brgy\.|brgy/gi,'').trim(); }
+      if(guess){
+        const query3 = `${guess}, ${location}`;
+        geocode(query3,function(success3,lat3,lon3,label3){ if(success3){ renderMap(lat3, lon3, label3, containerId); return; }
+          geocode(location,function(success4, lat4, lon4, label4){ if(success4){ renderMap(lat4, lon4, label4, containerId); } else { document.getElementById(containerId).innerHTML="<p>Map not available.</p>"; }}); 
+        });
+      } else {
+        geocode(location,function(success4, lat4, lon4, label4){ if(success4){ renderMap(lat4, lon4, label4, containerId); } else { document.getElementById(containerId).innerHTML="<p>Map not available.</p>"; }}); 
+      }
+    });
+  });
+}
+
+{% for booking in bookings %}
+initMapFallback(
+  '{{ booking.id }}',
+  '{{ booking.barangay|escapejs }}',
+  '{{ booking.location|escapejs }}',
+  '{{ booking.fulladdress|escapejs }}'
+);
+{% endfor %}
+</script>
 {% endblock %}

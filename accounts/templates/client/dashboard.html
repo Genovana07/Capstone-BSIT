@@ -96,20 +96,30 @@
             </ul>
         </div>
         
-        <div class="chart-box">
-            <h2>📅 Bookings Per Month</h2>
-            <p>Monthly trends (month + year shown separately)</p>
-            <div class="month-nav">
-                <button id="prevMonth" class="nav-btn">‹ Prev</button>
-                <select id="monthSelect" aria-label="Select month"></select>
-                <button id="nextMonth" class="nav-btn">Next ›</button>
-            </div>
-            <canvas id="monthlyChart"></canvas>
-            <div class="small-meta">
-                <div>Showing: <strong id="monthlyLabel">—</strong></div>
-                <div class="growth">MoM Growth: <strong id="monthlyGrowth">—</strong></div>
-            </div>
-        </div>
+<!-- Chart HTML -->
+<div class="chart-box">
+    <h2>📅 Bookings Per Month</h2>
+    <p>Monthly trends (grouped by year)</p>
+
+    <div class="month-nav">
+        <button id="prevMonth" class="nav-btn">‹ Prev</button>
+
+        <!-- Single select grouped by year (Option 2) -->
+        <select id="monthSelect" aria-label="Select month"></select>
+
+        <button id="nextMonth" class="nav-btn">Next ›</button>
+    </div>
+
+    <canvas id="monthlyChart" style="max-height:300px;"></canvas>
+
+    <div class="small-meta">
+        <div>Showing: <strong id="monthlyLabel">—</strong></div>
+        <div class="growth">MoM Growth: <strong id="monthlyGrowth">—</strong></div>
+    </div>
+
+    <!-- Booking status legend (populated dynamically) -->
+    <ul class="legend"></ul>
+</div>
         
         <div class="chart-box">
             <h2>⭐ Customer Feedback Summary</h2>
@@ -580,292 +590,395 @@ body {
 }
     </style>
 
+<!-- Add CDN for Chart.js & plugin (as in your original) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+
+<!-- Other canvases you already use -->
+<canvas id="packageChart" style="display:none;"></canvas>
+<canvas id="statusChart" style="display:none;"></canvas>
+<canvas id="feedbackChart" style="display:none;"></canvas>
+
 <script>
-    /* -------------------- 1. Data Initialization & Parsing -------------------- */
+/* -------------------- 1. Data Initialization & Parsing -------------------- */
 
-    const packagePopularityByMonth = {{ package_popularity_by_month|default:"{}"|safe }};
-    const statusData = Array.isArray({{ status_data|default:"[]"|safe }}) ? {{ status_data|default:"[]"|safe }} : [];
-    const rawMonthly = Array.isArray({{ bookings_per_month|default:"[]"|safe }}) ? {{ bookings_per_month|default:"[]"|safe }} : [];
-    const status_data_by_month = {{ status_data_by_month|safe }};
-    const feedback_by_month = {{ feedback_by_month|safe }};
+const packagePopularityByMonth = {{ package_popularity_by_month|default:"{}"|safe }};
+const statusData = Array.isArray({{ status_data|default:"[]"|safe }}) ? {{ status_data|default:"[]"|safe }} : [];
+const rawMonthly = Array.isArray({{ bookings_per_month|default:"[]"|safe }}) ? {{ bookings_per_month|default:"[]"|safe }} : [];
+const status_data_by_month = {{ status_data_by_month|safe }};
+const feedback_by_month = {{ feedback_by_month|safe }};
 
-    function parseMonthInput(monthVal) {
-        if (!monthVal) return null;
-        try {
-            if (typeof monthVal === 'string') {
-                const isoLike = monthVal.trim();
-                if (/^\d{4}-\d{2}$/.test(isoLike)) return new Date(isoLike + '-01T00:00:00');
-                if (/^\d{4}-\d{2}-\d{2}/.test(isoLike) || isoLike.includes('T')) return new Date(isoLike);
-                const d = new Date(isoLike);
-                if (!isNaN(d)) return d;
-            } else if (monthVal instanceof Date) {
-                return monthVal;
-            } else if (typeof monthVal === 'object' && monthVal.year && monthVal.month) {
-                return new Date(monthVal.year, monthVal.month - 1, 1);
-            }
-        } catch (e) {
-            return null;
+function parseMonthInput(monthVal) {
+    if (!monthVal) return null;
+    try {
+        if (typeof monthVal === 'string') {
+            const isoLike = monthVal.trim();
+            // yyyy-mm
+            if (/^\d{4}-\d{2}$/.test(isoLike)) return new Date(isoLike + '-01T00:00:00');
+            // yyyy-mm-dd or ISO
+            if (/^\d{4}-\d{2}-\d{2}/.test(isoLike) || isoLike.includes('T')) return new Date(isoLike);
+            const d = new Date(isoLike);
+            if (!isNaN(d)) return d;
+        } else if (monthVal instanceof Date) {
+            return monthVal;
+        } else if (typeof monthVal === 'object' && (monthVal.year || monthVal.month)) {
+            // allow { year: 2025, month: 7 } or { year: 2025, month: "07" }
+            const y = parseInt(monthVal.year, 10);
+            const m = parseInt(monthVal.month, 10) - 1;
+            if (!isNaN(y) && !isNaN(m)) return new Date(y, m, 1);
+        } else if (Array.isArray(monthVal) && monthVal.length >= 1) {
+            // accept [ '2025-07', count ] or [ '2025-07-01', count ]
+            const d = parseMonthInput(monthVal[0]);
+            if (d) return d;
         }
+    } catch (e) {
         return null;
     }
+    return null;
+}
 
-    const monthlyData = rawMonthly.map(item => {
-        const m = (item && (item.month || item[0] || item.date)) || item;
-        const count = (item && (item.count || item[1])) || 0;
-        const date = parseMonthInput(m);
-        const label = date && !isNaN(date) ? (date.toLocaleString('default', { month: 'short' }) + ' ' + date.getFullYear()) : (item && (item.label || String(m)));
-        const iso = (date && !isNaN(date)) ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}` : (item && (item.month || item.label || ''));
-        return { label, iso, count };
-    }).sort((a, b) => (parseMonthInput(a.iso) || new Date(0)) - (parseMonthInput(b.iso) || new Date(0)));
-
-    function getMonthKey(iso) {
-        if (!iso) return null;
-        const d = parseMonthInput(iso);
-        if (!d || isNaN(d)) return null;
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        return `${y}-${m}`;
+/* Normalize rawMonthly into consistent objects and sort chronologically */
+const monthlyData = rawMonthly.map((item, idx) => {
+    // item may be: { month: '2025-07', count: 3 } OR ['2025-07', 3] OR { label: 'Jul 2025', count: 3 }
+    let m = null, count = 0, label = null;
+    if (Array.isArray(item)) {
+        m = item[0];
+        count = item[1] || 0;
+    } else if (item && typeof item === 'object') {
+        m = item.month || item.date || item.label || item[0] || null;
+        count = item.count || item[1] || 0;
+        label = item.label || null;
+    } else {
+        m = item;
     }
 
-    /* -------------------- 2. Chart: Popular Packages (Bar) -------------------- */
+    const date = parseMonthInput(m);
+    const iso = (date && !isNaN(date)) ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2,'0')}` : (typeof m === 'string' ? m : null);
+    const computedLabel = date && !isNaN(date) ? (date.toLocaleString('default', { month: 'short' }) + ' ' + date.getFullYear()) : (label || String(m || idx));
 
-    const packageCtx = document.getElementById('packageChart').getContext('2d');
-    
-    function updatePackageChart(monthKey) {
-        const data = packagePopularityByMonth[monthKey] || [];
-        const labels = data.map(p => p.package__title || 'Unknown');
-        const counts = data.map(p => p.count || 0);
-        packageChart.data.labels = labels.length ? labels : ['No data'];
-        packageChart.data.datasets[0].data = counts.length ? counts : [0];
-        packageChart.update();
+    return { original: item, date: date, iso: iso, label: computedLabel, count: Number(count || 0) };
+}).filter(x => x.iso).sort((a,b) => {
+    // sort by iso (yyyy-mm)
+    return a.iso.localeCompare(b.iso);
+});
+
+/* Convenience: map iso -> index and group by year */
+const isoToIndex = {};
+monthlyData.forEach((m, i) => isoToIndex[m.iso] = i);
+
+const yearGroups = {};
+monthlyData.forEach((m, i) => {
+    const year = m.iso.split('-')[0];
+    if (!yearGroups[year]) yearGroups[year] = [];
+    // store the global index so we can navigate across years easily
+    yearGroups[year].push({ ...m, globalIndex: i });
+});
+
+/* Helper: turn iso or item into normalized key 'YYYY-MM' */
+function getMonthKey(iso) {
+    if (!iso) return null;
+    // ensure format yyyy-mm
+    if (/^\d{4}-\d{2}$/.test(iso)) return iso;
+    const d = parseMonthInput(iso);
+    if (!d || isNaN(d)) return null;
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2,'0');
+    return `${y}-${m}`;
+}
+
+/* -------------------- Charts Setup -------------------- */
+
+/* package chart (bar) */
+const packageCtx = document.getElementById('packageChart').getContext('2d');
+const packageChart = new Chart(packageCtx, {
+    type: 'bar',
+    data: {
+        labels: ['No data'],
+        datasets: [{
+            label: 'Bookings',
+            data: [0],
+            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#a855f7'],
+            borderRadius: 8,
+            borderSkipped: false
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false }, datalabels: { display: false } },
+        scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1, color: "#000" } },
+            x: { ticks: { color: "#000" } }
+        }
     }
-    
-    const initialMonthKey = monthlyData.length ? getMonthKey(monthlyData[monthlyData.length - 1].iso) : null;
-    const initialData = packagePopularityByMonth[initialMonthKey] || [];
-    
-    const packageChart = new Chart(packageCtx, {
-        type: 'bar',
-        data: {
-            labels: initialData.length ? initialData.map(p => p.package__title) : ['No data'],
-            datasets: [{
-                label: 'Bookings',
-                data: initialData.length ? initialData.map(p => p.count) : [0],
-                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#a855f7'],
-                borderRadius: 8,
-                borderSkipped: false
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false },
-                datalabels: { display: false }
-            },
-            scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1, color: "#000" } },
-                x: { ticks: { color: "#000" } }
-            }
+});
+
+/* status chart (doughnut) */
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+const statusChart = new Chart(statusCtx, {
+    type: 'doughnut',
+    data: { labels: ['No data'], datasets: [{ data: [1], backgroundColor: ['#10b981','#3b82f6','#f59e0b','#ef4444','#a855f7'], borderWidth: 2 }] },
+    options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 15 } } } }
+});
+
+/* monthly chart (line) - placeholder, will be updated on selection */
+const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+const monthlyChart = new Chart(monthlyCtx, {
+    type: 'line',
+    data: {
+        labels: ['No data'],
+        datasets: [{
+            label: 'Bookings',
+            data: [0],
+            fill: true,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37,99,235,0.15)',
+            tension: 0.4,
+            pointRadius: 5,
+            pointBackgroundColor: '#2563eb'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } },
+            x: { ticks: { font: { weight: '500' } } }
         }
-    });
+    }
+});
 
-    /* -------------------- 3. Chart: Booking Status (Doughnut) -------------------- */
+/* feedback (radar) - initial using overall averages */
+const feedbackCtx = document.getElementById('feedbackChart').getContext('2d');
+const avgQuality = parseFloat("{{ avg_quality|default:'0' }}");
+const avgTimeliness = parseFloat("{{ avg_timeliness|default:'0' }}");
+const avgProfessionalism = parseFloat("{{ avg_professionalism|default:'0' }}");
+const avgValue = parseFloat("{{ avg_value_for_money|default:'0' }}");
 
-    const statusCtx = document.getElementById('statusChart').getContext('2d');
-    const statusLabels = statusData.map(s => (s && (s.status || s[0])) || 'No data');
-    const statusCounts = statusData.map(s => (s && (s.count || 0)) || 1);
-    const statusBackgrounds = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#a855f7'];
-
-    const statusChart = new Chart(statusCtx, {
-        type: 'doughnut',
-        data: {
-            labels: statusLabels.length ? statusLabels : ['No data'],
-            datasets: [{
-                data: statusCounts.length ? statusCounts : [1],
-                backgroundColor: statusBackgrounds,
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            cutout: '70%',
-            plugins: {
-                legend: { position: 'bottom', labels: { boxWidth: 15 } }
+const feedbackChart = new Chart(feedbackCtx, {
+    type: 'radar',
+    data: {
+        labels: ['Quality', 'Timeliness', 'Professionalism', 'Value for Money'],
+        datasets: [{
+            label: 'Average Rating',
+            data: [avgQuality, avgTimeliness, avgProfessionalism, avgValue],
+            borderWidth: 2,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37,99,235,0.20)',
+            pointBackgroundColor: '#2563eb',
+            pointRadius: 4,
+            borderJoinStyle: 'round'
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            r: {
+                beginAtZero: true,
+                min: 0,
+                max: 5,
+                ticks: { stepSize: 1, color: '#475569' },
+                grid: { color: 'rgba(0,0,0,0.1)' },
+                angleLines: { color: 'rgba(0,0,0,0.15)' },
+                pointLabels: { color: '#1e293b', font: { size: 12, weight: '600' } }
             }
-        }
-    });
-
-    /* -------------------- 4. Chart: Monthly Trend (Line) -------------------- */
-
-    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-    const monthlyLabelsAll = monthlyData.map(m => m.label);
-    const monthlyCountsAll = monthlyData.map(m => m.count);
-
-    const monthlyChart = new Chart(monthlyCtx, {
-        type: 'line',
-        data: {
-            labels: monthlyLabelsAll.length ? monthlyLabelsAll : ['No data'],
-            datasets: [{
-                label: 'Bookings',
-                data: monthlyCountsAll.length ? monthlyCountsAll : [0],
-                fill: true,
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37,99,235,0.15)',
-                tension: 0.4,
-                pointRadius: 5,
-                pointBackgroundColor: '#2563eb'
-            }]
         },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1 } },
-                x: { ticks: { font: { weight: '500' } } }
-            }
-        }
-    });
+        plugins: { legend: { display: false } }
+    }
+});
 
-    /* -------------------- 5. Navigation and Update Logic -------------------- */
+/* -------------------- UI Elements & State -------------------- */
+const monthSelect = document.getElementById('monthSelect');
+const prevBtn = document.getElementById('prevMonth');
+const nextBtn = document.getElementById('nextMonth');
+const monthlyLabel = document.getElementById('monthlyLabel');
+const monthlyGrowth = document.getElementById('monthlyGrowth');
+const legendList = document.querySelector(".chart-box ul.legend");
 
-    const monthSelect = document.getElementById('monthSelect');
-    const prevBtn = document.getElementById('prevMonth');
-    const nextBtn = document.getElementById('nextMonth');
-    const monthlyLabel = document.getElementById('monthlyLabel');
-    const monthlyGrowth = document.getElementById('monthlyGrowth');
-    let currentMonthIndex = monthlyData.length ? monthlyData.length - 1 : -1;
+let globalIndex = monthlyData.length ? monthlyData.length - 1 : -1; // points at monthlyData global index
 
-    function populateMonthSelect() {
-        if (!monthSelect) return;
-        monthSelect.innerHTML = '';
-        monthlyData.forEach((m, idx) => {
+/* -------------------- Populate grouped dropdown (Option 2) -------------------- */
+function populateMonthSelectGrouped() {
+    if (!monthSelect) return;
+    monthSelect.innerHTML = '';
+
+    // years descending (latest first)
+    const years = Object.keys(yearGroups).sort((a,b) => b - a);
+
+    years.forEach(year => {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = year;
+
+        // months in chronological order (assuming yearGroups[year] already is chronological)
+        yearGroups[year].forEach(entry => {
             const opt = document.createElement('option');
-            opt.value = idx;
-            opt.textContent = m.label || `#${idx + 1}`;
-            if (idx === currentMonthIndex) opt.selected = true;
-            monthSelect.appendChild(opt);
+            opt.value = entry.globalIndex; // store global index to navigate easily
+            opt.textContent = entry.label; // e.g. "Jul 2025"
+            // select current global index if matching
+            if (entry.globalIndex === globalIndex) opt.selected = true;
+            optgroup.appendChild(opt);
         });
+
+        monthSelect.appendChild(optgroup);
+    });
+}
+
+/* -------------------- Update helpers for other charts & legend -------------------- */
+
+function updatePackageChart(monthKey) {
+    const data = packagePopularityByMonth[monthKey] || [];
+    const labels = data.map(p => p.package__title || 'Unknown');
+    const counts = data.map(p => p.count || 0);
+    packageChart.data.labels = labels.length ? labels : ['No data'];
+    packageChart.data.datasets[0].data = counts.length ? counts : [0];
+    packageChart.update();
+}
+
+function updateStatusChart(monthKey) {
+    const newStatus = status_data_by_month[monthKey] || [];
+    statusChart.data.labels = newStatus.length ? newStatus.map(s => s.status) : ['No data'];
+    statusChart.data.datasets[0].data = newStatus.length ? newStatus.map(s => s.count) : [1];
+    statusChart.update();
+
+    // update legend list under chart
+    updateBookingStatusLegend(monthKey, newStatus);
+}
+
+function updateBookingStatusLegend(monthKey, newStatus) {
+    if (!legendList) return;
+    legendList.innerHTML = '';
+    const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#a855f7'];
+    if (!newStatus || !newStatus.length) {
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="dot" style="background:${colors[0]}"></span> No data`;
+        legendList.appendChild(li);
+        return;
     }
+    newStatus.forEach((item, index) => {
+        const color = colors[index] || '#a855f7';
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="dot" style="display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; vertical-align:middle; background:${color}"></span> ${item.status} - ${item.count}`;
+        legendList.appendChild(li);
+    });
+}
 
-    // ✅ Update Booking Status Legend (Completed/Rejected) under chart
-    function updateBookingStatusLegend(monthKey) {
-        const legendList = document.querySelector(".chart-box ul.legend");
-        if (!legendList) return;
+function updateFeedbackChart(monthKey) {
+    const fb = feedback_by_month[monthKey] || {};
+    feedbackChart.data.datasets[0].data = [
+        fb.avg_quality || 0,
+        fb.avg_timeliness || 0,
+        fb.avg_professionalism || 0,
+        fb.avg_value_for_money || 0
+    ];
+    feedbackChart.update();
+}
 
-        const newStatus = status_data_by_month[monthKey] || [];
-        legendList.innerHTML = '';
+/* -------------------- Core: Render Monthly Chart for the SELECTED YEAR and highlight selected month -------------------- */
 
-        newStatus.forEach((item, index) => {
-            const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#a855f7'];
-            const color = colors[index] || '#a855f7';
-            const li = document.createElement('li');
-            li.innerHTML = `<span class="dot" style="background:${color}"></span> ${item.status} - ${item.count}`;
-            legendList.appendChild(li);
-        });
-    }
-
-    function gotoMonth(idx) {
-        if (monthlyData.length === 0) return;
-        if (idx < 0) idx = 0;
-        if (idx > monthlyData.length - 1) idx = monthlyData.length - 1;
-
-        currentMonthIndex = idx;
-        if (monthSelect) monthSelect.value = idx;
-
-        monthlyLabel.innerText = monthlyData[idx].label || '—';
-        const curr = monthlyData[idx].count || 0;
-        const prev = monthlyData[idx - 1] ? (monthlyData[idx - 1].count || 0) : null;
-        const growth = prev === null ? '—' : (prev === 0 ? (curr === 0 ? '0%' : '∞') : (((curr - prev) / prev) * 100).toFixed(1) + '%');
-        monthlyGrowth.innerText = growth;
-
-        monthlyChart.data.datasets[0].pointBackgroundColor = monthlyData.map((_, i) => i === idx ? '#2563eb' : '#93c5fd');
+function renderMonthlyChartForYearAndHighlight(selectedGlobalIndex) {
+    if (selectedGlobalIndex === -1 || monthlyData.length === 0) {
+        monthlyChart.data.labels = ['No data'];
+        monthlyChart.data.datasets[0].data = [0];
         monthlyChart.update();
-
-        // Determine Month Key for filtered data
-        const monthKey = getMonthKey(monthlyData[idx].iso);
-
-        // Update other charts
-        updatePackageChart(monthKey);
-
-        // ✅ Update Booking Status Chart
-        const newStatus = status_data_by_month[monthKey] || [];
-        statusChart.data.labels = newStatus.map(s => s.status);
-        statusChart.data.datasets[0].data = newStatus.map(s => s.count);
-        statusChart.update();
-
-        // ✅ Update Booking Status Legend (Completed/Rejected)
-        updateBookingStatusLegend(monthKey);
-
-        // Update Feedback Summary Chart
-        const fb = feedback_by_month[monthKey] || {};
-        feedbackChart.data.datasets[0].data = [
-            fb.avg_quality || 0,
-            fb.avg_timeliness || 0,
-            fb.avg_professionalism || 0,
-            fb.avg_value_for_money || 0
-        ];
-        feedbackChart.update();
+        monthlyLabel.innerText = '—';
+        monthlyGrowth.innerText = '—';
+        return;
     }
 
-    // Event Listeners
-    if (prevBtn) prevBtn.addEventListener('click', () => gotoMonth(currentMonthIndex - 1));
-    if (nextBtn) nextBtn.addEventListener('click', () => gotoMonth(currentMonthIndex + 1));
-    if (monthSelect) monthSelect.addEventListener('change', e => gotoMonth(parseInt(e.target.value, 10)));
+    // get the selected entry and its year
+    const selected = monthlyData[selectedGlobalIndex];
+    const selectedYear = selected.iso.split('-')[0];
 
-    /* -------------------- 6. Chart: Customer Feedback (Radar) -------------------- */
+    // months to display on x-axis = all months for selectedYear
+    const monthsForYear = yearGroups[selectedYear] || [];
 
-    const feedbackCtx = document.getElementById('feedbackChart').getContext('2d');
-    const avgQuality = parseFloat("{{ avg_quality|default:'0' }}");
-    const avgTimeliness = parseFloat("{{ avg_timeliness|default:'0' }}");
-    const avgProfessionalism = parseFloat("{{ avg_professionalism|default:'0' }}");
-    const avgValue = parseFloat("{{ avg_value_for_money|default:'0' }}");
+    // x labels and data (counts)
+    const labels = monthsForYear.map(m => m.label);
+    const data = monthsForYear.map(m => m.count);
 
-    const feedbackChart = new Chart(feedbackCtx, {
-        type: 'radar',
-        data: {
-            labels: ['Quality', 'Timeliness', 'Professionalism', 'Value for Money'],
-            datasets: [{
-                label: 'Average Rating',
-                data: [avgQuality, avgTimeliness, avgProfessionalism, avgValue],
-                borderWidth: 2,
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37,99,235,0.20)',
-                pointBackgroundColor: '#2563eb',
-                pointRadius: 4,
-                borderJoinStyle: 'round'
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                r: {
-                    beginAtZero: true,
-                    min: 0,
-                    max: 5,
-                    ticks: { stepSize: 1, color: '#475569' },
-                    grid: { color: 'rgba(0,0,0,0.1)' },
-                    angleLines: { color: 'rgba(0,0,0,0.15)' },
-                    pointLabels: { color: '#1e293b', font: { size: 12, weight: '600' } }
-                }
-            },
-            plugins: {
-                legend: { display: false }
-            }
-        }
+    monthlyChart.data.labels = labels;
+    monthlyChart.data.datasets[0].data = data;
+
+    // determine index within the year's months to highlight point
+    const indexWithinYear = monthsForYear.findIndex(m => m.globalIndex === selectedGlobalIndex);
+
+    // color points: highlight selected month
+    const defaultColor = '#93c5fd';
+    const highlightColor = '#2563eb';
+    monthlyChart.data.datasets[0].pointBackgroundColor = data.map((_, i) => i === indexWithinYear ? highlightColor : defaultColor);
+
+    monthlyChart.update();
+
+    // update small-meta: label and growth (compare to previous month globally if exists)
+    monthlyLabel.innerText = `${selected.label}`; // e.g. "Jul 2025"
+    const curr = selected.count || 0;
+    const prevGlobal = monthlyData[selectedGlobalIndex - 1] ? monthlyData[selectedGlobalIndex - 1].count : null;
+    let growth = '—';
+    if (prevGlobal === null) growth = '—';
+    else if (prevGlobal === 0) growth = (curr === 0 ? '0%' : '∞');
+    else growth = (((curr - prevGlobal) / prevGlobal) * 100).toFixed(1) + '%';
+    monthlyGrowth.innerText = growth;
+
+    // Update other charts using the iso key for this selected month
+    const monthKey = getMonthKey(selected.iso);
+    updatePackageChart(monthKey);
+    updateStatusChart(monthKey);
+    updateFeedbackChart(monthKey);
+}
+
+/* -------------------- Navigation & Select handlers -------------------- */
+
+function gotoGlobalIndex(idx) {
+    if (monthlyData.length === 0) return;
+    if (idx < 0) idx = 0;
+    if (idx > monthlyData.length - 1) idx = monthlyData.length - 1;
+    globalIndex = idx;
+
+    // update select value (single dropdown has option values = globalIndex)
+    if (monthSelect) {
+        monthSelect.value = String(globalIndex);
+        // if the currently selected option is not visible (because browser may not auto-open optgroup),
+        // ensure it's selected programmatically (value set above handles it).
+    }
+
+    // Re-render chart for the selected month (shows full year of selected)
+    renderMonthlyChartForYearAndHighlight(globalIndex);
+}
+
+if (prevBtn) prevBtn.addEventListener('click', () => gotoGlobalIndex(globalIndex - 1));
+if (nextBtn) nextBtn.addEventListener('click', () => gotoGlobalIndex(globalIndex + 1));
+if (monthSelect) monthSelect.addEventListener('change', e => {
+    const val = parseInt(e.target.value, 10);
+    if (!isNaN(val)) gotoGlobalIndex(val);
+});
+
+/* -------------------- Initialize UI on load -------------------- */
+
+function initialLoad() {
+    // default to last available month (most recent)
+    if (monthlyData.length === 0) {
+        populateMonthSelectGrouped();
+        renderMonthlyChartForYearAndHighlight(-1);
+        return;
+    }
+
+    // Ensure each year group is sorted chronologically (just in case)
+    Object.keys(yearGroups).forEach(y => {
+        yearGroups[y].sort((a,b) => a.iso.localeCompare(b.iso));
     });
 
-    // Initial Load
-    populateMonthSelect();
-    if (currentMonthIndex === -1 && monthlyData.length) currentMonthIndex = monthlyData.length - 1;
-    gotoMonth(currentMonthIndex);
-</script>
+    // populate select grouped by year
+    populateMonthSelectGrouped();
 
+    // ensure globalIndex is within bounds
+    if (globalIndex < 0 || globalIndex > monthlyData.length - 1) globalIndex = monthlyData.length - 1;
 
+    // show chart + other charts for initial selection
+    gotoGlobalIndex(globalIndex);
+}
 
-    
+/* Run initial load */
+initialLoad();
+
 </script>
 
 {% endblock %}

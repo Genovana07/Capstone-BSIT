@@ -1634,8 +1634,8 @@ def package_add_view(request):
 def package_edit_view(request, package_id):
     package = get_object_or_404(ServicePackage, id=package_id)
     # ✅ Only get equipment linked to this package
-    equipments = package.equipment.all()
-
+    equipments = Equipment.objects.all()
+    
     if request.method == "POST":
         form = ServicePackageForm(request.POST, request.FILES, instance=package)
         qty_form = EquipmentQuantityForm(request.POST, equipments=equipments)

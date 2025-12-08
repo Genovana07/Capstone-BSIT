@@ -161,7 +161,7 @@ def register_view(request):
     })
 
 
-# Temporary storage for OTPs (use database or cache for production)
+# Temporary storage for OTPs (use DB or cache in production)
 otp_storage = {}
 
 def login_view(request):
@@ -172,6 +172,7 @@ def login_view(request):
     if request.method == "POST":
         action = request.POST.get("action")
 
+        # ---------- STEP 1: SEND OTP ----------
         if action == "send_otp":
             try:
                 user_obj = User.objects.get(email=email)
@@ -180,44 +181,54 @@ def login_view(request):
                 user = None
 
             if user:
-                if user.is_superuser or user.is_staff:
-                    # Admin/staff: login directly
-                    login(request, user)
-                    messages.success(request, f"✅ Welcome back, {user.username}!")
-                    return redirect("dashboard")
-                else:
-                    # Normal user: send OTP
-                    otp = str(random.randint(100000, 999999))
-                    otp_storage[email] = otp
-                    send_mail(
-                        subject="Your Login OTP",
-                        message=f"Your OTP is: {otp}",
-                        from_email=settings.EMAIL_HOST_USER,
-                        recipient_list=[email],
-                        fail_silently=False
-                    )
-                    messages.success(request, f"✅ OTP sent to {email}. Please enter it below.")
-                    return render(request, "accounts/login.html", {
-                        "step": "otp",
-                        "email": email,
-                        "password": password,
-                        "hide_footer": True
-                    })
+                # Generate OTP for ALL users (admin, staff, normal)
+                otp = str(random.randint(100000, 999999))
+                otp_storage[email] = otp
+
+                send_mail(
+                    subject="Your Login OTP",
+                    message=f"Your OTP is: {otp}",
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[email],
+                    fail_silently=False
+                )
+
+                messages.success(request, f"✅ OTP sent to {email}. Please enter it below.")
+                return render(request, "accounts/login.html", {
+                    "step": "otp",
+                    "email": email,
+                    "password": password,
+                    "hide_footer": True
+                })
+
             else:
                 messages.error(request, "❌ Invalid email or password.")
 
+        # ---------- STEP 2: VERIFY OTP ----------
         elif action == "verify_otp":
             otp_input = request.POST.get("otp")
+
             if otp_input == otp_storage.get(email):
                 # OTP correct
                 try:
                     user_obj = User.objects.get(email=email)
                     user = authenticate(request, username=user_obj.username, password=password)
+
                     if user:
                         login(request, user)
+
+                        # Remove OTP after success
                         otp_storage.pop(email, None)
+
                         messages.success(request, f"✅ Login successful. Welcome, {user.username}!")
-                        return redirect("home")  # normal user dashboard
+
+                        # Redirect admin/staff to dashboard
+                        if user.is_superuser or user.is_staff:
+                            return redirect("dashboard")
+
+                        # Redirect normal user to home
+                        return redirect("home")
+
                     else:
                         messages.error(request, "❌ Authentication failed.")
                 except User.DoesNotExist:
@@ -231,7 +242,7 @@ def login_view(request):
                     "hide_footer": True
                 })
 
-    # Default: show initial login form
+    # ---------- DEFAULT: SHOW INITIAL FORM ----------
     return render(request, "accounts/login.html", {
         "step": "initial",
         "email": email,
@@ -410,7 +421,6 @@ def create_booking(request):
         event_type = request.POST.get("event_type")
         location = request.POST.get("location")
         fulladdress = request.POST.get("fulladdress")
-        audience_size = request.POST.get("audience_size")
         barangay = request.POST.get("barangay")
 
         try:
@@ -445,7 +455,6 @@ def create_booking(request):
             location=location,
             fulladdress=fulladdress,
             barangay=barangay,
-            audience_size=audience_size,
             price=package.price,
             status='Processing'
         )

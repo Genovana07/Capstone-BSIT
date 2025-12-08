@@ -196,7 +196,6 @@ class Booking(models.Model):
     event_type = models.CharField(max_length=100)
     location = models.CharField(max_length=255)
     fulladdress = models.CharField(max_length=255, blank=True, null=True)
-    audience_size = models.IntegerField()
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Processing')
     price = models.CharField(max_length=20)
     created_at = models.DateTimeField(default=timezone.now)

@@ -4,22 +4,16 @@
 
 {% block content %}
 <div class="inventory-container">
-  <!-- Header -->
   <div class="inventory-header">
     <div class="header-top">
       <h1>Equipment List</h1>
-
-      <!-- Search form -->
       <form method="get" class="search-box" action="">
         {% if show %}<input type="hidden" name="show" value="{{ show }}">{% endif %}
         <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search equipment">
-        <button type="submit" aria-label="Search">
-          <i class="fa fa-search"></i>
-        </button>
+        <button type="submit" aria-label="Search"><i class="fa fa-search"></i></button>
       </form>
     </div>
 
-    <!-- Filter Tabs -->
     <div class="filter-tabs">
       <a href="?show=all" class="tab {% if show == 'all' %}active{% endif %}">All <span class="badge">{{ counts.all }}</span></a>
       <a href="?show=available" class="tab {% if show == 'available' %}active{% endif %}">Available <span class="badge">{{ counts.available }}</span></a>
@@ -29,7 +23,6 @@
     </div>
   </div>
 
-<!-- Table -->
   <div class="table-wrap">
     <table class="inventory-table">
       <thead>
@@ -40,6 +33,7 @@
           <th>Under Maint</th>
           <th>Under Repair</th>
           <th style="min-width: 250px">Actions</th>
+          <th>Logs</th>
         </tr>
       </thead>
       <tbody>
@@ -60,17 +54,14 @@
               {% csrf_token %}
               <div class="actions-row">
                 <input type="number" name="qty" min="1" value="1" class="qty-input">
-
                 <div class="btn-group">
                   <button type="submit" name="action" value="add_stock" class="btn success">+ Stock</button>
                   <button type="submit" name="action" value="subtract_stock" class="btn danger">- Stock</button>
                 </div>
-
                 <div class="btn-group">
                   <button type="submit" name="action" value="to_maintenance" class="btn warn">→ Maint</button>
                   <button type="submit" name="action" value="back_from_maintenance" class="btn soft">↩ Maint</button>
                 </div>
-
                 <div class="btn-group">
                   <button type="submit" name="action" value="to_repair" class="btn warn">→ Repair</button>
                   <button type="submit" name="action" value="back_from_repair" class="btn soft">↩ Repair</button>
@@ -78,9 +69,48 @@
               </div>
             </form>
           </td>
+          <td>
+            <button onclick="toggleLogs('logs-{{ equipment.id }}')" class="btn info">History</button>
+          </td>
+        </tr>
+
+        <tr id="logs-{{ equipment.id }}" style="display: none; background: #f9f9f9;">
+          <td colspan="7">
+            <div style="padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <strong>History for {{ equipment.name }}</strong>
+                
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <label style="font-size: 0.8rem; color: #666;">Filter by Date:</label>
+                  <input type="date" 
+                         id="date-filter-{{ equipment.id }}"
+                         onchange="filterLogsByDate(this.value, 'list-{{ equipment.id }}')"
+                         style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                  
+                  <button onclick="resetDateFilter('date-filter-{{ equipment.id }}', 'list-{{ equipment.id }}')" 
+                          style="padding: 5px 10px; font-size: 0.75rem; cursor: pointer;">Reset</button>
+                </div>
+              </div>
+              
+              <ul id="list-{{ equipment.id }}" style="list-style: none; padding: 0; font-size: 0.85rem; max-height: 250px; overflow-y: auto;">
+                {% for log in equipment.logs.all|dictsortreversed:"timestamp" %}
+                <li class="log-item" 
+                    data-date="{{ log.timestamp|date:'Y-m-d' }}" 
+                    style="padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                   <span>
+                     <span style="color: #666;">[{{ log.timestamp|date:"M d, Y h:i A" }}]</span>
+                     <strong>{{ log.get_action_display }}</strong>: {{ log.quantity }} units
+                   </span>
+                </li>
+                {% empty %}
+                <li>No history recorded yet.</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </td>
         </tr>
         {% empty %}
-        <tr><td colspan="6">No equipment available.</td></tr>
+        <tr><td colspan="7">No equipment available.</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -89,14 +119,47 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+// Toggle History Row
+function toggleLogs(id) {
+  var x = document.getElementById(id);
+  x.style.display = (x.style.display === "none") ? "table-row" : "none";
+}
+
+// Function: Filter Logs by Date Picker
+function filterLogsByDate(selectedDate, listId) {
+  if (!selectedDate) return;
+
+  var ul = document.getElementById(listId);
+  var li = ul.getElementsByClassName("log-item");
+
+  for (var i = 0; i < li.length; i++) {
+    var logDate = li[i].getAttribute("data-date"); // Format: YYYY-MM-DD
+    
+    // I-compare ang date mula sa log at date mula sa picker
+    if (logDate === selectedDate) {
+      li[i].style.display = "flex";
+    } else {
+      li[i].style.display = "none";
+    }
+  }
+}
+
+// Function: Reset Filter para ipakita ulit lahat
+function resetDateFilter(inputId, listId) {
+  document.getElementById(inputId).value = "";
+  var ul = document.getElementById(listId);
+  var li = ul.getElementsByClassName("log-item");
+  for (var i = 0; i < li.length; i++) {
+    li[i].style.display = "flex";
+  }
+}
+
+// SweetAlert Form Confirmation (Original)
 document.querySelectorAll('.inventory-form').forEach(form => {
   form.addEventListener('submit', function(e){
     e.preventDefault();
-
-    // ✅ FIX: get the clicked button even on older browsers
     const actionBtn = e.submitter || document.activeElement;
     if (!actionBtn) return;
-
     let actionText = actionBtn.textContent.trim();
 
     Swal.fire({
@@ -109,20 +172,17 @@ document.querySelectorAll('.inventory-form').forEach(form => {
       confirmButtonText: 'Yes, proceed'
     }).then((result) => {
       if(result.isConfirmed){
-        // ✅ make sure the button value is sent
         const hidden = document.createElement('input');
         hidden.type = 'hidden';
         hidden.name = actionBtn.name;
         hidden.value = actionBtn.value;
         form.appendChild(hidden);
-
         form.submit();
       }
     });
   });
 });
 </script>
-
 
 <style>
 /* Design tokens */

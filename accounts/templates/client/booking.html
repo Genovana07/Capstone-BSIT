@@ -3,6 +3,8 @@
 {% block title %}Bookings{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
 <header class="header">
     <h1>Booking Details</h1>
     <div class="filters">
@@ -36,7 +38,6 @@
     </div>
 </header>
 
-<!-- Booking Table -->
 <table class="booking-table">
     <thead>
         <tr>
@@ -45,165 +46,254 @@
             <th>Event Type</th>
             <th>Event Date</th>
             <th>Location</th>
-            <th>Status</th>
-            <th>Price</th>
+            <th>Map</th> <th>Status</th> <th>Checked By</th>
+            <th>Equipment Status</th> <th>Price</th>
             <th>Action</th>
         </tr>
     </thead>
-<tbody>
-{% for booking in bookings %}
-<tr>
-    <td>{{ booking.package.title }}</td>
-    <td>{{ booking.full_name }}</td>
-    <td>{{ booking.event_type }}</td>
-    <td>{{ booking.event_date }}</td>
-    <td>{{ booking.location }}</td>
-    <td>
-        <span class="badge 
-            {% if booking.status == 'Processing' %}processing
-            {% elif booking.status == 'Accepted' %}accepted
-            {% elif booking.status == 'Rejected' %}rejected
-            {% elif booking.status == 'Cancelled' %}cancelled
-            {% elif booking.status == 'Completed' %}completed
-            {% else %}not-processed{% endif %}">
-            {{ booking.status }}
-        </span>
-    </td>
-    <td>{{ booking.price }}</td>
-    <td class="actions">
-        <!-- View Button -->
-        <a href="javascript:void(0);" class="view" onclick="openModal({{ booking.id }})">
-            <i class="fa fa-eye"></i> View
-        </a>
+    <tbody>
+    {% for booking in bookings %}
+    <tr>
+        <td>{{ booking.package.title }}</td>
+        <td>{{ booking.full_name }}</td>
+        <td>{{ booking.event_type }}</td>
+        <td>{{ booking.event_date }}</td>
+        <td>{{ booking.location }}</td>
+        
+        <td>
+            <div id="map-{{ booking.id }}" style="width: 100px; height: 60px; border-radius: 5px; cursor: pointer; border: 1px solid #ccc;">
+                <p style="font-size: 9px; text-align: center; padding-top: 20px;">Loading...</p>
+            </div>
+        </td>
 
-        <!-- Accept / Reject Buttons -->
-        {% if booking.status == 'Processing' %}
-            <a href="javascript:void(0);" class="accept" onclick="confirmAction('{% url 'accept_booking' booking.id %}', 'accept')">
-                <i class="fa fa-check"></i> Accept
+        <td>
+            <span class="badge 
+                {% if booking.status == 'Processing' %}processing
+                {% elif booking.status == 'Accepted' %}accepted
+                {% elif booking.status == 'Rejected' %}rejected
+                {% elif booking.status == 'Cancelled' %}cancelled
+                {% elif booking.status == 'Completed' %}completed
+                {% else %}not-processed{% endif %}">
+                {{ booking.status }}
+            </span>
+        </td>
+
+        <td>{{ booking.checker_name }}</td>
+
+        <td style="font-weight: bold; font-size: 0.85em;">
+            {{ booking.equipment_status }}
+        </td>
+
+        <td>{{ booking.price }}</td>
+
+        <td class="actions">
+            <a href="javascript:void(0);" class="view" onclick="openModal({{ booking.id }})">
+                <i class="fa fa-eye"></i> View
             </a>
-            <a href="javascript:void(0);" class="reject" onclick="rejectBooking('{% url 'reject_booking' booking.id %}')">
-                <i class="fa fa-times"></i> Reject
-            </a>
-        {% elif booking.status == 'Accepted' %}
-            <!-- Complete Button logic -->
-            {% if booking.checklist.is_confirmed %}
-                <a href="javascript:void(0);" class="complete" onclick="confirmAction('{% url 'complete_booking' booking.id %}', 'complete')">
-                    <i class="fa fa-check-circle"></i> Complete
+
+            {% if booking.status == 'Processing' %}
+                <a href="javascript:void(0);" class="accept" onclick="confirmAction('{% url 'accept_booking' booking.id %}', 'accept')">
+                    <i class="fa fa-check"></i> Accept
                 </a>
-            {% else %}
-                <button class="btn btn-secondary" disabled>
-                    <i class="fa fa-check-circle"></i> Complete (Pending Checklist)
-                </button>
+<a href="javascript:void(0);" class="reject" onclick="rejectBooking('{% url 'reject_booking' booking.id %}')">
+    <i class="fa fa-times"></i> Reject
+</a>
+            {% elif booking.status == 'Accepted' %}
+                {% if booking.is_ready_for_complete %}
+                    <a href="javascript:void(0);" class="complete" onclick="confirmAction('{% url 'complete_booking' booking.id %}', 'complete')" style="background-color: #28a745; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none;">
+                        <i class="fa fa-check-circle"></i> Complete
+                    </a>
+                {% else %}
+                    <button class="btn btn-secondary" disabled title="Check Before & After Checklist first" style="cursor: not-allowed; opacity: 0.6;">
+                        <i class="fa fa-lock"></i> Pending Equipment
+                    </button>
+                {% endif %}
             {% endif %}
-        {% endif %}
-    </td>
-</tr>
+        </td>
+    </tr>
 
-<!-- Modal for View -->
-<div id="viewModal{{ booking.id }}" class="modal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Booking Details for {{ booking.package.title }}</h5>
-                <button type="button" class="btn-close" onclick="closeModal({{ booking.id }})">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p><strong>Full Name:</strong> {{ booking.full_name }}</p>
-                <p><strong>Email:</strong> {{ booking.email }}</p>
-                <p><strong>Contact Number:</strong> {{ booking.contact_number }}</p>
-                <p><strong>Event Date:</strong> {{ booking.event_date }}</p>
-                <p><strong>Event Time:</strong> {{ booking.event_time }}</p>
-                <p><strong>End Time:</strong> {{ booking.end_time|time:"g:i A" }}</p>
-                <p><strong>Event Type:</strong> {{ booking.event_type }}</p>
-                <p><strong>Location:</strong> {{ booking.location }}</p>
-                <p><strong>Full Address:</strong> {{ booking.fulladdress}}</p>
-                <p><strong>Status:</strong> {{ booking.status }}</p>
-                <p><strong>Reason for Cancellation:</strong> {{ booking.cancel_reason }}</p>
-                <p><strong>Barangay:</strong> {{ booking.barangay }}</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="close-btn" onclick="closeModal({{ booking.id }})">Close</button>
+    <div id="viewModal{{ booking.id }}" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Details: {{ booking.package.title }}</h5>
+                    <button type="button" class="btn-close" onclick="closeModal({{ booking.id }})">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Full Name:</strong> {{ booking.full_name }}</p>
+                    <p><strong>Event Date:</strong> {{ booking.event_date }}</p>
+                    <p><strong>Equipment Track:</strong> {{ booking.equipment_status }}</p>
+                    <p><strong>Last Auditor:</strong> {{ booking.checker_name }}</p>
+                    <hr>
+                    <p><strong>Email:</strong> {{ booking.email }}</p>
+                    <p><strong>Location:</strong> {{ booking.location }}</p>
+                    <p><strong>Status:</strong> {{ booking.status }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="close-btn" onclick="closeModal({{ booking.id }})">Close</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-{% empty %}
-<tr>
-    <td colspan="9">You have no bookings yet.</td>
-</tr>
-{% endfor %}
-</tbody>
+    {% empty %}
+    <tr>
+        <td colspan="11">You have no bookings yet.</td>
+    </tr>
+    {% endfor %}
+    </tbody>
 </table>
 
+<div id="bigMapModal" class="modal">
+    <div class="modal-dialog-map">
+        <div class="modal-header-map">
+            <h5 style="margin:0; font-weight:600;">Event Location</h5>
+            <button type="button" class="btn-close" onclick="closeBigMap()" style="cursor:pointer; background:none; border:none; font-size:24px;">&times;</button>
+        </div>
+        <div id="modalMapCanvas"></div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-function confirmAction(url, actionType) {
-    let actionText = "";
-    let actionColor = "";
+let leafletMap;
 
-    if (actionType === "accept") {
-        actionText = "ACCEPT";
-        actionColor = "#28a745"; // green
-    } else if (actionType === "reject") {
-        actionText = "REJECT";
-        actionColor = "#dc3545"; // red
-    } else if (actionType === "cancel") {
-        actionText = "CANCEL";
-        actionColor = "#ffc107"; // yellow
-    } else if (actionType === "complete") {
-        actionText = "COMPLETE";
-        actionColor = "#007bff"; // blue
+// Global function para sa pag-search ng address (Smart Geocoding)
+async function geocodeAddress(query) {
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+        const data = await response.json();
+        return data.length > 0 ? { lat: data[0].lat, lon: data[0].lon, label: query } : null;
+    } catch (e) { return null; }
+}
+
+function openBigMap(lat, lon, label) {
+    document.getElementById('bigMapModal').style.display = 'flex';
+    if(leafletMap) { leafletMap.remove(); }
+    setTimeout(() => {
+        leafletMap = L.map('modalMapCanvas').setView([lat, lon], 16);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(leafletMap);
+        L.marker([lat, lon]).addTo(leafletMap).bindPopup(`<b>Location:</b><br>${label}`).openPopup();
+    }, 300);
+}
+
+function closeBigMap() {
+    document.getElementById('bigMapModal').style.display = 'none';
+}
+
+// Function para i-render ang thumbnail
+function renderThumbnail(id, result) {
+    const containerId = 'map-' + id;
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    container.innerHTML = ''; 
+    const mapThumb = L.map(containerId, { zoomControl: false, attributionControl: false }).setView([result.lat, result.lon], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapThumb);
+    L.marker([result.lat, result.lon]).addTo(mapThumb);
+    
+    container.onclick = () => openBigMap(result.lat, result.lon, result.label);
+}
+
+// --- ITO ANG SOLUTION SA N/A (Staggered Loading) ---
+async function loadMapsOneByOne() {
+    // Kunin lahat ng booking data na kailangan i-map
+    const mapQueue = [
+        {% for booking in bookings %}
+        {
+            id: '{{ booking.id }}',
+            barangay: '{{ booking.barangay|escapejs }}',
+            location: '{{ booking.location|escapejs }}',
+            fullAddress: '{{ booking.fulladdress|escapejs }}'
+        },
+        {% endfor %}
+    ];
+
+    for (let i = 0; i < mapQueue.length; i++) {
+        const item = mapQueue[i];
+        const container = document.getElementById('map-' + item.id);
+        
+        // 1. Subukan ang Barangay + City
+        let result = await geocodeAddress(`${item.barangay}, ${item.location}`);
+        
+        // 2. Fallback sa Full Address kung fail
+        if (!result && item.fullAddress) {
+            result = await geocodeAddress(item.fullAddress);
+        }
+        
+        // 3. Fallback sa City lang kung fail pa rin
+        if (!result) {
+            result = await geocodeAddress(item.location);
+        }
+
+        if (result) {
+            renderThumbnail(item.id, result);
+        } else {
+            container.innerHTML = "<p style='font-size:9px; color:red; padding-top:20px;'>N/A</p>";
+        }
+
+        // MAGHIHINTAY NG 800ms bago ang susunod na request para hindi ma-block ng OpenStreetMap
+        await new Promise(resolve => setTimeout(resolve, 800));
     }
+}
 
+// Iyong orihinal na Modal functions
+function openModal(id) { document.getElementById('viewModal' + id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById('viewModal' + id).style.display = 'none'; }
+
+// Start loading maps utay-utay pag-load ng page
+window.onload = loadMapsOneByOne;
+
+// Confirm Action Logic
+function confirmAction(url, actionType) {
+    const colors = { accept: "#28a745", reject: "#dc3545", complete: "#2563eb" };
     Swal.fire({
-        title: `Are you sure you want to ${actionText} this booking?`,
+        title: `Confirm ${actionType.toUpperCase()}`,
+        text: `Are you sure you want to ${actionType} this booking?`,
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: actionColor,
-        cancelButtonColor: "#6c757d",
-        confirmButtonText: `Yes, ${actionText} it!`
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = url;
-        }
-    });
+        confirmButtonColor: colors[actionType] || "#333",
+        confirmButtonText: "Yes"
+    }).then((result) => { if (result.isConfirmed) window.location.href = url; });
 }
 function rejectBooking(url) {
+    // UNANG MODAL: Confirmation kung talagang i-re-reject
     Swal.fire({
-        title: 'Reject Booking',
-        input: 'textarea',
-        inputLabel: 'Reason for rejection',
-        inputPlaceholder: 'Enter the reason...',
-        inputAttributes: {
-            'aria-label': 'Reason for rejection'
-        },
+        title: "Confirm REJECT",
+        text: "Are you sure you want to reject this booking?",
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonText: 'Reject',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#d33',
-        preConfirm: (reason) => {
-            if (!reason) {
-                Swal.showValidationMessage('Reason is required!')
-            }
-            return reason;
-        }
+        confirmButtonColor: "#dc3545",
+        confirmButtonText: "Yes, Reject it",
+        cancelButtonText: "No, Go back"
     }).then((result) => {
         if (result.isConfirmed) {
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({ 'reason': result.value })
-            })
-            .then(response => {
-                if (response.ok) {
-                    Swal.fire('Rejected!', 'Booking has been rejected and customer notified.', 'success')
-                        .then(() => location.reload());
+            // IKALAWANG MODAL: Lalabas lang ito pagkatapos mag-Yes sa una
+            Swal.fire({
+                title: "Reason for Rejection",
+                text: "Please provide a reason for the customer:",
+                input: 'textarea',
+                inputPlaceholder: "Enter the reason here...",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#dc3545",
+                confirmButtonText: "Submit Rejection",
+                inputValidator: (value) => {
+                    if (!value) {
+                        return "Kailangan mong maglagay ng dahilan!";
+                    }
                 }
-            })
+            }).then((resultReason) => {
+                if (resultReason.isConfirmed) {
+                    // Dito na itutuloy ang pag-redirect kasama ang reason
+                    const reason = resultReason.value;
+                    const finalUrl = `${url}?reason=${encodeURIComponent(reason)}`;
+                    window.location.href = finalUrl;
+                }
+            });
         }
     });
 }
@@ -216,7 +306,51 @@ function rejectBooking(url) {
         align-items: center;
         margin-top: 1%;
     }
+    /* Container ng Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Mas madilim para focus sa map */
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    padding: 20px; /* Space sa paligid para sa mobile */
+}
 
+/* Ang mismong kahon ng Modal */
+.modal-dialog-map {
+    background: white;
+    width: 90%;
+    max-width: 900px; /* Lapad ng mapa */
+    height: 80vh; /* 80% ng taas ng screen */
+    max-height: 90vh;
+    border-radius: 12px;
+    overflow: hidden; /* Para hindi lumagpas ang mapa sa kanto */
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* Header sa loob ng Modal */
+.modal-header-map {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+}
+
+/* Container ng Mapa */
+#modalMapCanvas {
+    flex-grow: 1; /* Kakainin ang natitirang space sa container */
+    width: 100%;
+    height: 100%; /* Importante para sa Leaflet */
+    background: #f0f0f0;
+}
     .filters select {
         padding: 6px 10px;
         margin-left: 10px;
@@ -416,6 +550,7 @@ function rejectBooking(url) {
 .completed {
     background-color: #2a9d8f; 
 }
+
 /* Tablets */
 @media (max-width: 1024px) {
   .header {

@@ -63,8 +63,11 @@ urlpatterns = [
     path('dashboard/packages/<int:package_id>/edit/', views.package_edit_view, name='package_edit'),
     path('dashboard/packages/<int:package_id>/delete/', views.package_delete_view, name='package_delete'),
     path("api/booking-status-data/", views.booking_status_data, name="booking_status_data"),
-    
-
+    path('employee/add/', views.add_employee_view, name='add_employee'),   
+    path('reports/', views.reports_page, name='reports_page'), # Idagdag itong linya
+    path('reports/', views.reports_page, name='reports_page'),
+    path('reports/download/', views.export_bookings_csv, name='export_bookings_csv'),
+    path('accounts/bookings/', views.bookings_list, name='bookings_history'), # Siguraduhin na may 'bookings_list' function ka sa views.py
     
     
 ]
@@ -72,3 +75,4 @@ urlpatterns = [
 # ✅ Serve media files (if in DEBUG mode)
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

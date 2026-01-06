@@ -1,0 +1,243 @@
+{% extends 'client-base.html' %}
+{% load humanize %}
+
+{% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    /* Pinipigilan ang paghati ng mga elemento sa gitna ng page break */
+    .pdf-section {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        margin-bottom: 25px;
+    }
+
+    /* Siguraduhin na ang container ay swak sa A4 aspect ratio */
+    #report-container {
+        padding: 2.5rem;
+        font-family: 'Inter', sans-serif;
+        background: #f8fafc;
+        min-height: 100vh;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    @media print {
+        #pdf-btn, #filter-box {
+            display: none !important;
+        }
+    }
+</style>
+
+<div id="report-container">
+    
+    <div class="pdf-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <div>
+            <h1 style="margin: 0; color: #1e293b; font-size: 2.2rem; font-weight: 800;">📊 Business Reports</h1>
+            <p style="color: #64748b; margin: 5px 0 0 0; font-size: 1.1rem;">Performance monitoring for <strong>{{ selected_y }}</strong></p>
+        </div>
+        <button id="pdf-btn" onclick="downloadPDF()" style="background: #ef4444; color: white; padding: 12px 28px; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-file-pdf"></i> Download PDF Report
+        </button>
+    </div>
+
+    <div id="filter-box" class="pdf-section" style="background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 30px; border: 1px solid #e2e8f0;">
+        <form method="GET" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+            <div>
+                <label style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Filter Year</label>
+                <select name="year" style="padding: 10px 15px; border-radius: 10px; border: 1px solid #cbd5e1; background: #fcfcfc; width: 130px; font-weight: 500;">
+                    {% for yr in years %}<option value="{{yr}}" {% if yr|slugify == selected_y %}selected{% endif %}>{{yr}}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">Filter Month</label>
+                <select name="month" style="padding: 10px 15px; border-radius: 10px; border: 1px solid #cbd5e1; background: #fcfcfc; width: 160px; font-weight: 500;">
+                    <option value="All">All Months</option>
+                    <option value="1" {% if selected_m == '1' %}selected{% endif %}>January</option>
+                    <option value="2" {% if selected_m == '2' %}selected{% endif %}>February</option>
+                    <option value="3" {% if selected_m == '3' %}selected{% endif %}>March</option>
+                    <option value="4" {% if selected_m == '4' %}selected{% endif %}>April</option>
+                    <option value="5" {% if selected_m == '5' %}selected{% endif %}>May</option>
+                    <option value="6" {% if selected_m == '6' %}selected{% endif %}>June</option>
+                    <option value="7" {% if selected_m == '7' %}selected{% endif %}>July</option>
+                    <option value="8" {% if selected_m == '8' %}selected{% endif %}>August</option>
+                    <option value="9" {% if selected_m == '9' %}selected{% endif %}>September</option>
+                    <option value="10" {% if selected_m == '10' %}selected{% endif %}>October</option>
+                    <option value="11" {% if selected_m == '11' %}selected{% endif %}>November</option>
+                    <option value="12" {% if selected_m == '12' %}selected{% endif %}>December</option>
+                </select>
+            </div>
+            <button type="submit" style="background: #2563eb; color: white; border: none; padding: 11px 30px; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.2s;">Apply Changes</button>
+        </form>
+    </div>
+
+    <div class="pdf-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 35px;">
+        <div style="background: white; padding: 30px; border-radius: 20px; border-top: 5px solid #10b981; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);">
+            <p style="color: #64748b; margin: 0; font-weight: 600; text-transform: uppercase; font-size: 0.8rem;">Total Revenue</p>
+            <h2 style="font-size: 2.2rem; margin: 12px 0 0 0; color: #0f172a;">₱{{ total_rev|floatformat:2|intcomma }}</h2>
+        </div>
+        <div style="background: white; padding: 30px; border-radius: 20px; border-top: 5px solid #3b82f6; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);">
+            <p style="color: #64748b; margin: 0; font-weight: 600; text-transform: uppercase; font-size: 0.8rem;">Top Booking Area</p>
+            <h2 style="font-size: 1.8rem; margin: 12px 0 0 0; color: #0f172a;">{{ top_area|default:"None" }}</h2>
+        </div>
+        <div style="background: white; padding: 30px; border-radius: 20px; border-top: 5px solid #f59e0b; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);">
+            <p style="color: #64748b; margin: 0; font-weight: 600; text-transform: uppercase; font-size: 0.8rem;">Peak Month</p>
+            <h2 style="font-size: 2.2rem; margin: 12px 0 0 0; color: #0f172a;">{{ peak_month }}</h2>
+        </div>
+    </div>
+
+    <div class="pdf-section" style="background: white; padding: 30px; border-radius: 20px; margin-bottom: 35px; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center;">
+        <h3 style="margin-top: 0; width: 100%; color: #1e293b; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-chart-line" style="color: #3b82f6;"></i> Revenue Trend
+        </h3>
+        <div style="height: 380px; width: 85%; position: relative;">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+
+    <div class="pdf-section" style="background: #eff6ff; border-radius: 20px; padding: 25px; margin-bottom: 35px; border-left: 8px solid #2563eb;">
+        <div style="display: flex; align-items: flex-start; gap: 15px;">
+            <div style="background: #2563eb; color: white; padding: 10px; border-radius: 12px; font-size: 1.2rem;">
+                <i class="fas fa-lightbulb"></i>
+            </div>
+            <div>
+                <h4 style="margin: 0 0 8px 0; color: #1e3a8a; font-size: 1.2rem; font-weight: 700;">Smart Financial Insights</h4>
+                <p style="margin: 0; color: #1e40af; line-height: 1.8; font-size: 1.05rem; font-style: italic;">
+                    "{{ insight_msg }}"
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="pdf-section" style="background: white; border-radius: 20px; overflow: hidden; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+        <div style="padding: 25px; background: #fff; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; color: #1e293b; font-weight: 700;">Recent Transactions</h3>
+            <span style="background: #f1f5f9; color: #475569; padding: 6px 14px; border-radius: 25px; font-size: 0.85rem; font-weight: 600;">{{ all_bookings_count }} Total Records</span>
+        </div>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f8fafc; text-align: left;">
+                        <th style="padding: 18px 25px; color: #64748b; font-weight: 700; font-size: 0.85rem; text-transform: uppercase;">Date</th>
+                        <th style="padding: 18px 25px; color: #64748b; font-weight: 700; font-size: 0.85rem; text-transform: uppercase;">Customer</th>
+                        <th style="padding: 18px 25px; color: #64748b; font-weight: 700; font-size: 0.85rem; text-transform: uppercase;">Location</th>
+                        <th style="padding: 18px 25px; color: #64748b; font-weight: 700; font-size: 0.85rem; text-transform: uppercase;">Amount</th>
+                        <th style="padding: 18px 25px; color: #64748b; font-weight: 700; font-size: 0.85rem; text-transform: uppercase;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in bookings %}
+                    <tr style="border-bottom: 1px solid #f8fafc;">
+                        <td style="padding: 18px 25px;">{{ b.event_date|date:"M d, Y" }}</td>
+                        <td style="padding: 18px 25px; font-weight: 600; color: #1e293b;">{{ b.full_name }}</td>
+                        <td style="padding: 18px 25px; color: #64748b;">{{ b.location|default:"---" }}</td>
+                        <td style="padding: 18px 25px; font-weight: 700; color: #10b981;">{{ b.price|intcomma }}</td>
+                        <td style="padding: 18px 25px;">
+                            <span style="background: #dcfce7; color: #166534; padding: 6px 14px; border-radius: 30px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">{{ b.status }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" style="text-align: center; padding: 40px; color: #94a3b8;">No data available.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if has_more %}
+        <div style="padding: 25px; text-align: center; background: #fafafa; border-top: 1px solid #f1f5f9;">
+            <a href="{% url 'bookings_history' %}" style="color: #2563eb; font-weight: 700; text-decoration: none;">
+                View All Booking History <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // 1. Chart Initializations
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        const rawData = {{ revenue_data|safe }};
+        
+        new Chart(ctx, {
+            type: 'bar', 
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Revenue (₱)',
+                    data: rawData,
+                    backgroundColor: 'rgba(37, 99, 235, 0.8)',
+                    borderColor: '#2563eb',
+                    borderWidth: 1,
+                    borderRadius: 8,
+                    hoverBackgroundColor: '#1d4ed8'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false, 
+                layout: {
+                    padding: {
+                        right: 20 // Allowance sa kanan para hindi maputol ang Dec
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9' },
+                        ticks: {
+                            callback: function(value) { return '₱' + value.toLocaleString(); },
+                            font: { weight: '600', size: 11 }
+                        }
+                    },
+                    x: { 
+                        grid: { display: false },
+                        ticks: {
+                            font: { size: 10 },
+                            autoSkip: false // I-force na ipakita lahat ng buwan
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    });
+
+    // 2. Updated PDF Export Logic
+    function downloadPDF() {
+        const element = document.getElementById('report-container');
+        const btn = document.getElementById('pdf-btn');
+        const filters = document.getElementById('filter-box');
+        
+        btn.style.visibility = 'hidden';
+        if(filters) filters.style.display = 'none';
+
+        const opt = {
+            margin: [10, 5, 10, 5], 
+            filename: 'Business_Report_{{selected_y}}.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { 
+                scale: 2, 
+                useCORS: true,
+                scrollY: 0,
+                letterRendering: true
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        };
+        
+        html2pdf().set(opt).from(element).save().then(() => {
+            btn.style.visibility = 'visible';
+            if(filters) filters.style.display = 'block';
+        }).catch(err => {
+            console.error(err);
+            btn.style.visibility = 'visible';
+            if(filters) filters.style.display = 'block';
+        });
+    }
+</script>
+{% endblock %}

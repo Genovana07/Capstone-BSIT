@@ -562,7 +562,7 @@
       <div class="user">
         <div class="avatar">
           <img
-            src="{% if request.user.profile.profile_picture %}{{ request.user.profile.profile_picture.url }}{% else %}{% static 'images/profile-icon.png' %}{% endif %}"
+            src="{% if request.user.profile.profile_picture %}{{ request.user.profile.profile_picture.url }}{% else %}{% static 'images/user1.jpg' %}{% endif %}"
             alt="Avatar Icon"
             class="avatar-img"
             style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover;"
@@ -582,25 +582,23 @@
         </p>
       </div>
 
-      <nav class="nav">
-        {% if user.is_staff and not user.is_superuser %}
-          <a href="{% url 'checklist' %}"><i class="fas fa-list-check"></i> Checklist</a>
-        {% else %}
-          <a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a>
-          <a href="{% url 'booking' %}"><i class="fas fa-calendar-alt"></i> Booking</a>
-          <a href="{% url 'event' %}"><i class="fas fa-calendar"></i> Event</a>
-          <a href="{% url 'equipment' %}"><i class="fas fa-box"></i> Equipment List</a>
-          <a href="{% url 'tracking' %}"><i class="fas fa-eye"></i> Equipment Tracking</a>
-          <a href="{% url 'reviews' %}"><i class="fas fa-star"></i> Review</a>
-          <a href="{% url 'customer' %}"><i class="fas fa-users"></i> Customer</a>
-          <a href="{% url 'employee' %}"><i class="fas fa-user"></i> Employee</a>
-          <a href="{% url 'checklist' %}"><i class="fas fa-list-check"></i> Checklist</a>
-          <a href="{% url 'package_list' %}"><i class="fas fa-boxes"></i> Packages</a>
-          {% if user.is_superuser %}
-            <a href="{% url 'admin_requests_view' %}"><i class="fas fa-user-shield"></i> Admin Requests</a>
-          {% endif %}
-        {% endif %}
-      </nav>
+     <nav class="nav">
+    {% if user.is_staff and not user.is_superuser %}
+        <a href="{% url 'checklist' %}"><i class="fas fa-list-check"></i> Checklist</a>
+    {% else %}
+        <a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="{% url 'booking' %}"><i class="fas fa-calendar-alt"></i> Booking</a>
+        <a href="{% url 'event' %}"><i class="fas fa-calendar"></i> Event</a>
+        <a href="{% url 'equipment' %}"><i class="fas fa-box"></i> Equipment List</a>
+        <a href="{% url 'tracking' %}"><i class="fas fa-eye"></i> Equipment Tracking</a>
+        <a href="{% url 'reviews' %}"><i class="fas fa-star"></i> Review</a>
+        <a href="{% url 'customer' %}"><i class="fas fa-users"></i> Customer</a>
+        <a href="{% url 'employee' %}"><i class="fas fa-user"></i> Employee</a>
+        <a href="{% url 'checklist' %}"><i class="fas fa-list-check"></i> Checklist</a>
+        <a href="{% url 'package_list' %}"><i class="fas fa-boxes"></i> Packages</a>
+        <a href="{% url 'reports_page' %}"><i class="fas fa-file-invoice-dollar"></i> Reports</a>
+    {% endif %}
+</nav>
     </aside>
 
 <main class="main">
@@ -625,15 +623,15 @@
 
       <div class="notification" id="notifToggle">
         <i class="fas fa-bell"></i>
-        {% if notifications and not request.resolver_match.url_name in "package_add package_edit package_delete.html checklist_detail.html" %}
-          <span class="badge">{{ notifications|length }}</span>
+        
+        {% if notification_count > 0 %}
+          <span class="badge">{{ notification_count }}</span>
         {% endif %}
+
         <div class="notif-dropdown" id="notifDropdown">
           <ul>
-            {% if notifications and not request.resolver_match.url_name in "package_add package_edit package_delete.html checklist_detail.html" %}
-              {% for notif in notifications %}
-                <li><a href="{% url 'booking' %}">{{ notif }}</a></li>
-              {% endfor %}
+            {% if notification_count > 0 %}
+              <li><a href="{% url 'booking' %}">You have {{ notification_count }} new booking(s)</a></li>
             {% else %}
               <li>No new notifications</li>
             {% endif %}

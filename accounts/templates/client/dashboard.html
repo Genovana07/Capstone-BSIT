@@ -4,68 +4,59 @@
 
 {% block content %}
 {% load humanize %}   
-<section class="dashboard-header">
-    <div class="header-top">
- <div class="dashboard-header">
-        <div class="dashboard-title">
-            <h1>📊 Dashboard Overview</h1>
-            <p>Welcome back, <strong>{{ request.user.get_full_name }}</strong>. Here’s your business summary at a glance.</p>
+<div class="dashboard-wrapper">
+    <section class="dashboard-header">
+        <div class="header-top">
+            <div class="dashboard-title">
+                <h1>📊 Dashboard Overview</h1>
+                <p>Welcome back, <strong>{{ request.user.get_full_name }}</strong>. Here’s your business summary.</p>
+            </div>
+
+            <form method="get" id="cardFilterForm" class="filter-form">
+                <label><strong>Filter by:</strong></label>
+                <select name="year" onchange="this.form.submit()">
+                    <option value="">All Years</option>
+                    {% for y in years %}
+                        <option value="{{ y }}" {% if selected_year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+                <select name="month" onchange="this.form.submit()">
+                    <option value="">All Months</option>
+                    {% for m in months %}
+                        <option value="{{ m.value }}" {% if selected_month == m.value %}selected{% endif %}>{{ m.label }}</option>
+                    {% endfor %}
+                </select>
+            </form>
         </div>
 
-        <!-- Year & Month Filter -->
-        <form method="get" id="cardFilterForm" class="filter-form">
-            <label><strong>Filter by:</strong></label>
-
-            <select name="year" onchange="document.getElementById('cardFilterForm').submit()">
-                <option value="">All Years</option>
-                {% for y in years %}
-                    <option value="{{ y }}" {% if selected_year == y|stringformat:"s" %}selected{% endif %}>
-                        {{ y }}
-                    </option>
-                {% endfor %}
-            </select>
-
-            <select name="month" onchange="document.getElementById('cardFilterForm').submit()">
-                <option value="">All Months</option>
-                {% for m in months %}
-                    <option value="{{ m.value }}" {% if selected_month == m.value %}selected{% endif %}>
-                        {{ m.label }}
-                    </option>
-                {% endfor %}
-            </select>
-        </form>
-    </div>
-
-    <div class="cards">
-        <div class="card card-booking">
-            <i class="fas fa-calendar-check"></i>
-            <h3>Total Bookings</h3>
-            <span>{{ booking_count }}</span>
+        <div class="cards">
+            <div class="card card-booking">
+                <i class="fas fa-calendar-check"></i>
+                <h3>Total Bookings</h3>
+                <span>{{ booking_count }}</span>
+            </div>
+            <div class="card card-revenue">
+                <i class="fas fa-hand-holding-usd"></i>
+                <h3>Total Revenue</h3>
+                <span>₱{{ revenue|intcomma }}</span>
+            </div>
+            <div class="card card-profit">
+                <i class="fas fa-chart-line"></i>
+                <h3>Total Profit</h3>
+                <span>₱{{ profit|intcomma }}</span>
+            </div>
+            <div class="card card-pending">
+                <i class="fas fa-hourglass-half"></i>
+                <h3>Pending</h3>
+                <span>{{ pending_count }}</span>
+            </div>
+            <div class="card card-rating">
+                <i class="fas fa-star"></i>
+                <h3>Avg Review</h3>
+                <span>{{ average_rating|floatformat:1 }}</span>
+            </div>
         </div>
-        <div class="card card-revenue">
-    <i class="fas fa-hand-holding-usd"></i>
-    <h3>Total Revenue</h3>
-    <span>₱{{ revenue|intcomma }}</span>
-</div>
-
-<div class="card card-profit">
-    <i class="fas fa-chart-line"></i>
-    <h3>Total Profit</h3>
-    <span>₱{{ profit|intcomma }}</span>
-</div>
-        <div class="card card-pending">
-            <i class="fas fa-hourglass-half"></i>
-            <h3>Pending Bookings</h3>
-            <span>{{ pending_count }}</span>
-        </div>
-        <div class="card card-rating">
-            <i class="fas fa-star"></i>
-            <h3>Average Review</h3>
-            <span>{{ average_rating|floatformat:1 }}</span>
-        </div>
-    </div>
-</section>
-
+    </section>
 
     <section class="quick-actions">
         <h2>⚡ Quick Actions</h2>
@@ -75,135 +66,113 @@
         </div>
     </section>
 
-    <section class="charts-grid">
-        <div class="chart-box">
-            <h2>📈 Booking Status</h2>
-            <p>Overview of booking progress</p>
-            <canvas id="statusChart"></canvas>
-            <ul class="legend">
-                {% for item in status_data %}
-                    <li>
-                        <span class="dot" style="background: 
-                            {% if forloop.counter0 == 0 %}#10b981 
-                            {% elif forloop.counter0 == 1 %}#3b82f6 
-                            {% elif forloop.counter0 == 2 %}#f59e0b 
-                            {% elif forloop.counter0 == 3 %}#ef4444 
-                            {% else %}#a855f7{% endif %}">
-                        </span>
-                        {{ item.status }} - {{ item.count }}
-                    </li>
-                {% endfor %}
-            </ul>
+<section class="charts-grid">
+    <div class="chart-box">
+        <h2>📈 Booking Status</h2>
+        <p>Overview of booking progress</p>
+        <canvas id="statusChart"></canvas>
+        <div class="chart-summary" style="margin-top: 10px; background: #f0fdf4; border-left: 4px solid #22c55e; padding: 8px; border-radius: 4px; font-size: 0.85rem;">
+            <i class="fas fa-info-circle"></i>
+            <strong>Status Summary:</strong>
+            <span id="statusInsightText">Focus on <b>{{ pending_count }}</b> pending bookings.</span>
         </div>
-        
-<!-- Chart HTML -->
-<div class="chart-box">
-    <h2>📅 Bookings Per Month</h2>
-    <p>Monthly trends (grouped by year)</p>
-
-    <div class="month-nav">
-        <button id="prevMonth" class="nav-btn">‹ Prev</button>
-
-        <!-- Single select grouped by year (Option 2) -->
-        <select id="monthSelect" aria-label="Select month"></select>
-
-        <button id="nextMonth" class="nav-btn">Next ›</button>
     </div>
 
-    <canvas id="monthlyChart" style="max-height:300px;"></canvas>
-
-    <div class="small-meta">
-        <div>Showing: <strong id="monthlyLabel">—</strong></div>
-        <div class="growth">MoM Growth: <strong id="monthlyGrowth">—</strong></div>
+    <div class="chart-box">
+        <h2>📅 Monthly Trends</h2>
+        <div class="month-nav">
+            <button id="prevMonth" class="nav-btn">‹</button>
+            <select id="monthSelect"></select>
+            <button id="nextMonth" class="nav-btn">›</button>
+        </div>
+        <canvas id="monthlyChart"></canvas>
+        <div class="small-meta">
+            <div>Showing: <strong id="monthlyLabel">—</strong></div>
+            <div class="growth">Growth: <strong id="monthlyGrowth">—</strong></div>
+        </div>
+        <div class="chart-summary" style="margin-top: 10px; background: #fefce8; border-left: 4px solid #eab308; padding: 8px; border-radius: 4px; font-size: 0.85rem;">
+            <i class="fas fa-chart-line"></i>
+            <strong>Trend:</strong> Updates based on monthly booking volume.
+        </div>
     </div>
 
-    <!-- Booking status legend (populated dynamically) -->
-    <ul class="legend"></ul>
-</div>
-        
-        <div class="chart-box">
-            <h2>⭐ Customer Feedback Summary</h2>
-            <div class="review-summary">
-                <div class="review-count">
-                    <h3>Total Reviews</h3>
-                    <p class="review-number">{{ reviews.count }}</p>
-                </div>
-                <div class="average-rating">
-                    <h3>Average Rating</h3>
-                    <p class="rating-number">{{ average_rating|default:"0" }} ★</p>
-                </div>
-            </div>
-            <canvas id="feedbackChart" height="220"></canvas>
+    <div class="chart-box">
+        <h2>⭐ Feedback Analytics</h2>
+        <div class="review-summary">
+            <div class="review-count"><h3>Reviews</h3><p class="review-number">{{ reviews.count }}</p></div>
+            <div class="average-rating"><h3>Avg. Rating</h3><p class="rating-number">{{ average_rating|default:"0" }} ★</p></div>
         </div>
-        
-        <div class="chart-box full-width">
-            <h2>🎶 Popular Packages</h2>
-            <p>Most frequently booked sound setups</p>
-            <canvas id="packageChart"></canvas>
+        <canvas id="feedbackChart" height="150"></canvas>
+        <div class="chart-summary" style="margin-top: 10px; background: #fdf2f8; border-left: 4px solid #db2777; padding: 8px; border-radius: 4px; font-size: 0.85rem;">
+            <i class="fas fa-comment-dots"></i>
+            <strong>Feedback:</strong> <span id="dynamicFeedbackInsight">Select month for details.</span>
         </div>
-    </section>
+    </div>
 
-    <section class="customer-feedback">
-        <h2>💬 Latest Feedback</h2>
-        {% if latest_feedback %}
-            <div class="feedback-container">
-                <div class="feedback-comment-box">
-                    <p class="comment-text">"{{ latest_feedback.comment|default:"No comment provided." }}"</p>
-                    <p class="customer-name">— {{ latest_feedback.customer_name|default:latest_feedback.booking.full_name|default:"A Customer" }}</p>
-                </div>
-                <div class="feedback-rating-box">
-                    <h4>Rating</h4>
-                    <p class="rating-stars">{{ latest_feedback.rating|default:"0" }} ★</p>
-                </div>
-            </div>
-        {% else %}
-            <p>No feedback yet.</p>
-        {% endif %}
-    </section>
+    <div class="chart-box full-width">
+        <h2>💰 Revenue & Booking Analysis</h2>
+        <p>Comparison of equipment earnings vs volume of bookings</p>
+        <div class="chart-container" style="position: relative; height:300px;">
+            <canvas id="revenueAnalysisChart"></canvas>
+        </div>
+        <div class="chart-summary" style="margin-top: 15px; background: #eff6ff; border-left: 4px solid #3b82f6; padding: 10px; border-radius: 4px;">
+            <i class="fas fa-lightbulb"></i>
+            <strong>Monthly Analysis:</strong> 
+            <span id="revenueInsightText">Select a month to see performance summary.</span>
+        </div>
+    </div>
 
-    <section class="upcoming-events">
-        <h2>📅 Upcoming Events</h2>
-        <div class="event-list">
-            {% if upcoming_events %}
-                {% for event in upcoming_events %}
-                    <div class="event-item">
-                        <div class="event-date">
-                            <span class="day">{{ event.event_date|date:"d" }}</span>
-                            <span class="month">{{ event.event_date|date:"b" }}</span>
-                        </div>
-                        <div class="event-details">
-                                <!-- Event type -->
-                                <h3>{{ event.event_type }}</h3>
+    <div class="chart-box full-width">
+        <h2>🎶 Popular Packages</h2>
+        <canvas id="packageChart"></canvas>
+        <div class="chart-summary" style="margin-top: 15px; background: #f8fafc; border-left: 4px solid #64748b; padding: 10px; border-radius: 4px;">
+            <i class="fas fa-trophy"></i>
+            <strong>Top Performer:</strong> <span id="topPackageText">Loading top package data...</span>
+        </div>
+    </div>
+</section>
 
-                                <!-- Event date -->
-                                <p>
-                                    <i class="fas fa-calendar-alt"></i>
-                                    {{ event.event_date|date:"F d, Y" }}
-                                    {% if event.event_time %}
-                                        at {{ event.event_time|time:"h:i A" }}
-                                    {% endif %}
-                                </p>
-
-                                <!-- Event location -->
-                                <p>
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    {% if event.barangay and event.city %}
-                                        {{ event.barangay }}, {{ event.city }}
-                                    {% elif event.fulladdress %}
-                                        {{ event.fulladdress }}
-                                    {% else %}
-                                        {{ event.location }}
-                                    {% endif %}
-                                </p>
-                            </div>
+    <section class="feedback-events-split" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem;">
+        <div class="customer-feedback" style="background: white; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+            <h2>💬 Latest Feedback</h2>
+            {% if latest_feedback %}
+                <div class="feedback-container" style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 15px; border-radius: 12px;">
+                    <div class="feedback-comment-box">
+                        <p class="comment-text">"{{ latest_feedback.comment|default:"No comment provided." }}"</p>
+                        <p class="customer-name" style="font-weight: bold; color: #64748b;">— {{ latest_feedback.customer_name|default:latest_feedback.booking.full_name|default:"A Customer" }}</p>
                     </div>
-                {% endfor %}
+                    <div class="feedback-rating-box" style="text-align: center; background: white; padding: 10px; border-radius: 10px; min-width: 80px;">
+                        <h4 style="margin: 0; font-size: 0.8rem;">Rating</h4>
+                        <p class="rating-stars" style="color: #f59e0b; font-weight: bold; font-size: 1.2rem; margin: 0;">{{ latest_feedback.rating|default:"0" }} ★</p>
+                    </div>
+                </div>
             {% else %}
-                <p>No upcoming events found.</p>
+                <p>No feedback yet.</p>
             {% endif %}
         </div>
-    </section>
 
+        <div class="upcoming-events" style="background: white; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+            <h2>📅 Upcoming Events</h2>
+            <div class="event-list">
+                {% if upcoming_events %}
+                    {% for event in upcoming_events %}
+                        <div class="event-item" style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px; padding: 10px; background: #f8fafc; border-radius: 10px;">
+                            <div class="event-date" style="background: white; padding: 8px; border-radius: 8px; text-align: center; min-width: 55px; border: 1px solid #e2e8f0;">
+                                <span class="day" style="display: block; font-size: 1.2rem; font-weight: bold; color: #2563eb;">{{ event.event_date|date:"d" }}</span>
+                                <span class="month" style="font-size: 0.7rem; text-transform: uppercase;">{{ event.event_date|date:"M" }}</span>
+                            </div>
+                            <div class="event-details">
+                                <h3 style="margin: 0; font-size: 1rem;">{{ event.event_type }}</h3>
+                                <p style="margin: 0; font-size: 0.85rem; color: #64748b;"><i class="fas fa-map-marker-alt"></i> {{ event.location }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No upcoming events.</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
     <style>
        /* BASE STYLES */
 body { 
@@ -345,14 +314,22 @@ body {
 
 .chart-box { 
     background: white; 
-    padding: 18px; 
+    padding: 20px; 
     border-radius: 12px; 
-    box-shadow: 0 6px 14px rgba(0,0,0,0.06); 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
     display: flex; 
-    flex-direction: column; 
-    justify-content: space-between; 
+    flex-direction: column;
 }
 
+.chart-summary {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f0f7ff;
+    border-left: 4px solid #3b82f6;
+    font-size: 13px;
+    color: #1e40af;
+    border-radius: 4px;
+}
 .chart-box.full-width { 
     grid-column: span 3; 
 }
@@ -465,7 +442,28 @@ body {
     font-weight: 700;
     color: #f59e0b;
 }
+.feedback-insight-box {
+    margin-top: 15px;
+    padding: 12px;
+    background: #fffbeb;
+    border: 1px dashed #f59e0b;
+    border-radius: 8px;
+}
 
+.feedback-insight-box h4 {
+    font-size: 14px;
+    color: #92400e;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.feedback-insight-box p {
+    font-size: 13px;
+    color: #78350f;
+    margin: 0;
+}
 /* UPCOMING EVENTS */
 .upcoming-events { 
     margin-top:20px; 
@@ -600,385 +598,238 @@ body {
 <canvas id="feedbackChart" style="display:none;"></canvas>
 
 <script>
-/* -------------------- 1. Data Initialization & Parsing -------------------- */
-
-const packagePopularityByMonth = {{ package_popularity_by_month|default:"{}"|safe }};
-const statusData = Array.isArray({{ status_data|default:"[]"|safe }}) ? {{ status_data|default:"[]"|safe }} : [];
-const rawMonthly = Array.isArray({{ bookings_per_month|default:"[]"|safe }}) ? {{ bookings_per_month|default:"[]"|safe }} : [];
+/* -------------------- 1. Data Initialization -------------------- */
+const packagePopularityByMonth = {{ package_popularity_by_month|safe }};
+const rawMonthly = {{ bookings_per_month|safe }};
 const status_data_by_month = {{ status_data_by_month|safe }};
 const feedback_by_month = {{ feedback_by_month|safe }};
+const revenue_data_by_month = {{ revenue_data_by_month|safe }};
+const notificationCount = {{ notification_count|default:0 }};
 
 function parseMonthInput(monthVal) {
     if (!monthVal) return null;
     try {
         if (typeof monthVal === 'string') {
             const isoLike = monthVal.trim();
-            // yyyy-mm
             if (/^\d{4}-\d{2}$/.test(isoLike)) return new Date(isoLike + '-01T00:00:00');
-            // yyyy-mm-dd or ISO
-            if (/^\d{4}-\d{2}-\d{2}/.test(isoLike) || isoLike.includes('T')) return new Date(isoLike);
             const d = new Date(isoLike);
             if (!isNaN(d)) return d;
-        } else if (monthVal instanceof Date) {
-            return monthVal;
-        } else if (typeof monthVal === 'object' && (monthVal.year || monthVal.month)) {
-            // allow { year: 2025, month: 7 } or { year: 2025, month: "07" }
-            const y = parseInt(monthVal.year, 10);
-            const m = parseInt(monthVal.month, 10) - 1;
-            if (!isNaN(y) && !isNaN(m)) return new Date(y, m, 1);
-        } else if (Array.isArray(monthVal) && monthVal.length >= 1) {
-            // accept [ '2025-07', count ] or [ '2025-07-01', count ]
-            const d = parseMonthInput(monthVal[0]);
-            if (d) return d;
         }
-    } catch (e) {
-        return null;
-    }
+    } catch (e) { return null; }
     return null;
 }
 
-/* Normalize rawMonthly into consistent objects and sort chronologically */
 const monthlyData = rawMonthly.map((item, idx) => {
-    // item may be: { month: '2025-07', count: 3 } OR ['2025-07', 3] OR { label: 'Jul 2025', count: 3 }
-    let m = null, count = 0, label = null;
-    if (Array.isArray(item)) {
-        m = item[0];
-        count = item[1] || 0;
-    } else if (item && typeof item === 'object') {
-        m = item.month || item.date || item.label || item[0] || null;
-        count = item.count || item[1] || 0;
-        label = item.label || null;
-    } else {
-        m = item;
-    }
-
+    let m = item.month || item[0] || null;
+    let count = item.count || item[1] || 0;
     const date = parseMonthInput(m);
-    const iso = (date && !isNaN(date)) ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2,'0')}` : (typeof m === 'string' ? m : null);
-    const computedLabel = date && !isNaN(date) ? (date.toLocaleString('default', { month: 'short' }) + ' ' + date.getFullYear()) : (label || String(m || idx));
-
-    return { original: item, date: date, iso: iso, label: computedLabel, count: Number(count || 0) };
-}).filter(x => x.iso).sort((a,b) => {
-    // sort by iso (yyyy-mm)
-    return a.iso.localeCompare(b.iso);
-});
-
-/* Convenience: map iso -> index and group by year */
-const isoToIndex = {};
-monthlyData.forEach((m, i) => isoToIndex[m.iso] = i);
+    const iso = (date && !isNaN(date)) ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2,'0')}` : m;
+    const computedLabel = date && !isNaN(date) ? (date.toLocaleString('default', { month: 'short' }) + ' ' + date.getFullYear()) : iso;
+    return { date, iso, label: computedLabel, count: Number(count) };
+}).filter(x => x.iso).sort((a,b) => a.iso.localeCompare(b.iso));
 
 const yearGroups = {};
 monthlyData.forEach((m, i) => {
     const year = m.iso.split('-')[0];
     if (!yearGroups[year]) yearGroups[year] = [];
-    // store the global index so we can navigate across years easily
     yearGroups[year].push({ ...m, globalIndex: i });
 });
 
-/* Helper: turn iso or item into normalized key 'YYYY-MM' */
-function getMonthKey(iso) {
-    if (!iso) return null;
-    // ensure format yyyy-mm
-    if (/^\d{4}-\d{2}$/.test(iso)) return iso;
-    const d = parseMonthInput(iso);
-    if (!d || isNaN(d)) return null;
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2,'0');
-    return `${y}-${m}`;
-}
+/* -------------------- 2. Charts Initialization -------------------- */
 
-/* -------------------- Charts Setup -------------------- */
-
-/* package chart (bar) */
-const packageCtx = document.getElementById('packageChart').getContext('2d');
-const packageChart = new Chart(packageCtx, {
-    type: 'bar',
-    data: {
-        labels: ['No data'],
-        datasets: [{
-            label: 'Bookings',
-            data: [0],
-            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#a855f7'],
-            borderRadius: 8,
-            borderSkipped: false
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: { legend: { display: false }, datalabels: { display: false } },
-        scales: {
-            y: { beginAtZero: true, ticks: { stepSize: 1, color: "#000" } },
-            x: { ticks: { color: "#000" } }
-        }
-    }
-});
-
-/* status chart (doughnut) */
-const statusCtx = document.getElementById('statusChart').getContext('2d');
-const statusChart = new Chart(statusCtx, {
-    type: 'doughnut',
-    data: { labels: ['No data'], datasets: [{ data: [1], backgroundColor: ['#10b981','#3b82f6','#f59e0b','#ef4444','#a855f7'], borderWidth: 2 }] },
-    options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 15 } } } }
-});
-
-/* monthly chart (line) - placeholder, will be updated on selection */
-const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-const monthlyChart = new Chart(monthlyCtx, {
+// Revenue & Booking Analysis
+const revenueAnalysisChart = new Chart(document.getElementById('revenueAnalysisChart').getContext('2d'), {
     type: 'line',
-    data: {
-        labels: ['No data'],
-        datasets: [{
-            label: 'Bookings',
-            data: [0],
-            fill: true,
+    data: { labels: [], datasets: [
+        { label: 'Revenue (₱)', data: [], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4, yAxisID: 'y' },
+        { label: 'Bookings', type: 'bar', data: [], backgroundColor: 'rgba(59, 130, 246, 0.7)', borderRadius: 5, yAxisID: 'y1' }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false }
+});
+
+// Monthly Trends
+const monthlyChart = new Chart(document.getElementById('monthlyChart').getContext('2d'), {
+    type: 'line',
+    data: { labels: [], datasets: [{ label: 'Bookings', data: [], borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.1)', fill: true, tension: 0.3 }] },
+    options: { responsive: true, plugins: { legend: { display: false } } }
+});
+
+// ✅ FIXED: Popular Packages (Blue Theme)
+const packageChart = new Chart(document.getElementById('packageChart').getContext('2d'), {
+    type: 'bar',
+    data: { 
+        labels: [], 
+        datasets: [{ 
+            data: [], 
+            backgroundColor: 'rgba(59, 130, 246, 0.8)', // Solid Blue
             borderColor: '#2563eb',
-            backgroundColor: 'rgba(37,99,235,0.15)',
-            tension: 0.4,
-            pointRadius: 5,
-            pointBackgroundColor: '#2563eb'
-        }]
+            borderWidth: 1,
+            borderRadius: 6
+        }] 
     },
-    options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
+    options: { 
+        responsive: true, 
+        maintainAspectRatio: false,
+        plugins: { 
+            legend: { display: false } 
+        },
         scales: {
-            y: { beginAtZero: true, ticks: { stepSize: 1 } },
-            x: { ticks: { font: { weight: '500' } } }
+            y: { beginAtZero: true }
         }
     }
 });
 
-/* feedback (radar) - initial using overall averages */
-const feedbackCtx = document.getElementById('feedbackChart').getContext('2d');
-const avgQuality = parseFloat("{{ avg_quality|default:'0' }}");
-const avgTimeliness = parseFloat("{{ avg_timeliness|default:'0' }}");
-const avgProfessionalism = parseFloat("{{ avg_professionalism|default:'0' }}");
-const avgValue = parseFloat("{{ avg_value_for_money|default:'0' }}");
-
-const feedbackChart = new Chart(feedbackCtx, {
-    type: 'radar',
-    data: {
-        labels: ['Quality', 'Timeliness', 'Professionalism', 'Value for Money'],
-        datasets: [{
-            label: 'Average Rating',
-            data: [avgQuality, avgTimeliness, avgProfessionalism, avgValue],
-            borderWidth: 2,
-            borderColor: '#2563eb',
-            backgroundColor: 'rgba(37,99,235,0.20)',
-            pointBackgroundColor: '#2563eb',
-            pointRadius: 4,
-            borderJoinStyle: 'round'
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            r: {
-                beginAtZero: true,
-                min: 0,
-                max: 5,
-                ticks: { stepSize: 1, color: '#475569' },
-                grid: { color: 'rgba(0,0,0,0.1)' },
-                angleLines: { color: 'rgba(0,0,0,0.15)' },
-                pointLabels: { color: '#1e293b', font: { size: 12, weight: '600' } }
-            }
-        },
-        plugins: { legend: { display: false } }
-    }
+// Booking Status
+const statusChart = new Chart(document.getElementById('statusChart').getContext('2d'), {
+    type: 'doughnut',
+    data: { labels: [], datasets: [{ data: [], backgroundColor: ['#10b981','#3b82f6','#f59e0b','#ef4444'] }] },
+    options: { responsive: true, cutout: '70%' }
 });
 
-/* -------------------- UI Elements & State -------------------- */
-const monthSelect = document.getElementById('monthSelect');
-const prevBtn = document.getElementById('prevMonth');
-const nextBtn = document.getElementById('nextMonth');
-const monthlyLabel = document.getElementById('monthlyLabel');
-const monthlyGrowth = document.getElementById('monthlyGrowth');
-const legendList = document.querySelector(".chart-box ul.legend");
+// Feedback Radar
+const feedbackChart = new Chart(document.getElementById('feedbackChart').getContext('2d'), {
+    type: 'radar',
+    data: { labels: ['Quality', 'Timeliness', 'Professionalism', 'Value'], datasets: [{ data: [], borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.2)' }] },
+    options: { responsive: true, scales: { r: { min: 0, max: 5 } } }
+});
 
-let globalIndex = monthlyData.length ? monthlyData.length - 1 : -1; // points at monthlyData global index
+/* -------------------- 3. Update & Insight Logic -------------------- */
 
-/* -------------------- Populate grouped dropdown (Option 2) -------------------- */
-function populateMonthSelectGrouped() {
-    if (!monthSelect) return;
-    monthSelect.innerHTML = '';
+function updateInsights(monthKey, label, idx) {
+    const revInsightP = document.getElementById('revenueInsightText');
+    const fbInsightP = document.getElementById('dynamicFeedbackInsight');
+    const statusInsightP = document.getElementById('statusInsightText');
+    const growthP = document.getElementById('monthlyGrowth');
+    const topPkgP = document.getElementById('topPackageText');
+    
+    const rev = revenue_data_by_month[monthKey] || { total_revenue: 0 };
+    const pkgs = packagePopularityByMonth[monthKey] || [];
+    const fb = feedback_by_month[monthKey];
+    const stats = status_data_by_month[monthKey] || [];
 
-    // years descending (latest first)
-    const years = Object.keys(yearGroups).sort((a,b) => b - a);
-
-    years.forEach(year => {
-        const optgroup = document.createElement('optgroup');
-        optgroup.label = year;
-
-        // months in chronological order (assuming yearGroups[year] already is chronological)
-        yearGroups[year].forEach(entry => {
-            const opt = document.createElement('option');
-            opt.value = entry.globalIndex; // store global index to navigate easily
-            opt.textContent = entry.label; // e.g. "Jul 2025"
-            // select current global index if matching
-            if (entry.globalIndex === globalIndex) opt.selected = true;
-            optgroup.appendChild(opt);
-        });
-
-        monthSelect.appendChild(optgroup);
-    });
-}
-
-/* -------------------- Update helpers for other charts & legend -------------------- */
-
-function updatePackageChart(monthKey) {
-    const data = packagePopularityByMonth[monthKey] || [];
-    const labels = data.map(p => p.package__title || 'Unknown');
-    const counts = data.map(p => p.count || 0);
-    packageChart.data.labels = labels.length ? labels : ['No data'];
-    packageChart.data.datasets[0].data = counts.length ? counts : [0];
-    packageChart.update();
-}
-
-function updateStatusChart(monthKey) {
-    const newStatus = status_data_by_month[monthKey] || [];
-    statusChart.data.labels = newStatus.length ? newStatus.map(s => s.status) : ['No data'];
-    statusChart.data.datasets[0].data = newStatus.length ? newStatus.map(s => s.count) : [1];
-    statusChart.update();
-
-    // update legend list under chart
-    updateBookingStatusLegend(monthKey, newStatus);
-}
-
-function updateBookingStatusLegend(monthKey, newStatus) {
-    if (!legendList) return;
-    legendList.innerHTML = '';
-    const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#a855f7'];
-    if (!newStatus || !newStatus.length) {
-        const li = document.createElement('li');
-        li.innerHTML = `<span class="dot" style="background:${colors[0]}"></span> No data`;
-        legendList.appendChild(li);
-        return;
-    }
-    newStatus.forEach((item, index) => {
-        const color = colors[index] || '#a855f7';
-        const li = document.createElement('li');
-        li.innerHTML = `<span class="dot" style="display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; vertical-align:middle; background:${color}"></span> ${item.status} - ${item.count}`;
-        legendList.appendChild(li);
-    });
-}
-
-function updateFeedbackChart(monthKey) {
-    const fb = feedback_by_month[monthKey] || {};
-    feedbackChart.data.datasets[0].data = [
-        fb.avg_quality || 0,
-        fb.avg_timeliness || 0,
-        fb.avg_professionalism || 0,
-        fb.avg_value_for_money || 0
-    ];
-    feedbackChart.update();
-}
-
-/* -------------------- Core: Render Monthly Chart for the SELECTED YEAR and highlight selected month -------------------- */
-
-function renderMonthlyChartForYearAndHighlight(selectedGlobalIndex) {
-    if (selectedGlobalIndex === -1 || monthlyData.length === 0) {
-        monthlyChart.data.labels = ['No data'];
-        monthlyChart.data.datasets[0].data = [0];
-        monthlyChart.update();
-        monthlyLabel.innerText = '—';
-        monthlyGrowth.innerText = '—';
-        return;
+    // 1. Revenue Insight
+    if (revInsightP) {
+        revInsightP.innerHTML = `💰 <b>${label} Revenue:</b> ₱${rev.total_revenue.toLocaleString()}. Top Package: <b>${pkgs[0]?.package__title || 'None'}</b>.`;
     }
 
-    // get the selected entry and its year
-    const selected = monthlyData[selectedGlobalIndex];
-    const selectedYear = selected.iso.split('-')[0];
+    // 2. Feedback Insight
+    if (fbInsightP) {
+        if (fb) {
+            const avg = (fb.avg_quality + fb.avg_professionalism + fb.avg_timeliness + fb.avg_value_for_money) / 4;
+            fbInsightP.innerHTML = `🌟 Average score: <b>${avg.toFixed(1)}/5</b>. Maganda ang performance!`;
+        } else {
+            fbInsightP.innerHTML = "Walang feedback data sa buwan na ito.";
+        }
+    }
 
-    // months to display on x-axis = all months for selectedYear
-    const monthsForYear = yearGroups[selectedYear] || [];
+    // 3. Booking Status Insight
+    if (statusInsightP) {
+        const total = stats.reduce((sum, s) => sum + s.count, 0);
+        const pending = stats.find(s => s.status.toLowerCase().includes('pending'))?.count || 0;
+        statusInsightP.innerHTML = `Total bookings: <b>${total}</b>. Meron kang <b>${pending}</b> na kailangang i-process.`;
+    }
 
-    // x labels and data (counts)
-    const labels = monthsForYear.map(m => m.label);
-    const data = monthsForYear.map(m => m.count);
+    // 4. Monthly Growth Insight
+    if (growthP) {
+        if (idx > 0) {
+            const prevCount = monthlyData[idx - 1].count;
+            const currentCount = monthlyData[idx].count;
+            if (prevCount > 0) {
+                const diff = ((currentCount - prevCount) / prevCount * 100).toFixed(0);
+                growthP.innerText = (diff >= 0 ? "+" : "") + diff + "% vs last month";
+                growthP.style.color = diff >= 0 ? "#10b981" : "#ef4444";
+            } else {
+                growthP.innerText = "New Growth";
+            }
+        } else {
+            growthP.innerText = "Baseline Month";
+        }
+    }
 
-    monthlyChart.data.labels = labels;
-    monthlyChart.data.datasets[0].data = data;
-
-    // determine index within the year's months to highlight point
-    const indexWithinYear = monthsForYear.findIndex(m => m.globalIndex === selectedGlobalIndex);
-
-    // color points: highlight selected month
-    const defaultColor = '#93c5fd';
-    const highlightColor = '#2563eb';
-    monthlyChart.data.datasets[0].pointBackgroundColor = data.map((_, i) => i === indexWithinYear ? highlightColor : defaultColor);
-
-    monthlyChart.update();
-
-    // update small-meta: label and growth (compare to previous month globally if exists)
-    monthlyLabel.innerText = `${selected.label}`; // e.g. "Jul 2025"
-    const curr = selected.count || 0;
-    const prevGlobal = monthlyData[selectedGlobalIndex - 1] ? monthlyData[selectedGlobalIndex - 1].count : null;
-    let growth = '—';
-    if (prevGlobal === null) growth = '—';
-    else if (prevGlobal === 0) growth = (curr === 0 ? '0%' : '∞');
-    else growth = (((curr - prevGlobal) / prevGlobal) * 100).toFixed(1) + '%';
-    monthlyGrowth.innerText = growth;
-
-    // Update other charts using the iso key for this selected month
-    const monthKey = getMonthKey(selected.iso);
-    updatePackageChart(monthKey);
-    updateStatusChart(monthKey);
-    updateFeedbackChart(monthKey);
+    // 5. Popular Package Insight
+    if (topPkgP) {
+        if (pkgs.length > 0) {
+            topPkgP.innerHTML = `Ang <b>${pkgs[0].package__title}</b> ang pinakasikat na setup na may <b>${pkgs[0].count}</b> bookings.`;
+        } else {
+            topPkgP.innerHTML = "Walang package bookings para sa buwan na ito.";
+        }
+    }
 }
-
-/* -------------------- Navigation & Select handlers -------------------- */
 
 function gotoGlobalIndex(idx) {
     if (monthlyData.length === 0) return;
     if (idx < 0) idx = 0;
     if (idx > monthlyData.length - 1) idx = monthlyData.length - 1;
-    globalIndex = idx;
+    
+    const selected = monthlyData[idx];
+    const monthKey = selected.iso;
+    const year = monthKey.split('-')[0];
+    const yearMonths = yearGroups[year] || [];
 
-    // update select value (single dropdown has option values = globalIndex)
-    if (monthSelect) {
-        monthSelect.value = String(globalIndex);
-        // if the currently selected option is not visible (because browser may not auto-open optgroup),
-        // ensure it's selected programmatically (value set above handles it).
-    }
+    document.getElementById('monthSelect').value = idx;
+    document.getElementById('monthlyLabel').innerText = selected.label;
 
-    // Re-render chart for the selected month (shows full year of selected)
-    renderMonthlyChartForYearAndHighlight(globalIndex);
+    updateInsights(monthKey, selected.label, idx);
+
+    // Update Revenue Chart
+    revenueAnalysisChart.data.labels = yearMonths.map(m => m.label.split(' ')[0]);
+    revenueAnalysisChart.data.datasets[0].data = yearMonths.map(m => (revenue_data_by_month[m.iso]?.total_revenue || 0));
+    revenueAnalysisChart.data.datasets[1].data = yearMonths.map(m => m.count);
+    revenueAnalysisChart.update();
+
+    // Update Monthly Trend
+    monthlyChart.data.labels = yearMonths.map(m => m.label);
+    monthlyChart.data.datasets[0].data = yearMonths.map(m => m.count);
+    monthlyChart.update();
+
+    // ✅ UPDATE: Popular Packages (Keep it Blue)
+    const pkgData = packagePopularityByMonth[monthKey] || [];
+    packageChart.data.labels = pkgData.map(p => p.package__title);
+    packageChart.data.datasets[0].data = pkgData.map(p => p.count);
+    // Siguraduhin na blue pa rin ang kulay pag nag-update
+    packageChart.data.datasets[0].backgroundColor = 'rgba(59, 130, 246, 0.8)';
+    packageChart.update();
+
+    // Update Status
+    const statData = status_data_by_month[monthKey] || [];
+    statusChart.data.labels = statData.map(s => s.status);
+    statusChart.data.datasets[0].data = statData.map(s => s.count);
+    statusChart.update();
+
+    // Update Feedback
+    const f = feedback_by_month[monthKey] || {};
+    feedbackChart.data.datasets[0].data = [f.avg_quality||0, f.avg_timeliness||0, f.avg_professionalism||0, f.avg_value_for_money||0];
+    feedbackChart.update();
 }
 
-if (prevBtn) prevBtn.addEventListener('click', () => gotoGlobalIndex(globalIndex - 1));
-if (nextBtn) nextBtn.addEventListener('click', () => gotoGlobalIndex(globalIndex + 1));
-if (monthSelect) monthSelect.addEventListener('change', e => {
-    const val = parseInt(e.target.value, 10);
-    if (!isNaN(val)) gotoGlobalIndex(val);
-});
-
-/* -------------------- Initialize UI on load -------------------- */
-
-function initialLoad() {
-    // default to last available month (most recent)
-    if (monthlyData.length === 0) {
-        populateMonthSelectGrouped();
-        renderMonthlyChartForYearAndHighlight(-1);
-        return;
-    }
-
-    // Ensure each year group is sorted chronologically (just in case)
-    Object.keys(yearGroups).forEach(y => {
-        yearGroups[y].sort((a,b) => a.iso.localeCompare(b.iso));
+/* -------------------- 4. Initialization & Navigation -------------------- */
+function init() {
+    const select = document.getElementById('monthSelect');
+    if(!select) return;
+    select.innerHTML = '';
+    Object.keys(yearGroups).sort((a,b) => b-a).forEach(y => {
+        const group = document.createElement('optgroup'); group.label = y;
+        yearGroups[y].forEach(m => {
+            const opt = document.createElement('option'); opt.value = m.globalIndex; opt.textContent = m.label;
+            group.appendChild(opt);
+        });
+        select.appendChild(group);
     });
-
-    // populate select grouped by year
-    populateMonthSelectGrouped();
-
-    // ensure globalIndex is within bounds
-    if (globalIndex < 0 || globalIndex > monthlyData.length - 1) globalIndex = monthlyData.length - 1;
-
-    // show chart + other charts for initial selection
-    gotoGlobalIndex(globalIndex);
+    gotoGlobalIndex(monthlyData.length - 1);
 }
 
-/* Run initial load */
-initialLoad();
+document.getElementById('prevMonth').onclick = (e) => {
+    e.preventDefault();
+    gotoGlobalIndex(parseInt(document.getElementById('monthSelect').value) - 1);
+};
+document.getElementById('nextMonth').onclick = (e) => {
+    e.preventDefault();
+    gotoGlobalIndex(parseInt(document.getElementById('monthSelect').value) + 1);
+};
+document.getElementById('monthSelect').onchange = (e) => gotoGlobalIndex(parseInt(e.target.value));
 
+init();
 </script>
+
 
 {% endblock %}

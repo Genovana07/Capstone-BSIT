@@ -20,26 +20,50 @@
   color: #555;
 }
 
-/* Download button */
-.download-wrapper {
-  text-align: right;
+/* Action Buttons Wrapper */
+.action-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
+/* Base style for buttons */
+.btn-action {
+  text-decoration: none;
+  padding: 10px 22px;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  border: none;
+  cursor: pointer;
+}
+
+/* Add Employee Button (Green) */
+.add-btn {
+  background: #28a745;
+  color: #fff;
+}
+.add-btn:hover {
+  background: #218838;
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+/* Download Button (Blue) */
 .download-btn {
   background: #4a90e2;
   color: #fff;
-  border: none;
-  padding: 10px 22px;
-  border-radius: 25px;
-  cursor: pointer;
-  font-weight: 600;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  transition: all 0.3s ease;
 }
 .download-btn:hover {
   background: #357abd;
   transform: translateY(-2px);
+  color: #fff;
 }
 
 /* Table wrapper */
@@ -87,107 +111,26 @@ table tr:hover {
   border: 2px solid #ddd;
 }
 
-/* Tablets */
+/* Responsive Adjustments */
 @media (max-width: 1024px) {
-  .dashboard-header h1 {
-    font-size: 28px;
-  }
-
-  .dashboard-header p {
-    font-size: 15px;
-  }
-
-  .download-btn {
-    padding: 9px 20px;
-    font-size: 14px;
-  }
-
-  table th,
-  table td {
-    padding: 12px 16px;
-    font-size: 14px;
-  }
-
-  .profile-pic {
-    width: 40px;
-    height: 40px;
-  }
+  .dashboard-header h1 { font-size: 28px; }
+  table th, table td { padding: 12px 16px; font-size: 14px; }
 }
 
-/* Mobile phones */
 @media (max-width: 768px) {
-  .dashboard-header {
-    margin-bottom: 16px;
+  .action-wrapper {
+    flex-direction: column;
+    justify-content: flex-start;
   }
-
-  .dashboard-header h1 {
-    font-size: 24px;
-  }
-
-  .dashboard-header p {
-    font-size: 14px;
-  }
-
-  .download-wrapper {
-    text-align: left;
-    margin-bottom: 16px;
-  }
-
-  .download-btn {
+  
+  .btn-action {
     width: 100%;
-    padding: 10px;
-    font-size: 14px;
+    justify-content: center;
     border-radius: 20px;
   }
 
-  .table-container {
-    padding: 16px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  table {
-    min-width: 600px; /* ✅ prevent squishing */
-  }
-
-  table th,
-  table td {
-    padding: 10px 12px;
-    font-size: 13.5px;
-    white-space: nowrap;
-  }
-
-  .profile-pic {
-    width: 36px;
-    height: 36px;
-  }
-}
-
-/* Extra small phones */
-@media (max-width: 480px) {
-  .dashboard-header h1 {
-    font-size: 20px;
-  }
-
-  .dashboard-header p {
-    font-size: 13px;
-  }
-
-  .download-btn {
-    font-size: 13px;
-    padding: 8px 12px;
-  }
-
-  table th,
-  table td {
-    padding: 8px 10px;
-    font-size: 12.5px;
-  }
-
-  .profile-pic {
-    width: 32px;
-    height: 32px;
-  }
+  .table-container { padding: 16px; }
+  table { min-width: 800px; } /* Prevent squishing */
 }
 </style>
 
@@ -196,12 +139,16 @@ table tr:hover {
   <p>AudioMan Team</p>
 </div>
 
-<!-- Download button -->
-<div class="download-wrapper">
-  <a href="{% url 'download_employees' %}" class="download-btn">⬇ Download</a>
+<div class="action-wrapper">
+  <a href="{% url 'add_employee' %}" class="btn-action add-btn">
+    <i class="fas fa-user-plus"></i> Add New Employee
+  </a>
+  
+  <a href="{% url 'download_employees' %}" class="btn-action download-btn">
+    <i class="fas fa-download"></i> Download
+  </a>
 </div>
 
-<!-- Table -->
 <div class="table-container">
   <table>
     <thead>
@@ -232,13 +179,15 @@ table tr:hover {
           {% if profile.profile_picture %}
             <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="profile-pic" />
           {% else %}
-            <span style="color:#888;">No Picture</span>
+            <span style="color:#888; font-size: 12px;">No Picture</span>
           {% endif %}
         </td>
       </tr>
       {% empty %}
       <tr>
-        <td colspan="9" style="text-align:center; padding:20px;">No approved employees found.</td>
+        <td colspan="9" style="text-align:center; padding:30px; color: #666;">
+          <i class="fas fa-info-circle"></i> No employees found. Click "Add New Employee" to register staff.
+        </td>
       </tr>
       {% endfor %}
     </tbody>

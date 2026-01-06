@@ -476,196 +476,154 @@ def admin_only(view_func):
 
 
 
-@login_required
-@admin_only
-def dashboard(request):
-    # ====== FILTERS FOR THE 5 CARDS ======
-    selected_month = request.GET.get("month")  # e.g. "01"
-    selected_year = request.GET.get("year")    # e.g. "2025"
+import json
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.db.models import Count, Avg, Sum
+from django.db.models.functions import TruncMonth
+from django.utils import timezone, dateformat
+from datetime import datetime
+from collections import defaultdict
+from .models import Booking, Review  # Siguraduhing tama ang import path ng models mo
+# Kung gumagamit ka ng admin_only decorator, siguraduhing naka-import din ito
 
-    # Month and Year dropdowns
-    months = [
-        {"value": "01", "label": "January"},
-        {"value": "02", "label": "February"},
-        {"value": "03", "label": "March"},
-        {"value": "04", "label": "April"},
-        {"value": "05", "label": "May"},
-        {"value": "06", "label": "June"},
-        {"value": "07", "label": "July"},
-        {"value": "08", "label": "August"},
-        {"value": "09", "label": "September"},
-        {"value": "10", "label": "October"},
-        {"value": "11", "label": "November"},
-        {"value": "12", "label": "December"},
+@login_required
+def dashboard(request):
+    # ====== 1. FILTERS & DROPDOWNS ======
+    selected_month = request.GET.get("month")
+    selected_year = request.GET.get("year")
+
+    months_list = [
+        {"value": "01", "label": "January"}, {"value": "02", "label": "February"},
+        {"value": "03", "label": "March"}, {"value": "04", "label": "April"},
+        {"value": "05", "label": "May"}, {"value": "06", "label": "June"},
+        {"value": "07", "label": "July"}, {"value": "08", "label": "August"},
+        {"value": "09", "label": "September"}, {"value": "10", "label": "October"},
+        {"value": "11", "label": "November"}, {"value": "12", "label": "December"},
     ]
     current_year = datetime.now().year
-    years = list(range(current_year - 5, current_year + 1))  # Last 5 years + current
+    years_list = list(range(current_year - 5, current_year + 1))
 
-    # ====== BASE QUERIES ======
-    bookings = Booking.objects.all()
-    reviews = Review.objects.all()
-
-    # Apply filters (affect ONLY the 5 cards)
-    if selected_year:
-        bookings = bookings.filter(event_date__year=int(selected_year))
-        reviews = reviews.filter(created_at__year=int(selected_year))
-    if selected_month:
-        bookings = bookings.filter(event_date__month=int(selected_month))
-        reviews = reviews.filter(created_at__month=int(selected_month))
-
-    # ====== 5 SUMMARY CARDS ======
-    booking_count = bookings.count()
-    pending_count = bookings.filter(status="Processing").count()
-
-    def parse_price(price):
-        try:
-            return float(str(price).replace('₱', '').replace(',', '').strip())
-        except:
-            return 0.0
-
-    revenue = sum(parse_price(b.price) for b in bookings)
-    profit = revenue * 0.5  # 50% profit assumption
-    average_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
-
-    # ====== STATIC (Unfiltered) DASHBOARD DATA ======
+    # ====== 2. BASE QUERIES & HELPER ======
     all_bookings = Booking.objects.all()
     all_reviews = Review.objects.all()
 
-    # --- Bookings Per Month ---
+    def parse_price(price):
+        if not price: return 0.0
+        try:
+            return float(str(price).replace('₱', '').replace(',', '').strip())
+        except (ValueError, TypeError):
+            return 0.0
+
+    # ====== 3. BELL NOTIFICATION LOGIC (REAL-TIME FIX) ======
+    notification_count = all_bookings.filter(is_seen=False).count()
+    all_bookings.filter(is_seen=False).update(is_seen=True)
+
+    # ====== 4. SUMMARY CARDS (FILTERED) ======
+    filtered_bookings = all_bookings
+    filtered_reviews = all_reviews
+
+    if selected_year:
+        filtered_bookings = filtered_bookings.filter(event_date__year=int(selected_year))
+        filtered_reviews = filtered_reviews.filter(created_at__year=int(selected_year))
+    if selected_month:
+        filtered_bookings = filtered_bookings.filter(event_date__month=int(selected_month))
+        filtered_reviews = filtered_reviews.filter(created_at__month=int(selected_month))
+
+    # Bilangin ang lahat ng filtered bookings (Total Bookings card)
+    booking_count = filtered_bookings.count()
+    pending_count = filtered_bookings.filter(status="Processing").count()
+
+    # ✅ UPDATE: Revenue at Profit computation (Filtered by status)
+    # Dito natin sinasala na 'Accepted' at 'Completed' lang ang may presyo
+    money_generating_bookings = filtered_bookings.filter(status__in=["Accepted", "Completed"])
+    revenue = sum(parse_price(b.price) for b in money_generating_bookings)
+    profit = revenue * 0.5 
+    
+    average_rating = filtered_reviews.aggregate(avg=Avg('rating'))['avg'] or 0
+
+    # ====== 5. CHART DATA (UNFILTERED / MONTHLY BREAKDOWN) ======
     raw_monthly = (
-        all_bookings.annotate(month=TruncMonth('event_date'))
-        .values('month')
+        all_bookings.annotate(month_trunc=TruncMonth('event_date'))
+        .values('month_trunc')
         .annotate(count=Count('id'))
-        .order_by('month')
+        .order_by('month_trunc')
     )
 
-    bookings_per_month = [
-        {"month": dateformat.DateFormat(entry["month"]).format("Y-m"), "count": entry["count"]}
-        for entry in raw_monthly if entry["month"]
-    ]
-
-    # --- Package Popularity Per Month ---
+    bookings_per_month = []
     package_popularity_by_month = defaultdict(list)
-    for entry in raw_monthly:
-        month_start = entry["month"]
-        if not month_start:
-            continue
-        month_end = month_start.replace(
-            year=month_start.year + (1 if month_start.month == 12 else 0),
-            month=1 if month_start.month == 12 else month_start.month + 1,
-            day=1,
-        )
-        monthly_packages = (
-            all_bookings.filter(event_date__gte=month_start, event_date__lt=month_end)
-            .values('package__title')
-            .annotate(count=Count('id'))
-            .order_by('-count')
-        )
-        key = dateformat.DateFormat(month_start).format("Y-m")
-        package_popularity_by_month[key] = list(monthly_packages)
-
-    # --- Booking Status Per Month ---
     status_data_by_month = defaultdict(list)
+    revenue_data_by_month = {}
+
     for entry in raw_monthly:
-        month_start = entry["month"]
-        if not month_start:
-            continue
-        month_end = month_start.replace(
-            year=month_start.year + (1 if month_start.month == 12 else 0),
-            month=1 if month_start.month == 12 else month_start.month + 1,
-            day=1,
-        )
-        monthly_status = (
-            all_bookings.filter(event_date__gte=month_start, event_date__lt=month_end)
-            .values('status')
-            .annotate(count=Count('id'))
-            .order_by('-count')
-        )
-        key = dateformat.DateFormat(month_start).format("Y-m")
-        status_data_by_month[key] = list(monthly_status)
+        month_date = entry["month_trunc"]
+        if not month_date: continue
+        
+        key = dateformat.DateFormat(month_date).format("Y-m")
+        bookings_per_month.append({"month": key, "count": entry["count"]})
 
-    # --- Overall Booking Status ---
-    status_data = (
-        all_bookings.values("status")
-        .annotate(count=Count("id"))
-        .order_by('-count')
-    )
-
-    # --- Notifications ---
-    notifications_qs = all_bookings.filter(status="Processing").order_by('-created_at')[:5]
-    notifications = [
-        f"📌 New booking from {b.full_name} on {dateformat.DateFormat(b.event_date).format('M d, Y')}"
-        for b in notifications_qs
-    ]
-
-    # --- Reviews (unfiltered for charts) ---
-    avg_quality = all_reviews.aggregate(avg=Avg('quality'))['avg'] or 0
-    avg_timeliness = all_reviews.aggregate(avg=Avg('timeliness'))['avg'] or 0
-    avg_professionalism = all_reviews.aggregate(avg=Avg('professionalism'))['avg'] or 0
-    avg_value_for_money = all_reviews.aggregate(avg=Avg('value_for_money'))['avg'] or 0
-    latest_feedback = all_reviews.order_by('-created_at').first()
-
-    # --- Feedback Per Month ---
-    feedback_by_month = {}
-    raw_review_months = (
-        all_reviews.annotate(month=TruncMonth('created_at'))
-        .values('month')
-        .annotate(count=Count('id'))
-        .order_by('month')
-    )
-    for entry in raw_review_months:
-        month_start = entry["month"]
-        if not month_start:
-            continue
-        month_end = month_start.replace(
-            year=month_start.year + (1 if month_start.month == 12 else 0),
-            month=1 if month_start.month == 12 else month_start.month + 1,
-            day=1,
-        )
-        monthly_reviews = all_reviews.filter(created_at__gte=month_start, created_at__lt=month_end)
-        key = dateformat.DateFormat(month_start).format("Y-m")
-        feedback_by_month[key] = {
-            "avg_quality": round(monthly_reviews.aggregate(avg=Avg('quality'))['avg'] or 0, 1),
-            "avg_timeliness": round(monthly_reviews.aggregate(avg=Avg('timeliness'))['avg'] or 0, 1),
-            "avg_professionalism": round(monthly_reviews.aggregate(avg=Avg('professionalism'))['avg'] or 0, 1),
-            "avg_value_for_money": round(monthly_reviews.aggregate(avg=Avg('value_for_money'))['avg'] or 0, 1),
+        monthly_b_objs = all_bookings.filter(event_date__year=month_date.year, event_date__month=month_date.month)
+        
+        # ✅ UPDATE: Monthly Revenue Chart (Filtered by status)
+        # Para sa chart, 'Accepted'/'Completed' lang din ang iku-compute na revenue
+        chart_money_objs = monthly_b_objs.filter(status__in=["Accepted", "Completed"])
+        monthly_revenue = sum(parse_price(b.price) for b in chart_money_objs)
+        
+        revenue_data_by_month[key] = {
+            "total_revenue": monthly_revenue,
+            "booking_count": entry["count"]
         }
 
-    # --- Upcoming Events ---
-    upcoming_events = (
-        all_bookings.filter(event_date__gte=timezone.now())
-        .exclude(status__in=["Completed", "Cancelled", "Rejected"])
-        .order_by('event_date')[:5]
-    )
+        package_popularity_by_month[key] = list(monthly_b_objs.values('package__title').annotate(count=Count('id')).order_by('-count'))
+        status_data_by_month[key] = list(monthly_b_objs.values('status').annotate(count=Count('id')).order_by('-count'))
 
-    # ====== CONTEXT ======
+    # ====== 6. FEEDBACK ANALYTICS ======
+    feedback_by_month = {}
+    raw_review_months = all_reviews.annotate(month_trunc=TruncMonth('created_at')).values('month_trunc').distinct()
+
+    for entry in raw_review_months:
+        m_date = entry["month_trunc"]
+        if not m_date: continue
+        key = dateformat.DateFormat(m_date).format("Y-m")
+        
+        m_reviews = all_reviews.filter(created_at__year=m_date.year, created_at__month=m_date.month)
+        feedback_by_month[key] = {
+            "avg_quality": round(m_reviews.aggregate(avg=Avg('quality'))['avg'] or 0, 1),
+            "avg_timeliness": round(m_reviews.aggregate(avg=Avg('timeliness'))['avg'] or 0, 1),
+            "avg_professionalism": round(m_reviews.aggregate(avg=Avg('professionalism'))['avg'] or 0, 1),
+            "avg_value_for_money": round(m_reviews.aggregate(avg=Avg('value_for_money'))['avg'] or 0, 1),
+        }
+
+    # ====== 7. OTHER DATA ======
+    status_data = list(all_bookings.values("status").annotate(count=Count("id")).order_by('-count'))
+    upcoming_events = all_bookings.filter(event_date__gte=timezone.now()).exclude(
+        status__in=["Completed", "Cancelled", "Rejected"]
+    ).order_by('event_date')[:1]
+
+    # ====== 8. CONTEXT CONSTRUCTION ======
     context = {
         'booking_count': booking_count,
-        'pending_count': pending_count,
+        'pending_count': pending_count, 
+        'notification_count': notification_count,
         'revenue': revenue,
         'profit': profit,
         'average_rating': round(average_rating, 1),
-        'bookings_per_month': bookings_per_month,
-        'status_data': list(status_data),
-        'package_popularity_by_month': dict(package_popularity_by_month),
-        'status_data_by_month': dict(status_data_by_month),
-        'feedback_by_month': feedback_by_month,
-        'notifications': notifications,
-        'avg_quality': round(avg_quality, 1),
-        'avg_timeliness': round(avg_timeliness, 1),
-        'avg_professionalism': round(avg_professionalism, 1),
-        'avg_value_for_money': round(avg_value_for_money, 1),
-        'latest_feedback': latest_feedback,
+        
+        'bookings_per_month': json.dumps(bookings_per_month),
+        'revenue_data_by_month': json.dumps(revenue_data_by_month),
+        'package_popularity_by_month': json.dumps(dict(package_popularity_by_month)),
+        'status_data_by_month': json.dumps(dict(status_data_by_month)),
+        'feedback_by_month': json.dumps(feedback_by_month),
+        
+        'latest_feedback': all_reviews.order_by('-created_at').first(),
         'upcoming_events': upcoming_events,
-        'months': months,
-        'years': years,
+        'months': months_list,
+        'years': years_list,
         'selected_month': selected_month,
         'selected_year': selected_year,
     }
 
     return render(request, 'client/dashboard.html', context)
-
-
 # ============================================================
 # ✅ NEW ENDPOINT: fetch Booking Status per Month (for JS filter)
 # ============================================================
@@ -695,51 +653,63 @@ def booking_status_data(request):
 def booking(request):
     current_year = datetime.now().year
 
-    # Dropdown options
-    months = [
-        ("1", "January"), ("2", "February"), ("3", "March"), ("4", "April"),
-        ("5", "May"), ("6", "June"), ("7", "July"), ("8", "August"),
-        ("9", "September"), ("10", "October"), ("11", "November"), ("12", "December"),
-    ]
+    # ... (retain your months, years, days list) ...
+    months = [("1", "January"), ("2", "February"), ("3", "March"), ("4", "April"), ("5", "May"), ("6", "June"), ("7", "July"), ("8", "August"), ("9", "September"), ("10", "October"), ("11", "November"), ("12", "December")]
     years = list(range(2000, current_year + 1))
-    days = list(range(1, 32))  # 1 to 31
+    days = list(range(1, 32))
 
     # Get filters
     filter_day = request.GET.get('filter_day')
     filter_month = request.GET.get('filter_month')
     filter_year = request.GET.get('filter_year')
-
     filter_conditions = Q()
 
-    # If filter is "today"
     if filter_day == "today":
         filter_conditions &= Q(event_date=datetime.now().date())
     else:
-        # Try converting day to int if it's numeric
         day_number = int(filter_day) if filter_day and filter_day.isdigit() else None
         month_number = int(filter_month) if filter_month and filter_month.isdigit() else None
         year_number = int(filter_year) if filter_year and filter_year.isdigit() else None
 
-        # If full date (day + month + year) is selected
         if day_number and month_number and year_number:
-            filter_conditions &= Q(
-                event_date__day=day_number,
-                event_date__month=month_number,
-                event_date__year=year_number
-            )
+            filter_conditions &= Q(event_date__day=day_number, event_date__month=month_number, event_date__year=year_number)
         elif month_number and year_number:
-            filter_conditions &= Q(
-                event_date__month=month_number,
-                event_date__year=year_number
-            )
+            filter_conditions &= Q(event_date__month=month_number, event_date__year=year_number)
         elif month_number:
             filter_conditions &= Q(event_date__month=month_number)
         elif year_number:
             filter_conditions &= Q(event_date__year=year_number)
 
-    bookings = Booking.objects.filter(filter_conditions).order_by('-created_at')
+    # Kunin ang bookings kasama ang checklists
+    bookings = Booking.objects.filter(filter_conditions).order_by('-created_at').prefetch_related('checklists__checked_by')
 
-    # Notifications (show up to 5 newest "Processing" bookings)
+    for b in bookings:
+        # Kunin ang specific checklists
+        before_cl = b.checklists.filter(checklist_type='BEFORE').first()
+        after_cl = b.checklists.filter(checklist_type='AFTER').first()
+        
+        b.equipment_status = "No Checklist"
+        b.checker_name = "N/A"
+        b.is_ready_for_complete = False # Default: Hindi pa pwedeng i-complete
+        
+        if before_cl:
+            b.checker_name = before_cl.checked_by.username if before_cl.checked_by else "System"
+            
+            if not before_cl.is_confirmed:
+                b.equipment_status = "Kulang (Outbound)"
+            elif after_cl:
+                if after_cl.checked_by:
+                    b.checker_name = after_cl.checked_by.username
+                
+                if not after_cl.is_confirmed:
+                    b.equipment_status = "Kulang (Inbound)"
+                else:
+                    b.equipment_status = "✅ Complete (All Returned)"
+                    b.is_ready_for_complete = True # ETO ANG MAG-EENABLE NG BUTTON
+            else:
+                b.equipment_status = "📦 Out for Event"
+
+    # Notifications logic
     notifications_qs = bookings.filter(status="Processing").order_by('-created_at')[:5]
     notifications = [
         f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
@@ -747,14 +717,9 @@ def booking(request):
     ]
 
     context = {
-        'bookings': bookings,
-        'months': months,
-        'years': years,
-        'days': days,
-        'current_year': current_year,
-        'notifications': notifications,  # Pass notifications to the template
+        'bookings': bookings, 'months': months, 'years': years, 'days': days,
+        'current_year': current_year, 'notifications': notifications,
     }
-
     return render(request, 'client/booking.html', context)
 
 @login_required
@@ -773,6 +738,7 @@ def event(request):
     return render(request, 'client/event.html', {
         'notifications': notifications,  # Pass notifications to the template
     })
+
 
 @login_required
 def booking_events_api(request):
@@ -1372,7 +1338,7 @@ def dashboard_redirect(request):
     else:
         return redirect('customer')  # Redirect to the customer dashboard
     
-
+from .models import Equipment, InventoryLog, Booking
 
 @login_required
 def update_inventory(request, equipment_id):
@@ -1388,72 +1354,64 @@ def update_inventory(request, equipment_id):
     except ValueError:
         qty = 1
 
-    # Detect booking if exists
     booking = None
     booking_id = request.POST.get("booking_id")
     if booking_id:
         booking = Booking.objects.filter(id=booking_id).first()
 
     try:
-
-        # + STOCK
         if action == "add_stock":
             equipment.quantity_available += qty
-            equipment.status = "Available"
             equipment.save()
             messages.success(request, f"Added {qty} to {equipment.name}.")
         
-        # - STOCK (NOW ALLOWED EVEN WITHOUT BOOKING)
         elif action == "subtract_stock":
-            
-            # If booking exists, require ACCEPTED
-            if booking:
-                if booking.status != "Accepted":
-                    messages.warning(request, "Booking must be accepted before renting out stock.")
-                    return redirect("inventory_list")
-                
-                # Use reserve_stock method if rental for booking
-                equipment.reserve_stock(required_qty=qty, booking=booking)
-                messages.success(request, f"Reserved {qty} for {equipment.name} (booking linked).")
+            if equipment.quantity_available < qty:
+                messages.error(request, "Not enough available stock.")
+                return redirect("inventory_list")
+            equipment.quantity_available -= qty
+            equipment.save()
+            messages.success(request, f"Subtracted {qty} from {equipment.name}.")
 
-            else:
-                # Manual stock deduction (no rental record)
-                if equipment.quantity_available < qty:
-                    messages.error(request, "Not enough available stock.")
-                    return redirect("inventory_list")
-                
-                equipment.quantity_available -= qty
-                equipment.save()
-                messages.success(request, f"Manually subtracted {qty} from {equipment.name}.")
-        
-        # MAINT / RETURN
         elif action == "to_maintenance":
-            equipment.move_to_maintenance(qty)
-            messages.success(request, f"Moved {qty} {equipment.name} → maintenance.")
+            # Siguraduhin na may available stock bago ilipat
+            if equipment.quantity_available >= qty:
+                equipment.quantity_available -= qty
+                equipment.qty_maintenance += qty
+                equipment.save()
+            messages.success(request, f"Moved {qty} to maintenance.")
 
         elif action == "back_from_maintenance":
-            equipment.return_from_maintenance(qty)
-            messages.success(request, f"Returned {qty} {equipment.name} from maintenance.")
+            if equipment.qty_maintenance >= qty:
+                equipment.qty_maintenance -= qty
+                equipment.quantity_available += qty
+                equipment.save()
+            messages.success(request, f"Returned {qty} from maintenance.")
 
         elif action == "to_repair":
-            equipment.move_to_repair(qty)
-            messages.success(request, f"Moved {qty} {equipment.name} → repair.")
+            if equipment.quantity_available >= qty:
+                equipment.quantity_available -= qty
+                equipment.qty_repair += qty
+                equipment.save()
+            messages.success(request, f"Moved {qty} to repair.")
 
         elif action == "back_from_repair":
-            equipment.return_from_repair(qty)
-            messages.success(request, f"Returned {qty} {equipment.name} from repair.")
-        
-        # RETURN RENTED STOCK
-        elif action == "return_rental":
-            equipment.release_stock(qty)
-            messages.success(request, f"Returned rented {qty} of {equipment.name}.")
+            if equipment.qty_repair >= qty:
+                equipment.qty_repair -= qty
+                equipment.quantity_available += qty
+                equipment.save()
+            messages.success(request, f"Returned {qty} from repair.")
 
-        else:
-            return HttpResponse("Unknown action.", status=400)
+        # --- DITO NALILIKHA ANG HISTORY/LOG ---
+        InventoryLog.objects.create(
+            equipment=equipment,
+            action=action,
+            quantity=qty,
+            booking=booking
+        )
 
-    except ValueError as e:
-        messages.error(request, str(e))
-        return redirect("inventory_list")
+    except Exception as e:
+        messages.error(request, f"Error: {str(e)}")
 
     return redirect("inventory_list")
 
@@ -1474,13 +1432,20 @@ def cancel_booking(request, booking_id):
     return redirect("mybookings")
 
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.utils.dateformat import DateFormat
+from .models import Booking, BookingChecklist, ChecklistItem, Notification
+from django.contrib import messages
+from django.contrib.auth.models import User
+
 @login_required
 @admin_only
 def checklist_view(request):
-    # Fetch bookings for checklist
-    bookings = Booking.objects.filter(status="Accepted").select_related("checklist")
+    # FIX: Pinalitan ang select_related("checklist") ng prefetch_related("checklists")
+    # Dahil ang ForeignKey ay nagbabalik ng listahan, hindi isang object lang.
+    bookings = Booking.objects.filter(status="Accepted").prefetch_related("checklists")
 
-    # 🔔 Notifications logic
     notif_qs = Booking.objects.filter(status="Processing").order_by("-created_at")[:5]
     notifications = [
         f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
@@ -1489,70 +1454,81 @@ def checklist_view(request):
 
     return render(request, "client/checklist.html", {
         "bookings": bookings,
-        "notifications": notifications,  # ← important
+        "notifications": notifications,
     })
-
 
 @login_required
 @admin_only
 def checklist_detail(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
-    checklist, created = BookingChecklist.objects.get_or_create(booking=booking)
+    ctype = request.GET.get('type', 'BEFORE')
+    
+    checklist, created = BookingChecklist.objects.get_or_create(
+        booking=booking, 
+        checklist_type=ctype
+    )
 
-    # Populate checklist items kung bagong gawa
+    # Populate items (>0 qty only)
     if created:
-        for pkg_eq in booking.package.packageequipment_set.filter(quantity_required__gt=0):
+        package_items = booking.package.packageequipment_set.filter(quantity_required__gt=0)
+        for pkg_eq in package_items:
             ChecklistItem.objects.create(
                 checklist=checklist,
                 equipment=pkg_eq.equipment,
                 quantity_required=pkg_eq.quantity_required
             )
 
+    # Check kung confirmed na ang BEFORE step
+    before_cl = booking.checklists.filter(checklist_type='BEFORE').first()
+    before_is_confirmed = before_cl.is_confirmed if before_cl else False
+
+    # Block access sa Step 2 kung di pa tapos ang Step 1
+    if ctype == 'AFTER' and not before_is_confirmed:
+        messages.error(request, "⚠️ Tapusin muna ang Step 1.")
+        return redirect(f"/accounts/checklist/{booking_id}/?type=BEFORE")
+
     if request.method == "POST":
-        all_confirmed = True
-        for item in checklist.items.filter(quantity_required__gt=0):
-            received_qty = int(request.POST.get(f"received_{item.id}", item.quantity_received))
-            confirmed = f"confirm_{item.id}" in request.POST
+        # Security: Bawal mag-save kung confirmed na
+        if checklist.is_confirmed:
+            messages.error(request, "⚠️ Naka-lock na ang audit na ito.")
+            return redirect(f"/accounts/checklist/{booking_id}/?type={ctype}")
 
-            item.quantity_received = received_qty
-            item.confirmed = confirmed
+        all_ok = True
+        missing_items = []
+        current_items = checklist.items.filter(quantity_required__gt=0)
+        
+        for item in current_items:
+            qty = int(request.POST.get(f"received_{item.id}", 0) or 0)
+            conf = f"confirm_{item.id}" in request.POST
+            
+            item.quantity_received = qty
+            item.confirmed = conf
             item.save()
-
-            if not confirmed or received_qty < item.quantity_required:
-                all_confirmed = False
-
-        checklist.is_confirmed = all_confirmed
+            
+            if qty < item.quantity_required or not conf:
+                all_ok = False
+                missing_items.append(item.equipment.name)
+        
+        checklist.is_confirmed = all_ok
+        checklist.checked_by = request.user # Sine-save ang auditor
         checklist.save()
-
-        # ✅ Create notification for all admins
-        admins = User.objects.filter(is_superuser=True)
-        for admin in admins:
-            Notification.objects.create(
-                user=admin,
-                message=f"✅ Checklist for booking #{booking.id} ({booking.full_name}) has been updated."
-            )
-
-        if all_confirmed:
-            messages.success(request, "Checklist confirmed successfully!")
-            return redirect("dashboard")
+        
+        if all_ok:
+            messages.success(request, f"✅ {ctype}: COMPLETE")
         else:
-            messages.info(request, "Checklist saved but not yet confirmed.")
-            return redirect("checklist_detail", booking_id=booking.id)
+            messages.warning(request, f"⚠️ INCOMPLETE: {', '.join(missing_items)}")
+            
+        return redirect(f"/accounts/checklist/{booking_id}/?type={ctype}")
 
-    # Pass filtered items
-    items = checklist.items.filter(quantity_required__gt=0)
-
-    # --- Notifications for admin bell ---
-    notifications = Notification.objects.filter(user=request.user, is_read=False).order_by('-created_at')
+    display_items = checklist.items.filter(quantity_required__gt=0)
 
     return render(request, "client/checklist_detail.html", {
-        "booking": booking,
-        "checklist": checklist,
-        "items": items,
-        "notifications": notifications,  # only unread
-        "notifications_unread_count": notifications.count()
+        "booking": booking, 
+        "checklist": checklist, 
+        "items": display_items, 
+        "checklist_type": ctype,
+        "before_is_confirmed": before_is_confirmed
     })
-
 import csv
 def download_employees(request):
     # Create the HttpResponse object with CSV header
@@ -1701,3 +1677,182 @@ def package_delete_view(request, package_id):
         messages.success(request, "Package deleted successfully!")
         return redirect('package_list')
     return render(request, 'client/package_delete.html', {'package': package})
+
+@login_required
+@admin_only
+def add_employee_view(request):
+    # --- Sidebar Notifications (Para mag-match sa ibang pages mo) ---
+    bookings = Booking.objects.all()
+    notifications_qs = bookings.filter(status="Processing").order_by('-created_at')[:5]
+    notifications = [
+        f"📌 New booking from {b.full_name} on {DateFormat(b.event_date).format('M d, Y')}"
+        for b in notifications_qs
+    ]
+
+    if request.method == "POST":
+        # Kunin ang data mula sa form
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        phone = request.POST.get("phone")
+        address = request.POST.get("address")
+        province = request.POST.get("province")
+        city = request.POST.get("city")
+        barangay = request.POST.get("barangay")
+
+        # Validation: Check kung existing na ang username/email
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already taken.")
+        elif User.objects.filter(email=email).exists():
+            messages.error(request, "Email already in use.")
+        else:
+            # 1. Create User as Staff (is_staff=True)
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                is_staff=True # Ito ang magseset sa kanila bilang Staff/Employee
+            )
+
+            # 2. Create Profile associated with the user
+            Profile.objects.create(
+                user=user,
+                contact_number=phone,
+                address=address,
+                province=province,
+                city=city,
+                barangay=barangay
+            )
+
+            messages.success(request, f"✅ Employee account for {username} successfully created!")
+            return redirect('employee') # Redirect pabalik sa table ng employees
+
+    return render(request, 'client/add_employee.html', {
+        'notifications': notifications
+    })
+import csv
+import json
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.db.models import Sum, Count, Q, FloatField, Value
+from django.db.models.functions import Cast, ExtractMonth, Replace
+from django.utils import timezone
+from .models import Booking
+
+@login_required
+def reports_page(request):
+    # Kunin ang Year at Month mula sa URL filters
+    y = request.GET.get('year', str(timezone.now().year))
+    m = request.GET.get('month', 'All')
+
+    # Data Cleaning: Tanggalin ang symbols para maging Float ang CharField
+    clean_price = Replace(Replace('price', Value('₱'), Value('')), Value(','), Value(''))
+
+    # 1. Base Filters
+    filters = Q(event_date__year=y)
+    if m != 'All':
+        filters &= Q(event_date__month=m)
+
+    # 2. Revenue Calculation (Lahat ng hindi Rejected)
+    revenue_query = Booking.objects.filter(filters).exclude(status__icontains='Reject').annotate(
+        price_num=Cast(clean_price, output_field=FloatField())
+    )
+    total_rev = revenue_query.aggregate(total=Sum('price_num'))['total'] or 0
+
+    # 3. Monthly Kita para sa Graph (Trend)
+    monthly_rev = [0] * 12
+    graph_query = Booking.objects.filter(event_date__year=y).exclude(status__icontains='Reject').annotate(
+        price_num=Cast(clean_price, output_field=FloatField())
+    ).annotate(month=ExtractMonth('event_date')).values('month').annotate(total=Sum('price_num'))
+    
+    for item in graph_query:
+        monthly_rev[item['month']-1] = float(item['total'] or 0)
+
+    # 4. Growth Logic (Current Year vs Previous Year)
+    last_y_rev = Booking.objects.filter(event_date__year=int(y)-1).exclude(status__icontains='Reject').annotate(
+        price_num=Cast(clean_price, output_field=FloatField())
+    ).aggregate(total=Sum('price_num'))['total'] or 0
+    
+    growth = 0
+    if last_y_rev > 0:
+        growth = ((total_rev - last_y_rev) / last_y_rev) * 100
+
+    # 5. History at Insights
+    all_bookings = Booking.objects.filter(filters).order_by('-event_date')
+    recent_bookings = all_bookings[:5] # Limit sa 5 para sa table
+    has_more = all_bookings.count() > 5
+
+    top_loc = all_bookings.values('location').annotate(c=Count('id')).order_by('-c').first()
+    top_area = top_loc['location'] if top_loc else "N/A"
+    
+    month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    max_val = max(monthly_rev) if any(monthly_rev) else 0
+    peak_month = month_names[monthly_rev.index(max_val)] if max_val > 0 else "N/A"
+
+    # Insight Message Construction
+    monthly_summary = ", ".join([f"{month_names[i]}: ₱{val:,.0f}" for i, val in enumerate(monthly_rev) if val > 0])
+    
+    if total_rev > 0:
+        insight_msg = f"Noong {y}, ang pinakamalakas mong buwan ay {peak_month}. Breakdown ng kita: {monthly_summary}. Pinaka-active na location ang {top_area}."
+    else:
+        insight_msg = "Wala pang sapat na revenue data para sa period na ito. Siguraduhin na ang bookings ay may 'Price' at hindi Rejected."
+
+    context = {
+        'bookings': recent_bookings,
+        'all_bookings_count': all_bookings.count(),
+        'has_more': has_more,
+        'revenue_data': json.dumps(monthly_rev),
+        'total_rev': total_rev,
+        'growth': round(growth, 2),
+        'top_area': top_area,
+        'peak_month': peak_month,
+        'insight_msg': insight_msg,
+        'selected_y': y,
+        'selected_m': m,
+        'years': range(2024, 2028),
+    }
+    return render(request, 'client/reports.html', context)
+@login_required
+def export_bookings_csv(request):
+    y = request.GET.get('year', str(timezone.now().year))
+    m = request.GET.get('month', 'All')
+    
+    clean_price = Replace(Replace('price', Value('₱'), Value('')), Value(','), Value(''))
+    filters = Q(event_date__year=y)
+    if m != 'All': filters &= Q(event_date__month=m)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="Report_{y}_{m}.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(['BUSINESS REPORT', f'Year: {y}', f'Month: {m}'])
+    writer.writerow([]) # Blank line
+    writer.writerow(['Date', 'Customer', 'Location', 'Price', 'Status'])
+    
+    bookings = Booking.objects.filter(filters).order_by('-event_date')
+    total = 0
+    for b in bookings:
+        writer.writerow([b.event_date, b.full_name, b.location, b.price, b.status])
+        # Simple cleaning for total in CSV
+        try:
+            p = float(b.price.replace('₱', '').replace(',', ''))
+            if 'Reject' not in b.status: total += p
+        except: pass
+
+    writer.writerow([])
+    writer.writerow(['', '', 'TOTAL REVENUE:', f'PHP {total:,.2f}'])
+    return response
+
+def bookings_list(request):
+    # Dito natin kukunin lahat ng bookings sa database
+    all_bookings = Booking.objects.all().order_by('-event_date') 
+    
+    context = {
+        'bookings': all_bookings,
+    }
+    return render(request, 'client/bookings_list.html', context)

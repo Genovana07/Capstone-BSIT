@@ -103,59 +103,57 @@
     </div>
 </section>
 
-<!-- Booking Form Modal -->
 <div id="booking-modal" class="booking-modal">
   <div class="booking-content">
     <span class="close-btn" onclick="closeBookingForm()">&times;</span>
     <h2>Book a Service</h2>
+    
     <form method="POST" action="{% url 'create_booking' %}" id="bookingForm">
       {% csrf_token %}
 
       <div class="booking-form-grid">
-        <!-- Full width -->
         <div class="full-width">
           <label for="selected_package">Package Selected</label>
           <input type="text" id="selected_package" name="selected_package" readonly>
         </div>
 
-        <!-- Two-column inputs -->
-        <div>
+        <div class="form-group">
           <label for="full_name">Full Name</label>
           <input type="text" id="full_name" name="full_name" value="{{ user.first_name }} {{ user.last_name }}" required>
         </div>
 
-        <div>
+        <div class="form-group">
           <label for="email">Email Address</label>
           <input type="email" id="email" name="email" value="{{ user.email }}" required>
         </div>
 
-        <div>
+        <div class="form-group">
           <label for="contact_number">Contact Number</label>
           <input type="tel" id="contact_number" name="contact_number" value="{{ profile.contact_number }}" required>
         </div>
 
-        <div>
+        <div class="form-group">
           <label for="event_date">Event Date</label>
           <input type="date" id="event_date" name="event_date" required>
         </div>
 
-        <div>
+        <div class="form-group">
           <label for="event_time">Start Time</label>
           <select id="event_time" name="event_time" required>
             <option value="">Select Start Time</option>
           </select>
         </div>
 
-        <div>
+        <div class="form-group">
           <label for="end_time">End Time</label>
           <select id="end_time" name="end_time" required>
             <option value="">Select End Time</option>
           </select>
         </div>
 
-        <div>
-          <label for="event_type">Type of Event</label>
-          <select id="event_type" name="event_type" required>
+        <div class="form-group">
+          <label for="booking_event_type">Type of Event</label>
+          <select id="booking_event_type" name="event_type" required>
             <option value="">Select</option>
             <option value="Wedding">Wedding</option>
             <option value="Birthday">Birthday</option>
@@ -173,8 +171,7 @@
           </select>
         </div>
 
-        <!-- City and Barangay now separated -->
-        <div>
+        <div class="form-group">
           <label for="location">Event Location City</label>
           <input type="text" id="location" name="location" list="city-suggestions" required>
           <datalist id="city-suggestions">
@@ -182,30 +179,33 @@
             <option value="Candelaria">
             <option value="Sariaya">
             <option value="Pagbilao">
-            <!-- add all cities/municipalities -->
           </datalist>
         </div>
 
-        <div>
+        <div class="form-group">
           <label for="barangay">Barangay</label>
           <select id="barangay" name="barangay" required>
             <option value="">Select Barangay</option>
           </select>
         </div>
 
-        <!-- Full width -->
-        <div class="full-width">
+        <div class="form-group">
           <label for="fulladdress">Specific Address</label>
-          <input type="text" id="fulladdress" name="fulladdress" placeholder="Ex: Purok 3 Sitio Dapdap" value="{{ profile.address }}" required>
+          <input type="text" id="fulladdress" name="fulladdress" placeholder="Bldg/Street/House No.">
         </div>
+      </div>
 
-      <button type="submit" class="submit-booking">Submit Booking Request</button>
+      <div class="form-actions">
+        <button type="submit" class="submit-booking">Submit Booking Request</button>
+      </div>
     </form>
   </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-const barangays = {
+// 1. DATA CONFIGURATION
+const barangayData = {
   "Lucena City": ["Ibabang Iyam","Ibabang Dupay","Gulang-gulang","Ibabang Talim","Ilayang Iyam","Ilayang Dupay","Ilayang Talim","Domoit","Dalahican","Bocohan","Cotta","Barra","Isabang","Market View","Mayao Castillo","Mayao Crossing","Mayao Kanluran","Mayao Parada","Mayao Silangan","Ransohan","Salinas","Talao-Talao","Barangay 1 (Poblacion)","Barangay 2 (Poblacion)","Barangay 3 (Poblacion)","Barangay 4 (Poblacion)","Barangay 5 (Poblacion)","Barangay 6 (Poblacion)","Barangay 7 (Poblacion)","Barangay 8 (Poblacion)","Barangay 9 (Poblacion)","Barangay 10 (Poblacion)","Barangay 11 (Poblacion)"],
   "Tayabas City": ["Alitao","Alsam Ibaba","Alsam Ilaya","Alupay","Angeles Zone I","Angeles Zone II","Angeles Zone III","Angeles Zone IV","Angustias Zone I","Angustias Zone II","Angustias Zone III","Angustias Zone IV","Anos","Ayaas","Baguio","Banilad","Ibabang Bukal","Ilayang Bukal","Calantas","Calumpang","Camaysa","Dapdap","Kanlurang Domoit","Silangang Domoit","Gibanga","Ibas","Ilasan Ibaba","Ilasan Ilaya","Ipilan","Isabang","Katigan Kanluran","Katigan Silangan","Lakawan","Lalo","Lawigue","Lita","Malaoa","Masin","Mate","Mateuna","Mayowe","Ibabang Nangka","Ilayang Nangka","Opias","Ibabang Palale","Ilayang Palale","Kanlurang Palale","Silangang Palale","Pandakaki","Pook","Potol","San Diego Zone I","San Diego Zone II","San Diego Zone III","San Diego Zone IV","San Isidro Zone I","San Isidro Zone II","San Isidro Zone III","San Isidro Zone IV","San Roque Zone I","San Roque Zone II","Talolong","Tamlong","Tongko","Valencia","Wakas"],
   "Candelaria": ["Malabanban Norte","Malabanban Sur","Buenavista East","Buenavista West","Bukal Norte","Bukal Sur","Kinatihan I","Kinatihan II","Mangilag Norte","Mangilag Sur","Masalukot I","Masalukot II","Masalukot III","Masalukot IV","Masalukot V","Masin Norte","Masin Sur","Mayabobo","Pahinga Norte","Pahinga Sur","San Andres","San Isidro","Santa Catalina Norte","Santa Catalina Sur","Poblacion"],
@@ -221,13 +221,13 @@ const barangays = {
   "Patnanungan": ["Amaga","Busdak","Kilogan","Luod","Patnanungan Norte","Patnanungan Sur"],
   "Polillo": ["Anawan","Atulayan","Balesin","Bañadero","Binibitinan","Bislian","Bucao","Canicanian","Kalubakis","Languyin","Libjo","Pamatdan","Pilion","Pinaglubayan","Poblacion","Sabang","Salipsip","Sibulan","Taluong","Tamulaya-Anitong"], 
   "Real": ["Bagong Silang","Capalong","Cawayan","Kiloloron","Llavac","Lubayat","Malapad","Maragondon","Masikap","Maunlad","Pandan","Poblacion 1","Poblacion 61","Tagumpay","Tanauan","Tignoan","Ungos"],
-  "Sampaloc": ["Alupay","Apasan","Banot","Bataan","Bayongon","Bilucao","Caldong","Ibabang Owain","Ilayang Owain","Mamala","San Bueno","San Isidro (Poblacion)","San Roque (Poblacion)","Taquico"],  
+  "Sampaloc": ["Alupay","Apasan","Banot","Bataan","Bayongon","Bilucao","Caldong","Ibabang Owain","Ilayang Owain","Mamala","San Bueno","San Isidro (Poblacion)","San Roque (Poblacion)","Taquico"],   
   "Dolores": ["Antonino","Bagong Anyo","Bayanihan","Bulakin I","Bulakin II","Bungoy","Cabatang","Dagatan","Kinabuhayan","Maligaya","Manggahan","Pinagdanlayan","Putol","San Mateo","Santa Lucia","Silanganan"], 
-  "San Antonio": ["Arawan","Bagong Niing","Balat Atis","Briones","Bulihan","Buliran","Callejon","Corazon","Manuel del Valle, Sr.","Loob","Magsaysay","Matipunso","Niing","Poblacion","Pulo","Pury","Sampaga","Sampaguita","San Jose","Sinturisan"],  
+  "San Antonio": ["Arawan","Bagong Niing","Balat Atis","Briones","Bulihan","Buliran","Callejon","Corazon","Manuel del Valle, Sr.","Loob","Magsaysay","Matipunso","Niing","Poblacion","Pulo","Pury","Sampaga","Sampaguita","San Jose","Sinturisan"],   
   "Tiaong": ["Anastacia","Aquino","Ayusan I","Ayusan II","Barangay I (Poblacion)","Barangay II (Poblacion)","Barangay III (Poblacion)","Barangay IV (Poblacion)","Behia","Bukal","Bula","Bulakin","Cabatang","Cabay","Del Rosario","Lagalag","Lalig","Lumingon","Lusacan","Paiisa","Palagaran","Quipot","San Agustin","San Isidro","San Jose","San Juan","San Pedro","Tagbakin","Talisay","Tamisian","San Francisco"],
   "Agdangan": ["Binagbag","Dayap","Ibabang Kinagunan","Ilayang Kinagunan","Kanlurang Calutan","Kanlurang Maligaya","Silangang Calutan","Silangang Maligaya","Sildora","Poblacion I","Poblacion II","Salvacion"],
   "Buenavista": ["Bagong Silang","Batabat Norte","Batabat Sur","Buenavista","Bukal","Bulo","Cabong","Cadlit","Catulin","Cawa","De La Paz","Del Rosario","Hagonghong","Ibabang Wasay","Ilayang Wasay","Lilukin","Mabini","Mabutag","Magallanes","Maligaya (Esperanza)","Manlana","Masaya","Poblacion","Rizal","Sabang Pinamasagan","Sabang Piris","San Diego","San Isidro Ibaba","San Isidro Ilaya","San Pablo","San Pedro (Villa Rodrigo)","San Vicente","Siain","Villa Aurora","Villa Batabat","Villa Magsaysay","Villa Veronica"],
-  "Catanauan": ["Ajos","Anusan","Barangay 1 (Pob.)","Barangay 2 (Pob.)","Barangay 3 (Pob.)","Barangay 4 (Pob.)","Barangay 5 (Pob.)","Barangay 6 (Pob.)","Barangay 7 (Pob.)","Barangay 8 (Pob.)","Barangay 9 (Pob.)","Barangay 10 (Pob.)","Bolo","Bulagsong","Camandiison","Canculajao","Catumbo","Cawayanin Ibaba","Cawayanin Ilaya","Cutcutan","Dahican","Doongan Ibaba","Doongan Ilaya","Gatasan","Macpac","Madulao","Matandang Sabang Kanluran","Matandang Sabang Silangan","Milagrosa","Navitas","Pacabit","San Antonio Magkupa","San Antonio Pala","San Isidro","San Jose (Anyao)","San Pablo (Suha)","San Roque (Doyon)","San Vicente Kanluran","San Vicente Silangan","Santa Maria (Dao)","Tagabas Ibaba","Tagabas Ilaya","Tagbacan Ibaba","Tagbacan Ilaya","Tagbacan Silangan","Tuhian"],  
+  "Catanauan": ["Ajos","Anusan","Barangay 1 (Pob.)","Barangay 2 (Pob.)","Barangay 3 (Pob.)","Barangay 4 (Pob.)","Barangay 5 (Pob.)","Barangay 6 (Pob.)","Barangay 7 (Pob.)","Barangay 8 (Pob.)","Barangay 9 (Pob.)","Barangay 10 (Pob.)","Bolo","Bulagsong","Camandiison","Canculajao","Catumbo","Cawayanin Ibaba","Cawayanin Ilaya","Cutcutan","Dahican","Doongan Ibaba","Doongan Ilaya","Gatasan","Macpac","Madulao","Matandang Sabang Kanluran","Matandang Sabang Silangan","Milagrosa","Navitas","Pacabit","San Antonio Magkupa","San Antonio Pala","San Isidro","San Jose (Anyao)","San Pablo (Suha)","San Roque (Doyon)","San Vicente Kanluran","San Vicente Silangan","Santa Maria (Dao)","Tagabas Ibaba","Tagabas Ilaya","Tagbacan Ibaba","Tagbacan Ilaya","Tagbacan Silangan","Tuhian"],   
   "General Luna": ["Bacong Ibaba","Bacong Ilaya","Barangay 1 (Pob.)","Barangay 2 (Pob.)","Barangay 3 (Pob.)","Barangay 4 (Pob.)","Barangay 5 (Pob.)","Barangay 6 (Pob.)","Barangay 7 (Pob.)","Barangay 8 (Pob.)","Barangay 9 (Pob.)","Lavides","Magsaysay","Malaya","Nieva","Recto","San Ignacio Ibaba","San Ignacio Ilaya","San Isidro Ibaba","San Isidro Ilaya","San Jose","San Nicolas","San Vicente","Santa Maria Ibaba","Santa Maria Ilaya","Sumilang","Villarica"],
   "Macalelon": ["Amontay","Anos","Buyao","Candangal","Calantas","Lahing","Luctob","Mabini Ibaba","Mabini Ilaya","Malabahay","Mambog","Olongtao Ibaba","Olongtao Ilaya","Padre Herrera","Pajarillo","Pinagbayanan","Rodriquez (Pob.)","Rizal (Pob.)","Castillo (Pob.)","Pag-Asa (Pob.)","Masipag (Pob.)","Damayan (Pob.)","San Isidro","San Jose","San Nicolas","San Vicente","Taguin","Tubigan Ibaba","Tubigan Ilaya","Vista Hermosa"],
   "Mulanay": ["Ajos (Sto. Niño)","Amuguis","Bagong Silang","Bolo","Butanyog","Canuyep","Latangan","Latingan","Lunsad","Magsaysay","Magtilang","Maligaya","Manapa","Matataja","Nueva Visaya","Poblacion I","Poblacion II","Poblacion III","Poblacion IV","Pogon (Tulay)","San Gabriel","San Gregory","San Isidro","San Pedro","San Roque","Santa Rosa","Sibucao","Sumundol"],
@@ -249,123 +249,14 @@ const barangays = {
   "Tagkawayan": ["Aldavoc","Aliji","Bagong Silang","Bamban","Bosigon","Bukal","Cabugwang","Cagascas","Casispalan","Colong‑colong","Del Rosario","Cabibihan","Candalapdap","Katimo","Kinatakutan","Landing","Laurel","Magsaysay","Maguibuay","Mahinta","Malbog","Manato Central","Manato Station","Mangayao","Mansilay","Mapulot","Munting Parang","Payapa","Poblacion","Rizal","Sabang","San Diego","San Francisco","San Isidro","San Jose","San Roque","San Vicente","Santa Cecilia","Santa Monica","Santo Niño I","Santo Niño II","Santo Tomas","Seguiwan","Tabason","Tunton","Victoria"]
 };
 
-document.getElementById("location").addEventListener("input", function() {
-  const city = this.value;
-  const barangaySelect = document.getElementById("barangay");
-  barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
-  if(barangays[city]) {
-    barangays[city].forEach(b => {
-      const opt = document.createElement("option");
-      opt.value = b;
-      opt.textContent = b;
-      barangaySelect.appendChild(opt);
-    });
-  }
-});
-</script>
-    </form>
-  </div>
-</div>
+let bookingData = {};
+const allTimes = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00", "00:00", "01:00", "02:00"];
 
-</form>
-    </div>
-</div>
-
-<script>
+// MODAL CONTROLS
 function confirmOpenBookingForm(packageTitle) {
-    document.getElementById("selected_package").value = packageTitle;
-    document.getElementById("booking-modal").style.display = "block";
-}
-
-function closeBookingForm() {
-    document.getElementById("booking-modal").style.display = "none";
-}
-
-window.onclick = function(event) {
-    document.querySelectorAll('.modal').forEach(modal => {
-        if (event.target === modal) {
-            modal.style.display = "none";
-        }
-    });
-}
-</script>
-
-<!-- Toggle Script -->
-<script>
-function toggleDetails(counter, btn) {
-    const element = document.getElementById(`details-${counter}`);
-    if (element.style.display === "none") {
-        element.style.display = "block";
-        btn.textContent = "See Less";
-    } else {
-        element.style.display = "none";
-        btn.textContent = "See More";
-    }
-}
-
-function openModal(id) {
-    document.getElementById("modal-" + id).style.display = "flex";
-}
-function closeModal(id) {
-    document.getElementById("modal-" + id).style.display = "none";
-}
-window.onclick = function(event) {
-    document.querySelectorAll('.modal').forEach(modal => {
-        if (event.target === modal) {
-            modal.style.display = "none";
-        }
-    });
-}
-</script>
-
-<!-- SweetAlert2 CSS & JS -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<!-- JavaScript to handle location input -->
-<script>
-    // List of cities in Quezon Province
-const quezonCities = [
-  // District 1
-  "Burdeos", "General Nakar", "Infanta", "Jomalig", "Lucban", "Mauban", "Pagbilao", "Panukulan", "Patnanungan", "Polillo", "Real", "Sampaloc", "Tayabas City",
-
-  // District 2
-  "Candelaria", "Dolores", "Lucena City", "San Antonio", "Sariaya", "Tiaong",
-
-  // District 3
-  "Agdangan", "Buenavista", "Catanauan", "General Luna", "Macalelon", "Mulanay", "Padre Burgos", "Pitogo", "San Andres", "San Francisco", "San Narciso", "Unisan",
-
-  // District 4
-  "Alabat", "Atimonan", "Calauag", "Guinayangan", "Gumaca", "Lopez", "Perez", "Plaridel", "Quezon",  "Tagkawayan"
-];
-
-
-    // Populate the suggestions in the datalist
-    const citySuggestions = document.getElementById('city-suggestions');
-    quezonCities.forEach(city => {
-        const option = document.createElement("option");
-        option.value = city;
-        citySuggestions.appendChild(option);
-    });
-
-    // Optional: filter the suggestions based on user input
-    const locationInput = document.getElementById("location");
-    locationInput.addEventListener('input', function() {
-        const searchTerm = locationInput.value.toLowerCase();
-        const filteredCities = quezonCities.filter(city => city.toLowerCase().includes(searchTerm));
-
-        // Clear previous suggestions
-        citySuggestions.innerHTML = '';
-
-        // Add filtered cities to suggestions
-        filteredCities.forEach(city => {
-            const option = document.createElement("option");
-            option.value = city;
-            citySuggestions.appendChild(option);
-        });
-    });
-    function confirmOpenBookingForm(packageTitle) {
     Swal.fire({
         title: "Confirm Booking",
-        text: "Do you want to book the package: " + packageTitle + "?",
+        text: "Do you want to book: " + packageTitle + "?",
         icon: "question",
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
@@ -377,168 +268,145 @@ const quezonCities = [
         }
     });
 }
+  document.addEventListener("DOMContentLoaded", function () {
+    const eventDateInput = document.getElementById("event_date");
 
-// Handle submit with SweetAlert2
-document.getElementById("bookingForm").addEventListener("submit", function(e) {
-    e.preventDefault(); // Stop default submit first
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+
+    const todayFormatted = `${year}-${month}-${day}`;
+
+    // Disable all past dates
+    eventDateInput.setAttribute("min", todayFormatted);
+  });
+  
+function openBookingForm(packageTitle) {
+    const modal = document.getElementById('booking-modal');
+    const packageInput = document.getElementById('selected_package');
+    const eventTypeSelect = document.getElementById('booking_event_type');
+
+    if (!modal) return;
+    packageInput.value = packageTitle;
+
+    // Auto-select Event Type
+    const eventTypes = ["Wedding", "Birthday", "Corporate", "Concert", "Seminar", "Graduation", "Awarding Ceremony", "Fundraising", "Fashion Show", "Church", "Conference", "School Event", "Charity Event"];
+    eventTypeSelect.value = ""; 
+    const lowerTitle = packageTitle.toLowerCase();
+    eventTypes.forEach(event => {
+        if (lowerTitle.includes(event.toLowerCase())) {
+            eventTypeSelect.value = event;
+        }
+    });
+
+    modal.style.display = "flex"; // Gumamit ng flex para sa centering
+}
+
+function closeBookingForm() {
+    document.getElementById('booking-modal').style.display = "none";
+}
+
+// CITY TO BARANGAY LOGIC
+// Ginamit ang 'change' event para hindi mag-flicker sa datalist
+document.getElementById("location").addEventListener("change", function() {
+    const city = this.value;
+    const barangaySelect = document.getElementById("barangay");
+    barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
     
-    // Isarado muna yung booking modal
+    if (barangayData[city]) {
+        barangayData[city].forEach(b => {
+            const opt = new Option(b, b);
+            barangaySelect.add(opt);
+        });
+    }
+});
+
+// FORM SUBMISSION WITH MODAL HIDING
+document.getElementById("bookingForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    
+    // 1. Itago muna ang modal para lilitaw ang confirmation nang malinis
     closeBookingForm();
 
     Swal.fire({
         title: "Submit Booking?",
-        text: "Please confirm your booking request before sending.",
+        text: "Are you sure you want to send this request?",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#28a745",
-        cancelButtonColor: "#d33",
         confirmButtonText: "Yes, submit",
+        cancelButtonText: "Cancel"
     }).then((result) => {
         if (result.isConfirmed) {
-            e.target.submit(); // Now submit form
+            this.submit();
+        } else {
+            // Kung na-cancel, ipakita ulit ang modal
+            document.getElementById('booking-modal').style.display = "flex";
         }
     });
 });
 
+// INITIAL DATA FETCH (TIME SLOTS)
+function fetchBookings() {
+    fetch('/accounts/api/bookings/')
+        .then(response => response.json())
+        .then(data => {
+            bookingData = data.form_logic || {};
+            setupBookingFormLogic();
+        })
+        .catch(err => console.log("API Error:", err));
+}
 
-</script>
+function setupBookingFormLogic() {
+    const dateInput = document.getElementById("event_date");
+    const timeSelect = document.getElementById("event_time");
+    const endTimeSelect = document.getElementById("end_time");
 
-    </div>
-</div>
+    if (!dateInput) return;
 
+    dateInput.addEventListener("input", function() {
+        timeSelect.innerHTML = '<option value="">Select Start Time</option>';
+        const selectedDate = this.value;
+        const entry = bookingData[selectedDate];
 
-<!-- JavaScript -->
-<script>
-    function toggleEquipmentVisibility(packageIndex) {
-        var equipmentList = document.querySelectorAll('.service-item')[packageIndex - 1].querySelector('.equipment-list');
-        if (equipmentList.style.display === "none" || equipmentList.style.display === "") {
-            equipmentList.style.display = "block";
-        } else {
-            equipmentList.style.display = "none";
+        if (entry && entry.count >= 2) {
+            Swal.fire("Full", "This date is already fully booked.", "warning");
+            this.value = "";
+            return;
         }
-    }
 
-    function openBookingForm(packageTitle) {
-        var modal = document.getElementById('booking-modal');
-        var packageInput = document.getElementById('selected_package');
-        packageInput.value = packageTitle;
-        modal.style.display = "flex";
-    }
-
-    function closeBookingForm() {
-        var modal = document.getElementById('booking-modal');
-        modal.style.display = "none";
-    }
-
-    window.addEventListener("click", function (e) {
-        var modal = document.getElementById('booking-modal');
-        if (e.target === modal) {
-            closeBookingForm();
-        }
+        allTimes.forEach(time => {
+            if (!(entry?.times || []).includes(time)) {
+                timeSelect.add(new Option(convertTo12Hour(time), time));
+            }
+        });
     });
 
-    // ===============================
-    // Booking Form Logic (with extended end time)
-    // ===============================
-
-    let bookingData = {};
-    const allTimes = [
-        "09:00", "10:00", "11:00", "12:00",
-        "13:00", "14:00", "15:00", "16:00",
-        "17:00", "18:00", "19:00", "20:00",
-        "21:00", "22:00", "23:00", "00:00",
-        "01:00", "02:00"
-    ]; // extended to 2AM
-
-    function fetchBookings() {
-        fetch('/accounts/api/bookings/')
-            .then(response => response.json())
-            .then(data => {
-                bookingData = data.form_logic;
-                setupBookingFormLogic();
-            });
-    }
-
-    function setupBookingFormLogic() {
-        const dateInput = document.getElementById("event_date");
-        const timeSelect = document.getElementById("event_time");
-        const endTimeSelect = document.getElementById("end_time");
-
-        if (!dateInput || !timeSelect || !endTimeSelect) return;
-
-        const today = new Date().toISOString().split("T")[0];
-        dateInput.setAttribute("min", today);
-
-        dateInput.addEventListener("input", function () {
-            const selectedDate = this.value;
-
-            timeSelect.innerHTML = '<option value="">Select Start Time</option>';
-            endTimeSelect.innerHTML = '<option value="">Select End Time</option>';
-
-            const entry = bookingData[selectedDate];
-
-            let available = [...allTimes];
-
-            if (entry) {
-                const { count, times } = entry;
-
-                if (count >= 2) {
-                    alert("This date already has two bookings. Please select another date.");
-                    this.value = "";
-                    return;
-                }
-
-                available = allTimes.filter(t => !times.includes(t));
-                if (available.length === 0) {
-                    alert("No available time slots left for this date.");
-                    return;
-                }
-            }
-
-            available.forEach(time => {
-                const option = document.createElement("option");
-                option.value = time;
-                option.textContent = convertTo12Hour(time);
-                timeSelect.appendChild(option);
-            });
-
-            endTimeSelect.innerHTML = '<option value="">Select End Time</option>';
+    timeSelect.addEventListener("change", function() {
+        endTimeSelect.innerHTML = '<option value="">Select End Time</option>';
+        const startIdx = allTimes.indexOf(this.value);
+        const booked = bookingData[dateInput.value]?.times || [];
+        allTimes.slice(startIdx + 1).forEach(t => {
+            if (!booked.includes(t)) endTimeSelect.add(new Option(convertTo12Hour(t), t));
         });
+    });
+}
 
-        timeSelect.addEventListener("change", function () {
-            const start = this.value;
-            const selectedDate = dateInput.value;
-            endTimeSelect.innerHTML = '<option value="">Select End Time</option>';
+function convertTo12Hour(time24) {
+    let [h, m] = time24.split(':');
+    let hInt = parseInt(h);
+    let suffix = hInt >= 12 && hInt < 24 ? 'PM' : 'AM';
+    let displayH = hInt % 12 || 12;
+    return displayH + ":" + m + " " + suffix;
+}
 
-            if (!start) return;
+window.onclick = function(event) {
+    const modal = document.getElementById('booking-modal');
+    if (event.target == modal) closeBookingForm();
+}
 
-            const entry = bookingData[selectedDate];
-            const bookedTimes = entry ? entry.times : [];
+fetchBookings();
 
-            const startIndex = allTimes.indexOf(start);
-            const possibleEnds = allTimes.slice(startIndex + 1);
-
-            const availableEnds = possibleEnds.filter(t => !bookedTimes.includes(t));
-
-            availableEnds.forEach(endTime => {
-                const option = document.createElement("option");
-                option.value = endTime;
-                option.textContent = convertTo12Hour(endTime);
-                endTimeSelect.appendChild(option);
-            });
-        });
-    }
-
-    function convertTo12Hour(time24) {
-        const [hour, minute] = time24.split(':');
-        const h = parseInt(hour);
-        const suffix = h >= 12 && h < 24 ? 'PM' : 'AM';
-        const adjusted = h % 12 === 0 ? 12 : h % 12;
-        return `${adjusted}:${minute} ${suffix}`;
-    }
-
-    // Initial load
-    fetchBookings();
 </script>
 
 
@@ -547,88 +415,143 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
 <link rel="stylesheet" href="{% static 'css/services.css' %}">
 <style>
 /* === GRID FORM === */
+.booking-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* MODAL BOX - Wide layout para dalawang column at iwas scroll */
+.booking-content {
+    background: #fff;
+    width: 95%;
+    max-width: 900px; 
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 35px 40px;
+    border-radius: 14px;
+    position: relative;
+    box-sizing: border-box;
+    animation: fadeIn 0.3s ease;
+}
+
+.booking-content h2 {
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+    color: #23194f;
+    font-weight: 700;
+}
+
+/* === GRID SYSTEM - 2 COLUMNS === */
 .booking-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* two columns */
-  gap: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 25px;
+    width: 100%;
 }
 
 .booking-form-grid .full-width {
-  grid-column: span 2; /* para sa mga field na dapat buong row */
+    grid-column: span 2;
 }
+
+/* === INPUTS & SELECTS (Isolated to Booking Form) === */
+.booking-form-grid label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #444;
+}
+
+.booking-form-grid input,
+.booking-form-grid select {
+    width: 100% !important;
+    height: 48px; /* Uniform height */
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    font-size: 1rem;
+    background-color: #f8fafc;
+    box-sizing: border-box; /* Fix alignment for Barangay & Address */
+    transition: all 0.2s ease;
+}
+
+.booking-form-grid input:focus, 
+.booking-form-grid select:focus {
+    outline: none;
+    border-color: #23194f;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(35, 25, 79, 0.1);
+}
+
+/* === UPDATED SUBMIT BUTTON DESIGN === */
+.submit-booking {
+    grid-column: span 2;
+    width: 100%;
+    max-width: 380px; /* Mas malapad na button */
+    justify-self: center;
+    margin-top: 35px; /* Ibinaba nang konti mula sa fields */
+    padding: 15px 30px;
+    background-color: #23194f;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(35, 25, 79, 0.2);
+    transition: all 0.3s ease;
+}
+
+.submit-booking:hover {
+    background-color: #3a2d7c;
+    transform: translateY(-2px); /* Swabe na hover effect */
+    box-shadow: 0 6px 15px rgba(35, 25, 79, 0.3);
+}
+
+/* === ORIGINAL DESIGNS (UNTOUCHED) === */
 .event-filter-form {
     display: flex;
-    justify-content: center; /* center horizontally */
+    justify-content: center;
     align-items: center;
     gap: 10px;
     margin-bottom: 2rem;
 }
-
-.event-filter-form label {
-    font-weight: 600;
-    font-size: 1rem;
-    color: #1e293b;
-}
-
 .event-filter-form select {
     padding: 0.5rem 0.75rem;
     border-radius: 8px;
-    border: 1px solid #cbd5e1; /* light gray border */
-    font-size: 1rem;
+    border: 1px solid #cbd5e1;
     background-color: #f8fafc;
-    color: #111827;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
+}
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #23194f;
+    border-bottom: 2px solid #23194f;
 }
 
-.event-filter-form select:hover {
-    border-color: #2563eb; /* blue border on hover */
-}
-
-.event-filter-form select:focus {
-    outline: none;
-    border-color: #3b82f6; /* stronger blue on focus */
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-}
-/* === BOOKING MODAL === */
-.booking-modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  z-index: 9999;
-  overflow-y: auto;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.booking-content {
-  background: white;
-  max-width: 600px;
-  width: 100%;
-  margin: auto;
-  border-radius: 10px;
-  padding: 25px;
-  position: relative;
-  font-family: 'MavenPro', sans-serif;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
+/* Modal and Animations */
 .close-btn {
-  position: absolute;
-  top: 12px;
-  right: 18px;
-  font-size: 28px;
-  cursor: pointer;
-  color: #333;
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 28px;
+    cursor: pointer;
+    color: #666;
 }
-
 .booking-content h2 {
   font-size: 1.8rem;
   margin-bottom: 20px;
@@ -644,35 +567,34 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
 }
 
 .booking-content input,
-.booking-content select,
-.booking-content textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 0.95rem;
-  margin-top: 5px;
-  background-color: #f9f9f9;
-  box-sizing: border-box;
+.booking-content select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    font-size: 1rem;
+    background-color: #f8fafc;
+    box-sizing: border-box;
+    transition: border 0.2s;
 }
 
+.booking-content input:focus, 
+.booking-content select:focus {
+    outline: none;
+    border-color: #23194f;
+    background-color: #fff;
+}
 .booking-content textarea {
   resize: vertical;
   min-height: 80px;
 }
-
 .submit-booking {
-  margin-top: 25px;
-  width: 100%;
-  background-color: #23194f;
-  color: white;
-  padding: 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.3s ease;
+  grid-column: span 2; /* sakop buong row */
+  width: auto;
+  justify-self: center; /* center sa row */
+  padding: 12px 24px;
 }
+/* HOVER */
 .submit-booking:hover {
   background-color: #3a2d7c;
 }
@@ -847,18 +769,21 @@ document.getElementById("bookingForm").addEventListener("submit", function(e) {
 }
 
 .booking-form-grid label {
-  display: block;
-  margin-bottom: 5px;
   font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  display: block;
 }
-
 .booking-form-grid input,
 .booking-form-grid select {
   width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.95rem;
+  background: #f8fafc;
 }
+
 /* Pag maliit na screen, tanggalin yung line */
 @media screen and (max-width: 768px) {
   .section-title {

@@ -203,7 +203,7 @@ class Booking(models.Model):
     reject_reason = models.TextField(null=True, blank=True)
     review_exists = models.BooleanField(null=False, default=False) 
     barangay = models.CharField(max_length=100, blank=True, null=True)
-    
+    is_seen = models.BooleanField(default=False) # Idagdag ito
     def __str__(self):
         return f"Booking {self.id} by {self.full_name}"
 
@@ -245,17 +245,29 @@ class Booking(models.Model):
         self.status = 'Rejected'
         self.save()
 
+
         print(f"Booking {self.id} has been canceled and equipment restored to inventory.")
 
 class InventoryLog(models.Model):
-    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
-    action = models.CharField(max_length=50, choices=[('rented', 'Rented'), ('returned', 'Returned')])
+    ACTION_CHOICES = [
+        ('add_stock', 'Added Stock'),
+        ('subtract_stock', 'Subtracted Stock'),
+        ('to_maintenance', 'Moved to Maintenance'),
+        ('back_from_maintenance', 'Returned from Maintenance'),
+        ('to_repair', 'Moved to Repair'),
+        ('back_from_repair', 'Returned from Repair'),
+        ('rented', 'Rented'),
+        ('returned', 'Returned'),
+    ]
+    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, related_name='logs')
+    action = models.CharField(max_length=50, choices=ACTION_CHOICES)
     quantity = models.IntegerField()
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    # Ginawang null=True dahil ang maintenance/repair ay walang booking link madalas
+    booking = models.ForeignKey('Booking', on_delete=models.CASCADE, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.action} {self.quantity} of {self.equipment.name} for Booking {self.booking.id}."
+        return f"{self.equipment.name} - {self.action} ({self.quantity}) on {self.timestamp}"
 
 
 class Review(models.Model):
@@ -279,12 +291,30 @@ class Review(models.Model):
     def __str__(self):
         return f"Review by {self.customer_name} on {self.booking_date}"
     
+from django.conf import settings
+
 class BookingChecklist(models.Model):
-    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name="checklist")
-    is_confirmed = models.BooleanField(default=False)  # Kung na-confirm na lahat ng equipment
+    CHECKLIST_TYPES = [
+        ('BEFORE', 'Before Event'),
+        ('AFTER', 'After Event'),
+    ]
+    # Ginawang ForeignKey kasi dalawa ang checklist (Before at After)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="checklists")
+    checklist_type = models.CharField(max_length=10, choices=CHECKLIST_TYPES, default='BEFORE')
+    is_confirmed = models.BooleanField(default=False)
+    checked_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Checklist for Booking {self.booking.id}"
+        return f"{self.checklist_type} - {self.booking.id}"
+
+    @property
+    def is_complete(self):
+        # Ito ang magche-check kung tugma lahat ng quantity
+        for item in self.items.all():
+            if item.quantity_received < item.quantity_required:
+                return False
+        return True
 
 
 class ChecklistItem(models.Model):
@@ -317,3 +347,5 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notif for {self.user.username} - {self.message[:20]}"
+    
+    
